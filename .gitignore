@@ -1,17 +1,47 @@
-# Created by .ignore support plugin (hsz.mobi)
-### Go template
-# Binaries for programs and plugins
-*.exe
-*.dll
-*.so
-*.dylib
 
-# Test binary, build with `go test -c`
+# Created by https://www.gitignore.io/api/go,code
+
+### Go ###
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+*.o
+*.a
+*.so
+
+# Folders
+_obj
+_test
+
+# Architecture specific extensions/prefixes
+*.[568vq]
+[568vq].out
+
+*.cgo1.go
+*.cgo2.c
+_cgo_defun.c
+_cgo_gotypes.go
+_cgo_export.*
+
+_testmain.go
+
+*.exe
 *.test
+*.prof
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
-.glide/
+# External packages folder
+vendor/
+!vendor/vendor.json
 
+### Code ###
+# Visual Studio Code - https://code.visualstudio.com/
+.settings/
+.vscode/
+tsconfig.json
+jsconfig.json
+
+# End of https://www.gitignore.io/api/go,code
+
+dist/
+.idea/
