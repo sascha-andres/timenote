@@ -1,0 +1,21 @@
+package persistence
+
+import "github.com/sascha-andres/timenote"
+
+// Persistor is used to store the received data
+type Persistor interface {
+	// New starts a new timenote
+	New() error
+	// Append adds a line to the note
+	Append(line string) error
+	// Tag sets a tag for the note
+	Tag(name string) error
+	// Done writes the stop timestamp
+	Done() error
+	// Close the connection to the persistence backend
+	Close() error
+	// List of entries for the current day - delta
+	ListForDay(delta int) ([]timenote.TimeEntry, error)
+	// Get currently running time entry
+	Current() (*timenote.TimeEntry, error)
+}
