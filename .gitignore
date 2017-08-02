@@ -45,3 +45,4 @@ jsconfig.json
 
 dist/
 .idea/
+vendor/
