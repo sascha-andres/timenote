@@ -21,6 +21,7 @@ func NewToggl(dsn string) (persistence.Persistor, error) {
 	var res TogglPersistor
 	res.dsn = dsn
 	res.session = toggl.OpenSession(dsn)
+	toggl.DisableLog()
 	return &res, nil
 }
 
