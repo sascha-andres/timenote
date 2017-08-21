@@ -2,12 +2,6 @@
 
 
 [[projects]]
-  name = "github.com/Sirupsen/logrus"
-  packages = ["."]
-  revision = "a3f95b5c423586578a4e099b11a46c2479628cac"
-  version = "1.0.2"
-
-[[projects]]
   name = "github.com/chzyer/readline"
   packages = ["."]
   revision = "62c6fe6193755f722b8b8788aa7357be55a50ff1"
@@ -92,10 +86,10 @@
   version = "v0.8.0"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/prometheus/log"
+  name = "github.com/sirupsen/logrus"
   packages = ["."]
-  revision = "9a3136781e1ff7bc42736ba4acb81339b1422551"
+  revision = "f006c2ac4710855cf0f916dd6b77acf6b048dc6e"
+  version = "v1.0.3"
 
 [[projects]]
   branch = "master"
@@ -135,8 +129,14 @@
 
 [[projects]]
   branch = "master"
+  name = "golang.org/x/crypto"
+  packages = ["ssh/terminal"]
+  revision = "eb71ad9bd329b5ac0fd0148dd99bd62e8be8e035"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/sys"
-  packages = ["unix"]
+  packages = ["unix","windows"]
   revision = "396c9fc8fb0ce27fc7a1ff136dc5af797bba258a"
 
 [[projects]]
@@ -154,6 +154,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "949e2d0d45b02dfe46aacf8f1e81b905a4b5ea30c835a8b89ede469488d0705c"
+  inputs-digest = "6dda3b48bf7ca07b2ae298ba7efe76169ff35927f9c6e3c8ea7db1c9fab9b59c"
   solver-name = "gps-cdcl"
   solver-version = 1

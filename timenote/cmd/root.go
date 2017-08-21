@@ -15,8 +15,9 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/google/gops/agent"
 	homedir "github.com/mitchellh/go-homedir"

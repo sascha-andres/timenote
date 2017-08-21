@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"io"
-	"log"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/chzyer/readline"
 	"github.com/pkg/errors"
@@ -21,15 +22,6 @@ var (
 		readline.PcItem("current"),
 	)
 )
-
-func filterInput(r rune) (rune, bool) {
-	switch r {
-	// block CtrlZ feature
-	case readline.CharCtrlZ:
-		return r, false
-	}
-	return r, true
-}
 
 func run() error {
 	persistence, err := factory.CreatePersistence(viper.GetString("persistor"), viper.GetString("dsn"))
@@ -98,8 +90,5 @@ func getReadlineConfig() (*readline.Instance, error) {
 		AutoComplete:    completer,
 		InterruptPrompt: "^C",
 		EOFPrompt:       "exit",
-
-		HistorySearchFold:   true,
-		FuncFilterInputRune: filterInput,
 	})
 }

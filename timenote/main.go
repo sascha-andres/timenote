@@ -15,6 +15,8 @@ package main
 
 import "github.com/sascha-andres/timenote/timenote/cmd"
 
+var version string = "develop"
+
 func main() {
 	cmd.Execute()
 }

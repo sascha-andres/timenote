@@ -1,17 +1,15 @@
 package mysqldriver
 
 import (
-	"database/sql"
-
 	"context"
-
+	"database/sql"
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
-	"github.com/prometheus/log"
 	"github.com/sascha-andres/timenote"
 	"github.com/sascha-andres/timenote/persistence"
+	log "github.com/sirupsen/logrus"
 )
 
 type (
