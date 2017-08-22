@@ -42,7 +42,11 @@ func (t *TogglPersistor) Append(line string) error {
 	if err != nil {
 		return errors.Wrap(err, "Unable to get running time entry from toggl")
 	}
-	te.Description = fmt.Sprintf("%s;%s", te.Description, line)
+	if te.Description == "" {
+		te.Description = line
+	} else {
+		te.Description = fmt.Sprintf("%s;%s", te.Description, line)
+	}
 	_, err = t.session.UpdateTimeEntry(*te)
 	if err != nil {
 		return errors.Wrap(err, "Unable to update time entry in toggl")
