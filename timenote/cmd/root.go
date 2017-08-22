@@ -41,7 +41,9 @@ You can tag notes`,
 			log.Fatal(err)
 		}
 
-		run()
+		if err := run(); err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 
