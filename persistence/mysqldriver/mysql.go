@@ -35,7 +35,23 @@ func NewMysql(dsn string) (persistence.Persistor, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "Error creating table - timenote")
 	}
-	db.SetConnMaxLifetime(500)
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS project (
+	id INT AUTO_INCREMENT NOT NULL,
+	name NVARCHAR(100) NOT NULL DEFAULT '',
+	PRIMARY KEY ( id )
+);`)
+	if err != nil {
+		return nil, errors.Wrap(err, "Error creating table - project")
+	}
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS timenote_project (
+	id INT AUTO_INCREMENT NOT NULL,
+	id_timenote INT NOT NULL,
+	id_project INT NOT NULL,
+	PRIMARY KEY ( id )
+);`)
+	if err != nil {
+		return nil, errors.Wrap(err, "Error creating table - timenote_project")
+	}
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS line (
 	id INT AUTO_INCREMENT NOT NULL,
 	id_timenote INT NOT NULL,
