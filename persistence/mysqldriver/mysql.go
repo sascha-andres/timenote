@@ -183,3 +183,7 @@ func (mysql *MySQLPersistor) prepareDb() error {
 	}
 	return nil
 }
+
+func (mysql *MySQLPersistor) Project(name string) error {
+	return errors.New("Not yet implemented")
+}

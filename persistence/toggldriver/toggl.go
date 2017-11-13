@@ -121,3 +121,7 @@ func getCurrentTimeEntry(account toggl.Account) (*toggl.TimeEntry, error) {
 	}
 	return nil, fmt.Errorf("No current time entry")
 }
+
+func (t *TogglPersistor) Project(name string) error {
+	return errors.New("Not yet implemented")
+}
