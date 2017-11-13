@@ -110,7 +110,7 @@ func (t *TogglPersistor) Current() (*timenote.TimeEntry, error) {
 	}
 	var res timenote.TimeEntry
 	res.Note = te.Description
-	res.Id = te.ID
+	res.ID = te.ID
 	return nil, nil
 }
 

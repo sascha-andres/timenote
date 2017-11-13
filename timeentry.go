@@ -13,8 +13,8 @@ var ErrNoCurrentTimeEntry = errors.New("timenote: no current timeentry")
 type (
 	// TimeEntry represents a simple note
 	TimeEntry struct {
-		// Id is a systerm id which may be set from a persistor
-		Id int
+		// ID is a systerm id which may be set from a persistor
+		ID int
 		// Tag is used for grouping
 		Tag string
 		// Some text attached to entry

@@ -167,7 +167,7 @@ func (mysql *MySQLPersistor) Current() (*timenote.TimeEntry, error) {
 	}
 	row := mysql.databaseConnection.QueryRow("select id, tag, `text` from timenote where stop = '0000-00-00 00:00:00'")
 	var te timenote.TimeEntry
-	if err := row.Scan(&te.Id, &te.Tag, &te.Note); err != nil {
+	if err := row.Scan(&te.ID, &te.Tag, &te.Note); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, timenote.ErrNoCurrentTimeEntry
 		}
@@ -215,7 +215,7 @@ func (mysql *MySQLPersistor) Project(name string) error {
 	if err != nil {
 		return errors.Wrap(err, "Could not start transaction")
 	}
-	_, err = tx.Exec("insert into timenote_project (timenote_id, project_id) values (?, ?)", te.Id, projectID)
+	_, err = tx.Exec("insert into timenote_project (timenote_id, project_id) values (?, ?)", te.ID, projectID)
 	if err != nil {
 		tx.Rollback()
 		return errors.Wrap(err, "Could not stop entry")
