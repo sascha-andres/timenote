@@ -3,11 +3,18 @@ package timenote
 import (
 	"fmt"
 	"time"
+
+	"github.com/pkg/errors"
 )
+
+// ErrNoCurrentTimeEntry should be returned in case no running timeentry is found
+var ErrNoCurrentTimeEntry = errors.New("timenote: no current timeentry")
 
 type (
 	// TimeEntry represents a simple note
 	TimeEntry struct {
+		// Id is a systerm id which may be set from a persistor
+		Id int
 		// Tag is used for grouping
 		Tag string
 		// Some text attached to entry
