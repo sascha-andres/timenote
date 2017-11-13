@@ -10,6 +10,8 @@ type Persistor interface {
 	Append(line string) error
 	// Tag sets a tag for the note
 	Tag(name string) error
+	// Project adds time entry to a project
+	Project(name string) error
 	// Done writes the stop timestamp
 	Done() error
 	// Close the connection to the persistence backend
