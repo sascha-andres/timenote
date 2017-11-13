@@ -15,7 +15,7 @@ type Persistor interface {
 	// Close the connection to the persistence backend
 	Close() error
 	// List of entries for the current day - delta
-	ListForDay(delta int) ([]timenote.TimeEntry, error)
+	// ListForDay(delta int) ([]timenote.TimeEntry, error)
 	// Get currently running time entry
 	Current() (*timenote.TimeEntry, error)
 }

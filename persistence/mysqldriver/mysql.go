@@ -154,12 +154,12 @@ func (mysql *MySQLPersistor) Close() error {
 // SELECT *, UNIX_TIMESTAMP(`stop`)-UNIX_TIMESTAMP(`start`) FROM `timenotes` WHERE `stop` <> '0000-00-00 00:00:00'
 // unix_timestamp(maketime(_,_,_)
 
-func (mysql *MySQLPersistor) ListForDay(delta int) ([]timenote.TimeEntry, error) {
+/* func (mysql *MySQLPersistor) ListForDay(delta int) ([]timenote.TimeEntry, error) {
 	if err := mysql.prepareDb(); err != nil {
 		return nil, errors.Wrap(err, "Connection to DB not valid")
 	}
 	return nil, errors.New("Not yet implemented")
-}
+}*/
 
 func (mysql *MySQLPersistor) Current() (*timenote.TimeEntry, error) {
 	if err := mysql.prepareDb(); err != nil {
