@@ -95,9 +95,9 @@ func (t *TogglPersistor) Close() error {
 	return nil
 }
 
-func (t *TogglPersistor) ListForDay(delta int) ([]timenote.TimeEntry, error) {
+/*func (t *TogglPersistor) ListForDay(delta int) ([]timenote.TimeEntry, error) {
 	return nil, errors.New("Not yet implemented")
-}
+}*/
 
 func (t *TogglPersistor) Current() (*timenote.TimeEntry, error) {
 	account, err := t.session.GetAccount()
