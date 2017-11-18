@@ -95,9 +95,9 @@ func (t *TogglPersistor) Close() error {
 	return nil
 }
 
-func (t *TogglPersistor) ListForDay(delta int) ([]timenote.TimeEntry, error) {
+/*func (t *TogglPersistor) ListForDay(delta int) ([]timenote.TimeEntry, error) {
 	return nil, errors.New("Not yet implemented")
-}
+}*/
 
 func (t *TogglPersistor) Current() (*timenote.TimeEntry, error) {
 	account, err := t.session.GetAccount()
@@ -110,6 +110,7 @@ func (t *TogglPersistor) Current() (*timenote.TimeEntry, error) {
 	}
 	var res timenote.TimeEntry
 	res.Note = te.Description
+	res.ID = te.ID
 	return nil, nil
 }
 
@@ -120,4 +121,59 @@ func getCurrentTimeEntry(account toggl.Account) (*toggl.TimeEntry, error) {
 		}
 	}
 	return nil, fmt.Errorf("No current time entry")
+}
+
+func (t *TogglPersistor) Project(name string) error {
+	var (
+		account   toggl.Account
+		projectID int
+		err       error
+	)
+
+	account, err = t.session.GetAccount()
+	if err != nil {
+		return errors.Wrap(err, "Unable to get account")
+	}
+	if name == "" {
+		projectID = 0
+	} else {
+		projectID, err = t.getProjectID(name)
+		if projectID == 0 {
+			projectID, err = t.createProject(account, name)
+			if err != nil {
+				return errors.Wrap(err, "Unable to create project")
+			}
+		}
+	}
+
+	te, err := getCurrentTimeEntry(account)
+	if err != nil {
+		return errors.Wrap(err, "Unable to get running time entry from toggl")
+	}
+	te.Pid = projectID
+	_, err = t.session.UpdateTimeEntry(*te)
+	return err
+}
+
+func (t *TogglPersistor) createProject(account toggl.Account, name string) (int, error) {
+	res, err := t.session.CreateProject(name, account.Data.Workspaces[0].ID)
+	if err != nil {
+		return 0, err
+	}
+	return res.ID, nil
+}
+
+func (t *TogglPersistor) getProjectID(name string) (int, error) {
+	account, err := t.session.GetAccount()
+	if err != nil {
+		return 0, errors.Wrap(err, "Unable to get account")
+	}
+
+	for _, prj := range account.Data.Projects {
+		if prj.Name == name {
+			return prj.ID, nil
+		}
+	}
+
+	return 0, nil
 }

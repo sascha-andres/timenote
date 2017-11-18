@@ -30,6 +30,9 @@ func executeLine(persistence persistence.Persistor, commandline string) error {
 	case "append":
 		return persistence.Append(strings.Join(tokenize[1:], " "))
 		break
+	case "project":
+		return persistence.Project(strings.Join(tokenize[1:], " "))
+		break
 	case "tag":
 		return persistence.Tag(strings.Join(tokenize[1:], " "))
 		break
