@@ -188,6 +188,7 @@ func (mysql *MySQLPersistor) Project(name string) error {
 		projectID int
 		err       error
 	)
+
 	if name == "" {
 		projectID = 0
 	} else {
@@ -196,12 +197,13 @@ func (mysql *MySQLPersistor) Project(name string) error {
 			return errors.Wrap(err, "Unable to select project")
 		}
 		if projectID == 0 {
-			projectID, err = mysql.getProjectID(name)
-			if err != nil {
+			projectID, err = mysql.createProject(name)
+			if err != nil || projectID == 0 {
 				return errors.Wrap(err, "Unable to select project")
 			}
 		}
 	}
+
 	tx, err := mysql.databaseConnection.BeginTx(context.Background(), nil)
 	if err != nil {
 		return errors.Wrap(err, "Could not start transaction")
@@ -238,7 +240,7 @@ func (mysql *MySQLPersistor) getProjectID(name string) (int, error) {
 	if err := mysql.prepareDb(); err != nil {
 		return 0, errors.Wrap(err, "Connection to DB not valid")
 	}
-	row := mysql.databaseConnection.QueryRow("select id, `name` from project where name = ?", name)
+	row := mysql.databaseConnection.QueryRow("select id from project where name = ?", name)
 	var id int
 	if err := row.Scan(&id); err != nil {
 		if err == sql.ErrNoRows {
