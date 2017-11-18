@@ -25,16 +25,6 @@ func NewMysql(dsn string) (persistence.Persistor, error) {
 	}
 	db.SetMaxIdleConns(0)
 	db.SetConnMaxLifetime(500)
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS timenote (
-	id INT AUTO_INCREMENT NOT NULL,
-	tag NVARCHAR(100) NOT NULL DEFAULT '',
-	start TIMESTAMP NOT NULL DEFAULT NOW(),
-	stop TIMESTAMP,
-	PRIMARY KEY ( id )
-);`)
-	if err != nil {
-		return nil, errors.Wrap(err, "Error creating table - timenote")
-	}
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS project (
 	id INT AUTO_INCREMENT NOT NULL,
 	name NVARCHAR(100) NOT NULL DEFAULT '',
@@ -43,14 +33,16 @@ func NewMysql(dsn string) (persistence.Persistor, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "Error creating table - project")
 	}
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS timenote_project (
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS timenote (
 	id INT AUTO_INCREMENT NOT NULL,
-	id_timenote INT NOT NULL,
-	id_project INT NOT NULL,
+	id_project INT NOT NULL DEFAULT 0,
+	tag NVARCHAR(100) NOT NULL DEFAULT '',
+	start TIMESTAMP NOT NULL DEFAULT NOW(),
+	stop TIMESTAMP,
 	PRIMARY KEY ( id )
 );`)
 	if err != nil {
-		return nil, errors.Wrap(err, "Error creating table - timenote_project")
+		return nil, errors.Wrap(err, "Error creating table - timenote")
 	}
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS line (
 	id INT AUTO_INCREMENT NOT NULL,
@@ -195,15 +187,10 @@ func (mysql *MySQLPersistor) Project(name string) error {
 	var (
 		projectID int
 		err       error
-		te        *timenote.TimeEntry
 	)
 	projectID, err = mysql.getProjectID(name)
 	if err != nil {
 		return errors.Wrap(err, "Unable to select project")
-	}
-	te, err = mysql.Current()
-	if err != nil {
-		return err
 	}
 	if projectID == 0 {
 		projectID, err = mysql.getProjectID(name)
@@ -215,10 +202,9 @@ func (mysql *MySQLPersistor) Project(name string) error {
 	if err != nil {
 		return errors.Wrap(err, "Could not start transaction")
 	}
-	_, err = tx.Exec("insert into timenote_project (timenote_id, project_id) values (?, ?)", te.ID, projectID)
-	if err != nil {
+	if _, err = tx.Exec("update timenote set `id_project`=? where `stop` = '0000-00-00 00:00:00'", projectID); err != nil {
 		tx.Rollback()
-		return errors.Wrap(err, "Could not stop entry")
+		return errors.Wrap(err, "Could not set project")
 	}
 	return tx.Commit()
 }
