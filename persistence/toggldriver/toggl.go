@@ -124,7 +124,35 @@ func getCurrentTimeEntry(account toggl.Account) (*toggl.TimeEntry, error) {
 }
 
 func (t *TogglPersistor) Project(name string) error {
-	return errors.New("Not yet implemented")
+	var (
+		account   toggl.Account
+		projectID int
+		err       error
+	)
+
+	account, err = t.session.GetAccount()
+	if err != nil {
+		return errors.Wrap(err, "Unable to get account")
+	}
+	if name == "" {
+		projectID = 0
+	} else {
+		projectID, err = t.getProjectID(name)
+		if projectID == 0 {
+			projectID, err = t.createProject(account, name)
+			if err != nil {
+				return errors.Wrap(err, "Unable to create project")
+			}
+		}
+	}
+
+	te, err := getCurrentTimeEntry(account)
+	if err != nil {
+		return errors.Wrap(err, "Unable to get running time entry from toggl")
+	}
+	te.Pid = projectID
+	_, err = t.session.UpdateTimeEntry(*te)
+	return err
 }
 
 func (t *TogglPersistor) createProject(account toggl.Account, name string) (int, error) {
