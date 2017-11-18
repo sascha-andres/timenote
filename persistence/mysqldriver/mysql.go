@@ -188,14 +188,18 @@ func (mysql *MySQLPersistor) Project(name string) error {
 		projectID int
 		err       error
 	)
-	projectID, err = mysql.getProjectID(name)
-	if err != nil {
-		return errors.Wrap(err, "Unable to select project")
-	}
-	if projectID == 0 {
+	if name == "" {
+		projectID = 0
+	} else {
 		projectID, err = mysql.getProjectID(name)
 		if err != nil {
 			return errors.Wrap(err, "Unable to select project")
+		}
+		if projectID == 0 {
+			projectID, err = mysql.getProjectID(name)
+			if err != nil {
+				return errors.Wrap(err, "Unable to select project")
+			}
 		}
 	}
 	tx, err := mysql.databaseConnection.BeginTx(context.Background(), nil)
