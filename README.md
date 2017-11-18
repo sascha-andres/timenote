@@ -33,3 +33,10 @@ This is in an early phase but used regularly with the toggl backend and from tim
 ### Dependencies with dep
 
 https://github.com/golang/dep
+
+## History
+
+|Version|Description|
+|---|---|
+|0.1.0|Initial version|
+|0.2.0|Add support for projects|
