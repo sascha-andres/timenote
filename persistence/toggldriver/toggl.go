@@ -111,7 +111,9 @@ func (t *TogglPersistor) Current() (*timenote.TimeEntry, error) {
 	var res timenote.TimeEntry
 	res.Note = te.Description
 	res.ID = te.ID
-	return nil, nil
+	res.Tag = fmt.Sprintf("%v", te.Tags)
+	res.Start = *te.Start
+	return &res, nil
 }
 
 func getCurrentTimeEntry(account toggl.Account) (*toggl.TimeEntry, error) {

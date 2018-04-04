@@ -26,6 +26,6 @@ type (
 	}
 )
 
-func (te *TimeEntry) ToString() string {
+func (te *TimeEntry) String() string {
 	return fmt.Sprintf("%v, %s,\n%s\n", te.Start, te.Tag, te.Note)
 }

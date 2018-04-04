@@ -23,3 +23,10 @@ build:
       goarm: 6 
 snapshot: 
   name_template: "{{.Commit}}"
+fpm:
+  vendor: Sascha Andres
+  homepage: https://github.com/sascha-andres/timenote/
+  description: timenote is a tool to take notes with timestamps. You can choose between two different backends
+  license: Apache 2.0
+  formats:
+    - deb
