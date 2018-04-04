@@ -31,7 +31,7 @@ var cfgFile string
 var RootCmd = &cobra.Command{
 	Use:   "timenote",
 	Short: "Take notes with attached timestamps",
-	Long: `A timestamp will be attached when you start a not nd a second
+	Long: `A timestamp will be attached when you start a not and a second
 one as soon as you stop working on that note
 
 You can tag notes`,
