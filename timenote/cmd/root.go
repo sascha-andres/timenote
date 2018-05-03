@@ -37,7 +37,7 @@ one as soon as you stop working on that note
 You can tag notes`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		if err := agent.Listen(nil); err != nil {
+		if err := agent.Listen(agent.Options{}); err != nil {
 			log.Fatal(err)
 		}
 
