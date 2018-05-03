@@ -15,19 +15,17 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/sascha-andres/timenote/persistence/factory"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-// timestampCurrentCmd represents the current command
-var timestampCurrentCmd = &cobra.Command{
-	Use:   "current",
-	Short: "Print current timestamp",
-	Long:  `Prints the current timestamp`,
+// timestampDoneCmd represents the done command
+var timestampDoneCmd = &cobra.Command{
+	Use:   "done",
+	Short: "done with current entry",
+	Long:  `Stops the current entry`,
 	Run: func(cmd *cobra.Command, args []string) {
 		persistence, err := factory.CreatePersistence(viper.GetString("persistor"), viper.GetString("dsn"))
 		if err != nil {
@@ -40,15 +38,14 @@ var timestampCurrentCmd = &cobra.Command{
 			}
 		}()
 
-		ts, err := persistence.Current()
+		err = persistence.Done()
 		if err != nil {
 			log.Error(err)
 			return
 		}
-		fmt.Println(ts)
 	},
 }
 
 func init() {
-	timestampCmd.AddCommand(timestampCurrentCmd)
+	timestampCmd.AddCommand(timestampDoneCmd)
 }
