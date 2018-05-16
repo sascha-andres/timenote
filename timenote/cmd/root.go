@@ -31,13 +31,13 @@ var cfgFile string
 var RootCmd = &cobra.Command{
 	Use:   "timenote",
 	Short: "Take notes with attached timestamps",
-	Long: `A timestamp will be attached when you start a not nd a second
+	Long: `A timestamp will be attached when you start a not and a second
 one as soon as you stop working on that note
 
 You can tag notes`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		if err := agent.Listen(nil); err != nil {
+		if err := agent.Listen(agent.Options{}); err != nil {
 			log.Fatal(err)
 		}
 

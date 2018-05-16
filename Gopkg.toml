@@ -51,10 +51,6 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/prometheus/log"
-
-[[constraint]]
-  branch = "master"
   name = "github.com/spf13/cobra"
 
 [[constraint]]
