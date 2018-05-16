@@ -13,7 +13,7 @@ var ErrNoCurrentTimeEntry = errors.New("timenote: no current timeentry")
 type (
 	// TimeEntry represents a simple note
 	TimeEntry struct {
-		// ID is a systerm id which may be set from a persistor
+		// ID is a system id which may be set from a persistor
 		ID int
 		// Tag is used for grouping
 		Tag string
@@ -27,5 +27,5 @@ type (
 )
 
 func (te *TimeEntry) String() string {
-	return fmt.Sprintf("%v, %s,\n%s\n", te.Start, te.Tag, te.Note)
+	return fmt.Sprintf("%v, %s,\nNote:\n%s\n", te.Start, te.Tag, te.Note)
 }
