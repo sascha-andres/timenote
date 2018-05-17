@@ -252,3 +252,7 @@ func (mysql *MySQLPersistor) getProjectID(name string) (int, error) {
 	}
 	return id, nil
 }
+
+func (mysql *MySQLPersistor) GetWebsite() (bool, string, error) {
+	return false, "", nil
+}

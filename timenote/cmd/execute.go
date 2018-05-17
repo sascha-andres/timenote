@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/mgutz/str"
+	"github.com/pkg/browser"
 	"github.com/sascha-andres/timenote/persistence"
 )
 
@@ -35,6 +36,15 @@ func executeLine(persistence persistence.Persistor, commandline string) error {
 		break
 	case "tag":
 		return persistence.Tag(strings.Join(tokenize[1:], " "))
+		break
+	case "open":
+		hasOne, url, err := persistence.GetWebsite()
+		if err != nil {
+			return err
+		}
+		if hasOne {
+			return browser.OpenURL(url)
+		}
 		break
 	}
 	return nil
