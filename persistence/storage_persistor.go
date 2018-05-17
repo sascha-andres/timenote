@@ -20,4 +20,6 @@ type Persistor interface {
 	// ListForDay(delta int) ([]timenote.TimeEntry, error)
 	// Get currently running time entry
 	Current() (*timenote.TimeEntry, error)
+	// GetWebsite returns a URL to the time management system
+	GetWebsite() (bool, string, error)
 }

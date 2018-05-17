@@ -179,3 +179,7 @@ func (t *TogglPersistor) getProjectID(name string) (int, error) {
 
 	return 0, nil
 }
+
+func (t *TogglPersistor) GetWebsite() (bool, string, error) {
+	return true, "https://toggl.com/app/timer", nil
+}
