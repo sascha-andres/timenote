@@ -38,7 +38,7 @@ https://github.com/golang/dep
 
 |Version|Description|
 |---|---|
-|TBD|Add cli|
+|0.3.0|Add cli|
 ||Open in browser|
 |0.2.0|Add projects|
 |0.1.0|Initial version|
