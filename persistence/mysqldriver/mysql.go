@@ -6,8 +6,8 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
-	"github.com/sascha-andres/timenote"
-	"github.com/sascha-andres/timenote/persistence"
+	"livingit.de/code/timenote"
+	"livingit.de/code/timenote/persistence"
 	log "github.com/sirupsen/logrus"
 )
 

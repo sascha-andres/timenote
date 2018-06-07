@@ -1,6 +1,6 @@
 package persistence
 
-import "github.com/sascha-andres/timenote"
+import "livingit.de/code/timenote"
 
 // Persistor is used to store the received data
 type Persistor interface {

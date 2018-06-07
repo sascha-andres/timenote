@@ -6,8 +6,8 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/jason0x43/go-toggl"
-	"github.com/sascha-andres/timenote"
-	"github.com/sascha-andres/timenote/persistence"
+	"livingit.de/code/timenote"
+	"livingit.de/code/timenote/persistence"
 )
 
 type (

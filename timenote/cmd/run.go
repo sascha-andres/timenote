@@ -8,8 +8,8 @@ import (
 
 	"github.com/chzyer/readline"
 	"github.com/pkg/errors"
-	"github.com/sascha-andres/timenote/persistence"
-	"github.com/sascha-andres/timenote/persistence/factory"
+	"livingit.de/code/timenote/persistence"
+	"livingit.de/code/timenote/persistence/factory"
 	"github.com/spf13/viper"
 )
 
