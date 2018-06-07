@@ -18,22 +18,19 @@ import (
 	"fmt"
 
 	"github.com/pkg/browser"
-	"github.com/sascha-andres/timenote/persistence/factory"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"livingit.de/code/timenote/persistence/factory"
 )
 
 // browserCmd represents the browser command
 var browserCmd = &cobra.Command{
 	Use:   "browser",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "open a browser with your overview",
+	Long: `Depending on your backend this may open a browser
+	with your dashboard. For local backends such as MySQL this
+	does not work.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		persistence, err := factory.CreatePersistence(viper.GetString("persistor"), viper.GetString("dsn"))
 		if err != nil {

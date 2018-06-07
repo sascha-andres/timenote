@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
-	"github.com/sascha-andres/timenote/persistence"
-	"github.com/sascha-andres/timenote/persistence/mysqldriver"
-	"github.com/sascha-andres/timenote/persistence/toggldriver"
+	"livingit.de/code/timenote/persistence"
+	"livingit.de/code/timenote/persistence/mysqldriver"
+	"livingit.de/code/timenote/persistence/toggldriver"
 )
 
 // CreatePersistence returns the selected backend

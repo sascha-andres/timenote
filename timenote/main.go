@@ -13,7 +13,7 @@
 
 package main
 
-import "github.com/sascha-andres/timenote/timenote/cmd"
+import "livingit.de/code/timenote/timenote/cmd"
 
 var version string = "develop"
 

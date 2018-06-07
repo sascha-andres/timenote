@@ -6,7 +6,7 @@ import (
 
 	"github.com/mgutz/str"
 	"github.com/pkg/browser"
-	"github.com/sascha-andres/timenote/persistence"
+	"livingit.de/code/timenote/persistence"
 )
 
 func executeLine(persistence persistence.Persistor, commandline string) error {
