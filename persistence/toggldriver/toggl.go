@@ -113,6 +113,7 @@ func (t *TogglPersistor) Current() (*timenote.TimeEntry, error) {
 	res.ID = te.ID
 	res.Tag = fmt.Sprintf("%v", te.Tags)
 	res.Start = *te.Start
+	res.Duration = te.Duration
 	return &res, nil
 }
 

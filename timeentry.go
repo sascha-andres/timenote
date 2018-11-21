@@ -23,6 +23,8 @@ type (
 		Start time.Time
 		// End time
 		Stop *time.Time
+		// time entry duration in seconds. If the time entry is currently running, the duration attribute contains a negative value, denoting the start of the time entry in seconds since epoch (Jan 1 1970). The correct duration can be calculated as current_time + duration, where current_time is the current time in seconds since epoch.
+		Duration int64
 	}
 )
 
