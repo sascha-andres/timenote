@@ -47,8 +47,8 @@ hh:mm:ss'`,
 			return
 		}
 		if ts.Duration != 0 {
-			t := time.Now().Add(time.Duration(ts.Duration) * time.Second)
-			fmt.Println(t.Format("15:04:05"))
+			t := time.Now().UTC().Add(time.Duration(ts.Duration) * time.Second)
+			fmt.Printf("%s %s - %s", ts.Tag, t.Format("15:04:05"), ts.Note)
 		} else {
 			fmt.Println("not supported for storage type")
 		}
