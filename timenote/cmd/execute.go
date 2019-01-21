@@ -17,10 +17,8 @@ func executeLine(persistence persistence.Persistor, commandline string) error {
 	switch tokenize[0] {
 	case "new":
 		return persistence.New()
-		break
 	case "done":
 		return persistence.Done()
-		break
 	case "current":
 		entry, err := persistence.Current()
 		if err != nil {
@@ -30,13 +28,12 @@ func executeLine(persistence persistence.Persistor, commandline string) error {
 		break
 	case "append":
 		return persistence.Append(strings.Join(tokenize[1:], " "))
-		break
 	case "project":
 		return persistence.Project(strings.Join(tokenize[1:], " "))
-		break
 	case "tag":
 		return persistence.Tag(strings.Join(tokenize[1:], " "))
-		break
+	case "client":
+		return persistence.Client(strings.Join(tokenize[1:], " "))
 	case "open":
 		hasOne, url, err := persistence.GetWebsite()
 		if err != nil {

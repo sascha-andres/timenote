@@ -10,7 +10,6 @@ require (
 	github.com/google/gops v0.3.3
 	github.com/hashicorp/hcl v0.0.0-20180404174102-ef8a98b0bbce // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
-	github.com/jason0x43/go-toggl v0.0.0-20180325153507-43dca077f8d8
 	github.com/kardianos/osext v0.0.0-20170510131534-ae77be60afb1 // indirect
 	github.com/magiconair/properties v1.7.6 // indirect
 	github.com/mgutz/str v1.2.0
@@ -21,6 +20,7 @@ require (
 	github.com/pkg/browser v0.0.0-20170505125900-c90ca0c84f15
 	github.com/pkg/errors v0.8.0
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/sascha-andres/go-toggl v0.0.0-20181222145957-f0b050b11033
 	github.com/sirupsen/logrus v1.0.5
 	github.com/spf13/afero v1.1.0 // indirect
 	github.com/spf13/cast v1.2.0 // indirect

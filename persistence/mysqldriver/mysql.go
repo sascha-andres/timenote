@@ -6,9 +6,9 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"livingit.de/code/timenote"
 	"livingit.de/code/timenote/persistence"
-	log "github.com/sirupsen/logrus"
 )
 
 type (
@@ -255,4 +255,8 @@ func (mysql *MySQLPersistor) getProjectID(name string) (int, error) {
 
 func (mysql *MySQLPersistor) GetWebsite() (bool, string, error) {
 	return false, "", nil
+}
+
+func (mysql *MySQLPersistor) Client(name string) error {
+	return errors.New("not yet implemented")
 }

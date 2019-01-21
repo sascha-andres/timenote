@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/jason0x43/go-toggl"
+	"github.com/sascha-andres/go-toggl"
 	"livingit.de/code/timenote"
 	"livingit.de/code/timenote/persistence"
 )
@@ -183,4 +183,9 @@ func (t *TogglPersistor) getProjectID(name string) (int, error) {
 
 func (t *TogglPersistor) GetWebsite() (bool, string, error) {
 	return true, "https://toggl.com/app/timer", nil
+}
+
+func (t *TogglPersistor) Client(name string) error {
+	t.session.
+	return errors.New("not yet implemented")
 }
