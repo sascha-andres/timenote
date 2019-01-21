@@ -186,6 +186,5 @@ func (t *TogglPersistor) GetWebsite() (bool, string, error) {
 }
 
 func (t *TogglPersistor) Client(name string) error {
-	t.session.
 	return errors.New("not yet implemented")
 }
