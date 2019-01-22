@@ -185,6 +185,24 @@ func (t *TogglPersistor) GetWebsite() (bool, string, error) {
 	return true, "https://toggl.com/app/timer", nil
 }
 
-func (t *TogglPersistor) Client(name string) error {
+func (t *TogglPersistor) Client() ([]timenote.Client, error) {
+	clients, err := t.session.GetClients()
+	if err != nil {
+		return nil, err
+	}
+	var result = make([]timenote.Client, 0)
+	for _, c := range clients {
+		result = append(result, timenote.Client{
+			ID:          c.ID,
+			Name:        c.Name,
+			Description: c.Notes,
+		})
+	}
+	return result, nil
+}
+
+func (t *TogglPersistor) NewClient(name string) error {
+	// get workspace id
+	// post to
 	return errors.New("not yet implemented")
 }

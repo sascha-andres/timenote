@@ -11,7 +11,9 @@ type Persistor interface {
 	// Tag sets a tag for the note
 	Tag(name string) error
 	// Client sets a client for the note
-	Client(name string) error
+	Client() ([]timenote.Client, error)
+	// NewClient is used to create a new client
+	NewClient(name string) error
 	// Project adds time entry to a project
 	Project(name string) error
 	// Done writes the stop timestamp

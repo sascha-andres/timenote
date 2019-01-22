@@ -20,7 +20,7 @@ require (
 	github.com/pkg/browser v0.0.0-20170505125900-c90ca0c84f15
 	github.com/pkg/errors v0.8.0
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/sascha-andres/go-toggl v0.0.0-20181222145957-f0b050b11033
+	github.com/sascha-andres/go-toggl v0.0.0-20190121083229-c240410e87e5
 	github.com/sirupsen/logrus v1.0.5
 	github.com/spf13/afero v1.1.0 // indirect
 	github.com/spf13/cast v1.2.0 // indirect

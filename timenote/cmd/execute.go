@@ -33,7 +33,7 @@ func executeLine(persistence persistence.Persistor, commandline string) error {
 	case "tag":
 		return persistence.Tag(strings.Join(tokenize[1:], " "))
 	case "client":
-		return persistence.Client(strings.Join(tokenize[1:], " "))
+		return executeClient(persistence, strings.Join(tokenize[1:], " "))
 	case "open":
 		hasOne, url, err := persistence.GetWebsite()
 		if err != nil {

@@ -46,6 +46,14 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/sascha-andres/go-toggl v0.0.0-20181222145957-f0b050b11033 h1:pP1Xr7OeaT++prZ8cYQHpzJIE7VCYTr7xQgJlD9fACE=
 github.com/sascha-andres/go-toggl v0.0.0-20181222145957-f0b050b11033/go.mod h1:4oTnLHbrx49SYvnWg67C52cqy48VI2PmNDcjiykJIOA=
+github.com/sascha-andres/go-toggl v0.0.0-20190121082513-a58c714c0af0 h1:tY1FGKBo2Uo8s29xyoTUPctn4rlhtr/2luyZLrzp5vw=
+github.com/sascha-andres/go-toggl v0.0.0-20190121082513-a58c714c0af0/go.mod h1:4oTnLHbrx49SYvnWg67C52cqy48VI2PmNDcjiykJIOA=
+github.com/sascha-andres/go-toggl v0.0.0-20190121082918-3d74700cc2ab h1:wF3ITGdzsn+b0FeZXERVRRot1KiqH04K9EukIzoJIAE=
+github.com/sascha-andres/go-toggl v0.0.0-20190121082918-3d74700cc2ab/go.mod h1:4oTnLHbrx49SYvnWg67C52cqy48VI2PmNDcjiykJIOA=
+github.com/sascha-andres/go-toggl v0.0.0-20190121083144-03da0990b305 h1:O1A4wkGWqdWcokD/D5AbI9E2Jh4O75lAg/yNRy1mGxc=
+github.com/sascha-andres/go-toggl v0.0.0-20190121083144-03da0990b305/go.mod h1:4oTnLHbrx49SYvnWg67C52cqy48VI2PmNDcjiykJIOA=
+github.com/sascha-andres/go-toggl v0.0.0-20190121083229-c240410e87e5 h1:VzJ1xBBF2JFnmSIV0Fd5Yw/AP8xhh4k4TGaocp1GSmY=
+github.com/sascha-andres/go-toggl v0.0.0-20190121083229-c240410e87e5/go.mod h1:4oTnLHbrx49SYvnWg67C52cqy48VI2PmNDcjiykJIOA=
 github.com/sirupsen/logrus v1.0.5 h1:8c8b5uO0zS4X6RPl/sd1ENwSkIc0/H2PaHxE3udaE8I=
 github.com/sirupsen/logrus v1.0.5/go.mod h1:pMByvHTf9Beacp5x1UXfOR9xyW/9antXMhjMPG0dEzc=
 github.com/spf13/afero v1.1.0 h1:bopulORc2JeYaxfHLvJa5NzxviA9PoWhpiiJkru7Ji4=
