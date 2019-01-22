@@ -9,7 +9,7 @@ import (
 
 func executeClient(persistence persistence.Persistor, commandline string) error {
 	if commandline == "" {
-		clients, err := persistence.Client()
+		clients, err := persistence.Clients()
 		if err != nil {
 			return err
 		}

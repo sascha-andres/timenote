@@ -185,7 +185,7 @@ func (t *TogglPersistor) GetWebsite() (bool, string, error) {
 	return true, "https://toggl.com/app/timer", nil
 }
 
-func (t *TogglPersistor) Client() ([]timenote.Client, error) {
+func (t *TogglPersistor) Clients() ([]timenote.Client, error) {
 	clients, err := t.session.GetClients()
 	if err != nil {
 		return nil, err

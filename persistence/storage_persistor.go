@@ -10,8 +10,8 @@ type Persistor interface {
 	Append(line string) error
 	// Tag sets a tag for the note
 	Tag(name string) error
-	// Client sets a client for the note
-	Client() ([]timenote.Client, error)
+	// Clients sets a client for the note
+	Clients() ([]timenote.Client, error)
 	// NewClient is used to create a new client
 	NewClient(name string) error
 	// Project adds time entry to a project

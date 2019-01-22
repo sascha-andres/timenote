@@ -257,7 +257,7 @@ func (mysql *MySQLPersistor) GetWebsite() (bool, string, error) {
 	return false, "", nil
 }
 
-func (mysql *MySQLPersistor) Client() ([]timenote.Client, error) {
+func (mysql *MySQLPersistor) Clients() ([]timenote.Client, error) {
 	return nil, errors.New("not yet implemented")
 }
 
