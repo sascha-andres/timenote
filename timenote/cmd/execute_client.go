@@ -8,7 +8,6 @@ import (
 )
 
 func executeClient(persistence persistence.Persistor, commandline string) error {
-	fmt.Println(commandline)
 	if commandline == "" {
 		clients, err := persistence.Client()
 		if err != nil {
@@ -22,6 +21,8 @@ func executeClient(persistence persistence.Persistor, commandline string) error 
 	if strings.HasPrefix(commandline, "new ") {
 		tokenize := str.ToArgv(commandline)
 		clientName := strings.Join(tokenize[1:], " ")
+		return persistence.NewClient(clientName)
 	}
+
 	return nil
 }

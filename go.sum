@@ -54,6 +54,8 @@ github.com/sascha-andres/go-toggl v0.0.0-20190121083144-03da0990b305 h1:O1A4wkGW
 github.com/sascha-andres/go-toggl v0.0.0-20190121083144-03da0990b305/go.mod h1:4oTnLHbrx49SYvnWg67C52cqy48VI2PmNDcjiykJIOA=
 github.com/sascha-andres/go-toggl v0.0.0-20190121083229-c240410e87e5 h1:VzJ1xBBF2JFnmSIV0Fd5Yw/AP8xhh4k4TGaocp1GSmY=
 github.com/sascha-andres/go-toggl v0.0.0-20190121083229-c240410e87e5/go.mod h1:4oTnLHbrx49SYvnWg67C52cqy48VI2PmNDcjiykJIOA=
+github.com/sascha-andres/go-toggl v0.0.0-20190122163914-9b7c7807557c h1:ytaNBe96iQC8GP5CwFpUZeUrPDrcxGL+cySzVDd2IFM=
+github.com/sascha-andres/go-toggl v0.0.0-20190122163914-9b7c7807557c/go.mod h1:4oTnLHbrx49SYvnWg67C52cqy48VI2PmNDcjiykJIOA=
 github.com/sirupsen/logrus v1.0.5 h1:8c8b5uO0zS4X6RPl/sd1ENwSkIc0/H2PaHxE3udaE8I=
 github.com/sirupsen/logrus v1.0.5/go.mod h1:pMByvHTf9Beacp5x1UXfOR9xyW/9antXMhjMPG0dEzc=
 github.com/spf13/afero v1.1.0 h1:bopulORc2JeYaxfHLvJa5NzxviA9PoWhpiiJkru7Ji4=

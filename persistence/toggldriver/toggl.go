@@ -68,7 +68,7 @@ func (t *TogglPersistor) Tag(name string) error {
 	} else {
 		te.AddTag(name)
 	}
-	t.session.UpdateTimeEntry(*te)
+	_, err = t.session.UpdateTimeEntry(*te)
 	if err != nil {
 		return errors.Wrap(err, "Unable to update time entry in toggl")
 	}
@@ -202,7 +202,10 @@ func (t *TogglPersistor) Client() ([]timenote.Client, error) {
 }
 
 func (t *TogglPersistor) NewClient(name string) error {
-	// get workspace id
-	// post to
-	return errors.New("not yet implemented")
+	account, err := t.session.GetAccount()
+	if err != nil {
+		return err
+	}
+	_, err = t.session.CreateClient(name, account.Data.Workspaces[0].ID)
+	return err
 }
