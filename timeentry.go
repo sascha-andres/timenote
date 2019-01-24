@@ -29,5 +29,14 @@ type (
 )
 
 func (te *TimeEntry) String() string {
-	return fmt.Sprintf("%v, %s,\nNote:\n%s\n", te.Start, te.Tag, te.Note)
+	if "[]" == te.Tag {
+		if "" == te.Note {
+			return fmt.Sprintf("duration: %s\n", te.Start.Format("15:04:05"))
+		}
+		return fmt.Sprintf("duration: %s\nnote: %s\n", te.Start.Format("15:04:05"), te.Note)
+	}
+	if "" == te.Note {
+		return fmt.Sprintf("duration: %s - tags:%s\n", te.Start.Format("15:04:05"), te.Tag)
+	}
+	return fmt.Sprintf("duration: %s - tags:%s\n%s\n", te.Start.Format("15:04:05"), te.Tag, te.Note)
 }
