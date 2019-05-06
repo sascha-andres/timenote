@@ -2,7 +2,6 @@ package toggldriver
 
 import (
 	"fmt"
-
 	"github.com/pkg/errors"
 
 	"github.com/sascha-andres/go-toggl"
