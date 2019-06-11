@@ -23,9 +23,20 @@ type (
 		Start time.Time
 		// End time
 		Stop *time.Time
+		// time entry duration in seconds. If the time entry is currently running, the duration attribute contains a negative value, denoting the start of the time entry in seconds since epoch (Jan 1 1970). The correct duration can be calculated as current_time + duration, where current_time is the current time in seconds since epoch.
+		Duration int64
 	}
 )
 
 func (te *TimeEntry) String() string {
-	return fmt.Sprintf("%v, %s,\nNote:\n%s\n", te.Start, te.Tag, te.Note)
+	if "[]" == te.Tag {
+		if "" == te.Note {
+			return fmt.Sprintf("duration: %s\n", te.Start.Format("15:04:05"))
+		}
+		return fmt.Sprintf("duration: %s\nnote: %s\n", te.Start.Format("15:04:05"), te.Note)
+	}
+	if "" == te.Note {
+		return fmt.Sprintf("duration: %s - tags:%s\n", te.Start.Format("15:04:05"), te.Tag)
+	}
+	return fmt.Sprintf("duration: %s - tags:%s\n%s\n", te.Start.Format("15:04:05"), te.Tag, te.Note)
 }

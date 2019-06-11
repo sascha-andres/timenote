@@ -2,10 +2,9 @@ package toggldriver
 
 import (
 	"fmt"
-
 	"github.com/pkg/errors"
 
-	"github.com/jason0x43/go-toggl"
+	"github.com/sascha-andres/go-toggl"
 	"livingit.de/code/timenote"
 	"livingit.de/code/timenote/persistence"
 )
@@ -68,7 +67,7 @@ func (t *TogglPersistor) Tag(name string) error {
 	} else {
 		te.AddTag(name)
 	}
-	t.session.UpdateTimeEntry(*te)
+	_, err = t.session.UpdateTimeEntry(*te)
 	if err != nil {
 		return errors.Wrap(err, "Unable to update time entry in toggl")
 	}
@@ -113,6 +112,7 @@ func (t *TogglPersistor) Current() (*timenote.TimeEntry, error) {
 	res.ID = te.ID
 	res.Tag = fmt.Sprintf("%v", te.Tags)
 	res.Start = *te.Start
+	res.Duration = te.Duration
 	return &res, nil
 }
 
@@ -182,4 +182,29 @@ func (t *TogglPersistor) getProjectID(name string) (int, error) {
 
 func (t *TogglPersistor) GetWebsite() (bool, string, error) {
 	return true, "https://toggl.com/app/timer", nil
+}
+
+func (t *TogglPersistor) Clients() ([]timenote.Client, error) {
+	clients, err := t.session.GetClients()
+	if err != nil {
+		return nil, err
+	}
+	var result = make([]timenote.Client, 0)
+	for _, c := range clients {
+		result = append(result, timenote.Client{
+			ID:          c.ID,
+			Name:        c.Name,
+			Description: c.Notes,
+		})
+	}
+	return result, nil
+}
+
+func (t *TogglPersistor) NewClient(name string) error {
+	account, err := t.session.GetAccount()
+	if err != nil {
+		return err
+	}
+	_, err = t.session.CreateClient(name, account.Data.Workspaces[0].ID)
+	return err
 }
