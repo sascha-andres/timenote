@@ -30,14 +30,13 @@ This is in an early phase but used regularly with the toggl backend and from tim
 
 ## Development
 
-### Dependencies with dep
-
-https://github.com/golang/dep
+### Dependencies with go modules
 
 ## History
 
 |Version|Description|
 |---|---|
+|0.4.0|add project command|
 |0.3.0|Add cli|
 ||Open in browser|
 |0.2.0|Add projects|
