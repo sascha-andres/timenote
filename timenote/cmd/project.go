@@ -18,6 +18,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"livingit.de/code/timenote/persistence/factory"
 )
 
 // appendCmd represents the append command
@@ -26,7 +27,21 @@ var projectCmd = &cobra.Command{
 	Short: "current entry is part of project",
 	Long:  `Depending on the persistor, this command sets the project`,
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Info("todo")
+		name := viper.GetString("project.name")
+		persistence, err := factory.CreatePersistence(viper.GetString("persistor"), viper.GetString("dsn"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer func() {
+			err := persistence.Close()
+			if err != nil {
+				log.Fatal(err)
+			}
+		}()
+		err = persistence.Project(name)
+		if err != nil {
+			log.Errorf("error setting project: %s", err)
+		}
 	},
 }
 
