@@ -1,6 +1,6 @@
 build: 
   ldflags: -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} 
-  binary: devenv 
+  binary: timenote
   env: 
     - CGO_ENABLED=0 
   goos: 
@@ -9,21 +9,9 @@ build:
     - freebsd 
   goarch: 
     - amd64 
-    - arm 
-    - arm64 
-  goarm: 
-    - 6 
-    - 7 
-  ignore: 
-    - goos: freebsd 
-      goarch: arm 
-      goarm: 7 
-    - goos: freebsd 
-      goarch: arm 
-      goarm: 6 
 snapshot: 
   name_template: "{{.Commit}}"
-fpm:
+nfpm:
   vendor: Sascha Andres
   homepage: https://livingit.de/code/timenote/
   description: timenote is a tool to take notes with timestamps. You can choose between two different backends
