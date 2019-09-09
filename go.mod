@@ -57,3 +57,5 @@ require (
 	honnef.co/go/tools v0.0.0-20190607181801-497c8f037f5a // indirect
 	rsc.io/goversion v1.2.0 // indirect
 )
+
+go 1.13

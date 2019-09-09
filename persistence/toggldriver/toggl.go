@@ -208,3 +208,7 @@ func (t *TogglPersistor) NewClient(name string) error {
 	_, err = t.session.CreateClient(name, account.Data.Workspaces[0].ID)
 	return err
 }
+
+func (t *TogglPersistor) ListForDay() ([]timenote.TimeEntry, error) {
+	return nil, errors.New("not yet implemented")
+}
