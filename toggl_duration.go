@@ -1,6 +1,9 @@
 package timenote
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 import "errors"
 
 // TogglDuration is used to pretty print a toggl duration
@@ -23,13 +26,13 @@ const (
 
 func (td *TogglDuration) String() string {
 	if td.days > 0 {
-		return fmt.Sprintf("%dd%dh%dm%ds", td.days, td.hours, td.minutes, td.seconds)
+		return fmt.Sprintf("%dd %dh %dm %ds", td.days, td.hours, td.minutes, td.seconds)
 	}
 	if td.hours > 0 {
-		return fmt.Sprintf("%dh%dm%ds", td.hours, td.minutes, td.seconds)
+		return fmt.Sprintf("%dh %dm %ds", td.hours, td.minutes, td.seconds)
 	}
 	if td.minutes > 0 {
-		return fmt.Sprintf("%dm%ds", td.minutes, td.seconds)
+		return fmt.Sprintf("%dm %ds", td.minutes, td.seconds)
 	}
 	return fmt.Sprintf("%ds", td.seconds)
 }
@@ -59,4 +62,15 @@ func (td *TogglDuration) calculateDone() {
 	td.minutes = localDuration / minuteInSeconds
 	localDuration = localDuration - (td.minutes * minuteInSeconds)
 	td.seconds = localDuration
+}
+
+func (td *TogglDuration) FromTime(t time.Time) string {
+	if t.Hour() > 0 {
+		return fmt.Sprintf("%dh %dm %ds", t.Hour(), t.Minute(), t.Second())
+	}
+	if t.Minute() > 0 {
+		return fmt.Sprintf("%dm %ds", t.Minute(), t.Second())
+	}
+
+	return fmt.Sprintf("%ds", t.Second())
 }

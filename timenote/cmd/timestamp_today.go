@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"fmt"
+	"livingit.de/code/timenote"
 	"os"
 	"text/tabwriter"
 	"time"
@@ -54,15 +55,16 @@ var timestampTodayCmd = &cobra.Command{
 			w.Init(os.Stdout, 0, 8, 2, '\t', 0)
 			_, _ = fmt.Fprintln(w, "ID\tTime\tNote\t")
 			for _, e := range ts {
-				if e.Duration != 0 {
-					d, er := time.ParseDuration(fmt.Sprintf("%ds", e.Duration))
-					if er != nil {
-						panic(er)
-					}
-					fmt.Println(d)
+				humanTime := ""
+				if e.Duration >= 0 {
+					td, _ := timenote.NewTogglDuration(e.Duration)
+					humanTime = td.String()
+				} else {
 					t := time.Now().UTC().Add(time.Duration(e.Duration) * time.Second)
-					_, _ = fmt.Fprintln(w, fmt.Sprintf("%d\t%s\t%s\t", e.ID, t.Format("15:04:05"), e.Note))
+					td, _ := timenote.NewTogglDuration(0)
+					humanTime = td.FromTime(t)
 				}
+				_, _ = fmt.Fprintln(w, fmt.Sprintf("%d\t%s\t%s\t", e.ID, humanTime, e.Note))
 			}
 			_, _ = fmt.Fprintln(w)
 			_ = w.Flush()
