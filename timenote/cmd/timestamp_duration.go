@@ -47,18 +47,20 @@ hh:mm:ss'`,
 			log.Error(err)
 			return
 		}
-		humanTime := ""
+		var td *timenote.TogglDuration
 		if ts.Duration < 0 {
 			t := time.Now().UTC().Add(time.Duration(ts.Duration) * time.Second)
-			humanTime = t.Format("15:04:05")
-		} else {
-			td, err := timenote.NewTogglDuration(ts.Duration)
+			td, err = timenote.TogglDurationFromTime(t)
 			if err != nil {
 				panic(err)
 			}
-			humanTime = td.String()
+		} else {
+			td, err = timenote.NewTogglDuration(ts.Duration)
+			if err != nil {
+				panic(err)
+			}
 		}
-		fmt.Println(humanTime)
+		fmt.Println(td.String())
 	},
 }
 

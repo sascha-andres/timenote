@@ -24,6 +24,7 @@ const (
 	minuteInSeconds int64 = 60
 )
 
+// String returns a properly readable string for a duration in seconds
 func (td *TogglDuration) String() string {
 	if td.days > 0 {
 		return fmt.Sprintf("%dd %dh %dm %ds", td.days, td.hours, td.minutes, td.seconds)
@@ -64,13 +65,13 @@ func (td *TogglDuration) calculateDone() {
 	td.seconds = localDuration
 }
 
-func (td *TogglDuration) FromTime(t time.Time) string {
-	if t.Hour() > 0 {
-		return fmt.Sprintf("%dh %dm %ds", t.Hour(), t.Minute(), t.Second())
-	}
-	if t.Minute() > 0 {
-		return fmt.Sprintf("%dm %ds", t.Minute(), t.Second())
-	}
+// FromTime formats a time like the duration
+//
+// Known caveat: this forgets about days
+func TogglDurationFromTime(t time.Time) (*TogglDuration, error) {
+	return NewTogglDuration(int64(t.Hour())*hourInSeconds + int64(t.Minute())*minuteInSeconds + int64(t.Second()))
+}
 
-	return fmt.Sprintf("%ds", t.Second())
+func (td *TogglDuration) GetDuration() int64 {
+	return td.duration
 }

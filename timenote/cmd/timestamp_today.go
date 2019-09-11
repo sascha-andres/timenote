@@ -61,15 +61,29 @@ var timestampTodayCmd = &cobra.Command{
 					humanTime = td.String()
 				} else {
 					t := time.Now().UTC().Add(time.Duration(e.Duration) * time.Second)
-					td, _ := timenote.NewTogglDuration(0)
-					humanTime = td.FromTime(t)
+					td2, _ := timenote.TogglDurationFromTime(t)
+					humanTime = td2.String()
 				}
 				_, _ = fmt.Fprintln(w, fmt.Sprintf("%d\t%s\t%s\t", e.ID, humanTime, e.Note))
 			}
 			_, _ = fmt.Fprintln(w)
 			_ = w.Flush()
 		} else {
-
+			var sum int64
+			for _, e := range ts {
+				if e.Duration >= 0 {
+					sum += e.Duration
+				} else {
+					t := time.Now().UTC().Add(time.Duration(e.Duration) * time.Second)
+					td2, _ := timenote.TogglDurationFromTime(t)
+					sum += td2.GetDuration()
+				}
+			}
+			td, err := timenote.NewTogglDuration(sum)
+			if err != nil {
+				panic(err)
+			}
+			fmt.Println(td.String())
 		}
 	},
 }
