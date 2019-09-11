@@ -19,6 +19,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"livingit.de/code/timenote"
 	"livingit.de/code/timenote/persistence/factory"
 	"time"
 )
@@ -46,12 +47,18 @@ hh:mm:ss'`,
 			log.Error(err)
 			return
 		}
-		if ts.Duration != 0 {
+		humanTime := ""
+		if ts.Duration < 0 {
 			t := time.Now().UTC().Add(time.Duration(ts.Duration) * time.Second)
-			fmt.Printf("%s %s - %s", ts.Tag, t.Format("15:04:05"), ts.Note)
+			humanTime = t.Format("15:04:05")
 		} else {
-			fmt.Println("not supported for storage type")
+			td, err := timenote.NewTogglDuration(ts.Duration)
+			if err != nil {
+				panic(err)
+			}
+			humanTime = td.String()
 		}
+		fmt.Println(humanTime)
 	},
 }
 
