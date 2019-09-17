@@ -66,4 +66,7 @@ hh:mm:ss'`,
 
 func init() {
 	timestampCmd.AddCommand(timestampDurationCmd)
+
+	timestampDurationCmd.Flags().BoolP("include-seconds", "", true, "Include seconds when writing out time entry")
+	_ = viper.BindPFlag("timestamp.duration.include-seconds", timestampDurationCmd.Flags().Lookup("include-seconds"))
 }

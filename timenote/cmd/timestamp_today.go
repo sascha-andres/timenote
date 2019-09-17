@@ -92,6 +92,7 @@ func init() {
 	timestampCmd.AddCommand(timestampTodayCmd)
 
 	timestampTodayCmd.Flags().BoolP("sum-only", "", false, "Just print sum of timestamps")
-
+	timestampTodayCmd.Flags().BoolP("include-seconds", "", true, "Include seconds when writing out time entry")
+	_ = viper.BindPFlag("timestamp.today.include-seconds", timestampTodayCmd.Flags().Lookup("include-seconds"))
 	_ = viper.BindPFlag("timestamp.today.sum-only", timestampTodayCmd.Flags().Lookup("sum-only"))
 }

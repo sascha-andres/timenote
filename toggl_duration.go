@@ -12,6 +12,8 @@ type TogglDuration struct {
 
 	calculated bool
 
+	omitSeconds bool
+
 	days    int64
 	hours   int64
 	minutes int64
@@ -26,6 +28,23 @@ const (
 
 // String returns a properly readable string for a duration in seconds
 func (td *TogglDuration) String() string {
+	if !td.omitSeconds {
+		return td.withSeconds()
+	}
+	return td.withoutSeconds()
+}
+
+// OmitSeconds tells the converter to not print seconds
+func (td *TogglDuration) OmitSeconds() {
+	td.omitSeconds = true
+}
+
+// ShowSeconds tells the converter to print seconds
+func (td *TogglDuration) ShowSeconds() {
+	td.omitSeconds = false
+}
+
+func (td *TogglDuration) withSeconds() string {
 	if td.days > 0 {
 		return fmt.Sprintf("%dd %dh %dm %ds", td.days, td.hours, td.minutes, td.seconds)
 	}
@@ -38,8 +57,24 @@ func (td *TogglDuration) String() string {
 	return fmt.Sprintf("%ds", td.seconds)
 }
 
+func (td *TogglDuration) withoutSeconds() string {
+	if td.days > 0 {
+		return fmt.Sprintf("%dd %dh %dm", td.days, td.hours, td.minutes)
+	}
+	if td.hours > 0 {
+		return fmt.Sprintf("%dh %dm", td.hours, td.minutes)
+	}
+	if td.minutes > 0 {
+		return fmt.Sprintf("%dm", td.minutes)
+	}
+	return ""
+}
+
 // NewTogglDuration creates a new instance
 func NewTogglDuration(duration int64) (*TogglDuration, error) {
+	if duration < 0 {
+		return nil, errors.New("negative values not allowed")
+	}
 	result := TogglDuration{
 		duration: duration,
 	}
