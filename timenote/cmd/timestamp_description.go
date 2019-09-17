@@ -19,17 +19,14 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"livingit.de/code/timenote"
 	"livingit.de/code/timenote/persistence/factory"
-	"time"
 )
 
 // timestampCurrentCmd represents the current command
-var timestampDurationCmd = &cobra.Command{
-	Use:   "duration",
-	Short: "Print current timestamp duration",
-	Long: `Prints the current timestamp's duration in
-hh:mm:ss'`,
+var timestampDescriptionCmd = &cobra.Command{
+	Use:   "description",
+	Short: "Print current timestamp description",
+	Long:  `Prints the current timestamp's description`,
 	Run: func(cmd *cobra.Command, args []string) {
 		persistence, err := factory.CreatePersistence(viper.GetString("persistor"), viper.GetString("dsn"))
 		if err != nil {
@@ -47,29 +44,10 @@ hh:mm:ss'`,
 			log.Error(err)
 			return
 		}
-		var td *timenote.TogglDuration
-		if ts.Duration < 0 {
-			t := time.Now().UTC().Add(time.Duration(ts.Duration) * time.Second)
-			td, err = timenote.TogglDurationFromTime(t)
-			if err != nil {
-				panic(err)
-			}
-		} else {
-			td, err = timenote.NewTogglDuration(ts.Duration)
-			if err != nil {
-				panic(err)
-			}
-		}
-		if !viper.GetBool("timestamp.duration.include-seconds") {
-			td.OmitSeconds()
-		}
-		fmt.Println(td.String())
+		fmt.Println(ts.Note)
 	},
 }
 
 func init() {
-	timestampCmd.AddCommand(timestampDurationCmd)
-
-	timestampDurationCmd.Flags().BoolP("include-seconds", "", true, "Include seconds when writing out time entry")
-	_ = viper.BindPFlag("timestamp.duration.include-seconds", timestampDurationCmd.Flags().Lookup("include-seconds"))
+	timestampCmd.AddCommand(timestampDescriptionCmd)
 }

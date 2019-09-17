@@ -17,10 +17,10 @@ package cmd
 import (
 	"fmt"
 
-	"livingit.de/code/timenote/persistence/factory"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"livingit.de/code/timenote/persistence/factory"
 )
 
 // timestampCurrentCmd represents the current command
