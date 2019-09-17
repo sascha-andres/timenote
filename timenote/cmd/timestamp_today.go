@@ -58,10 +58,16 @@ var timestampTodayCmd = &cobra.Command{
 				humanTime := ""
 				if e.Duration >= 0 {
 					td, _ := timenote.NewTogglDuration(e.Duration)
+					if !viper.GetBool("timestamp.today.include-seconds") {
+						td.OmitSeconds()
+					}
 					humanTime = td.String()
 				} else {
 					t := time.Now().UTC().Add(time.Duration(e.Duration) * time.Second)
 					td2, _ := timenote.TogglDurationFromTime(t)
+					if !viper.GetBool("timestamp.today.include-seconds") {
+						td2.OmitSeconds()
+					}
 					humanTime = td2.String()
 				}
 				_, _ = fmt.Fprintln(w, fmt.Sprintf("%d\t%s\t%s\t", e.ID, humanTime, e.Note))
@@ -82,6 +88,9 @@ var timestampTodayCmd = &cobra.Command{
 			td, err := timenote.NewTogglDuration(sum)
 			if err != nil {
 				panic(err)
+			}
+			if !viper.GetBool("timestamp.today.include-seconds") {
+				td.OmitSeconds()
 			}
 			fmt.Println(td.String())
 		}

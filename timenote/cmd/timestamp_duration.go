@@ -60,6 +60,9 @@ hh:mm:ss'`,
 				panic(err)
 			}
 		}
+		if !viper.GetBool("timestamp.duration.include-seconds") {
+			td.OmitSeconds()
+		}
 		fmt.Println(td.String())
 	},
 }
