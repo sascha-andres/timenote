@@ -29,14 +29,25 @@ type (
 )
 
 func (te *TimeEntry) String() string {
+	humanTime := ""
+	if te.Duration < 0 {
+		t := time.Now().UTC().Add(time.Duration(te.Duration) * time.Second)
+		humanTime = t.Format("15:04:05")
+	} else {
+		td, err := NewTogglDuration(te.Duration)
+		if err != nil {
+			panic(err)
+		}
+		humanTime = td.String()
+	}
 	if "[]" == te.Tag {
 		if "" == te.Note {
-			return fmt.Sprintf("duration: %s\n", te.Start.Format("15:04:05"))
+			return fmt.Sprintf("duration: %s\n", humanTime)
 		}
-		return fmt.Sprintf("duration: %s\nnote: %s\n", te.Start.Format("15:04:05"), te.Note)
+		return fmt.Sprintf("duration: %s\nnote: %s\n", humanTime, te.Note)
 	}
 	if "" == te.Note {
-		return fmt.Sprintf("duration: %s - tags:%s\n", te.Start.Format("15:04:05"), te.Tag)
+		return fmt.Sprintf("duration: %s - tags:%s\n", humanTime, te.Tag)
 	}
-	return fmt.Sprintf("duration: %s - tags:%s\n%s\n", te.Start.Format("15:04:05"), te.Tag, te.Note)
+	return fmt.Sprintf("duration: %s - tags:%s\n%s\n", humanTime, te.Tag, te.Note)
 }

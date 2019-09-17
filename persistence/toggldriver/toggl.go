@@ -3,6 +3,7 @@ package toggldriver
 import (
 	"fmt"
 	"github.com/pkg/errors"
+	"time"
 
 	"github.com/sascha-andres/go-toggl"
 	"livingit.de/code/timenote"
@@ -207,4 +208,27 @@ func (t *TogglPersistor) NewClient(name string) error {
 	}
 	_, err = t.session.CreateClient(name, account.Data.Workspaces[0].ID)
 	return err
+}
+
+func (t *TogglPersistor) ListForDay() ([]timenote.TimeEntry, error) {
+	year, month, day := time.Now().Date()
+	loc, _ := time.LoadLocation("")
+	startDate := time.Date(year, month, day, 0, 0, 0, 0, loc)
+	endDate := time.Date(year, month, day, 23, 59, 59, 0, loc)
+	entries, err := t.session.GetTimeEntries(startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]timenote.TimeEntry, 0)
+	for _, entry := range entries {
+		result = append(result, timenote.TimeEntry{
+			ID:       entry.ID,
+			Tag:      fmt.Sprintf("%v", entry.Tags),
+			Note:     entry.Description,
+			Start:    *entry.Start,
+			Stop:     entry.Stop,
+			Duration: entry.Duration,
+		})
+	}
+	return result, nil
 }

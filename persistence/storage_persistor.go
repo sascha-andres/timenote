@@ -20,8 +20,8 @@ type Persistor interface {
 	Done() error
 	// Close the connection to the persistence backend
 	Close() error
-	// List of entries for the current day - delta
-	// ListForDay(delta int) ([]timenote.TimeEntry, error)
+	// List of entries for the current day
+	ListForDay() ([]timenote.TimeEntry, error)
 	// Get currently running time entry
 	Current() (*timenote.TimeEntry, error)
 	// GetWebsite returns a URL to the time management system
