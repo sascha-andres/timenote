@@ -36,6 +36,8 @@ This is in an early phase but used regularly with the toggl backend and from tim
 
 |Version|Description|
 |---|---|
+|0.5.0|add support for daily summary|
+||better output for entry duration|
 |0.4.0|add project command|
 |0.3.0|Add cli|
 ||Open in browser|
