@@ -38,7 +38,7 @@ var timestampProjectCmd = &cobra.Command{
 				log.Fatal(err)
 			}
 		}()
-		err = persistence.Project(name)
+		err = persistence.SetProjectForCurrentTimestamp(name)
 		if err != nil {
 			log.Errorf("error setting project: %s", err)
 		}

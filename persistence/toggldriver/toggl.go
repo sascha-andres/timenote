@@ -94,11 +94,6 @@ func (t *TogglPersistor) Done() error {
 func (t *TogglPersistor) Close() error {
 	return nil
 }
-
-/*func (t *TogglPersistor) ListForDay(delta int) ([]timenote.TimeEntry, error) {
-	return nil, errors.New("Not yet implemented")
-}*/
-
 func (t *TogglPersistor) Current() (*timenote.TimeEntry, error) {
 	account, err := t.session.GetAccount()
 	if err != nil {
@@ -126,7 +121,7 @@ func getCurrentTimeEntry(account toggl.Account) (*toggl.TimeEntry, error) {
 	return nil, fmt.Errorf("No current time entry")
 }
 
-func (t *TogglPersistor) Project(name string) error {
+func (t *TogglPersistor) SetProjectForCurrentTimestamp(name string) error {
 	var (
 		account   toggl.Account
 		projectID int

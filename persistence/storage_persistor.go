@@ -14,8 +14,8 @@ type Persistor interface {
 	Clients() ([]timenote.Client, error)
 	// NewClient is used to create a new client
 	NewClient(name string) error
-	// Project adds time entry to a project
-	Project(name string) error
+	// SetProjectForCurrentTimestamp adds time entry to a project
+	SetProjectForCurrentTimestamp(name string) error
 	// Done writes the stop timestamp
 	Done() error
 	// Close the connection to the persistence backend
