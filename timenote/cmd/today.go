@@ -98,7 +98,7 @@ var timestampTodayCmd = &cobra.Command{
 }
 
 func init() {
-	timestampCmd.AddCommand(timestampTodayCmd)
+	RootCmd.AddCommand(timestampTodayCmd)
 
 	timestampTodayCmd.Flags().BoolP("sum-only", "", false, "Just print sum of timestamps")
 	timestampTodayCmd.Flags().BoolP("include-seconds", "", true, "Include seconds when writing out time entry")
