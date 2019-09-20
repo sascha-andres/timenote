@@ -21,13 +21,13 @@ import (
 	"livingit.de/code/timenote/persistence/factory"
 )
 
-// appendCmd represents the append command
-var projectCmd = &cobra.Command{
-	Use:   "project",
-	Short: "current entry is part of project",
-	Long:  `Depending on the persistor, this command sets the project`,
+// timestampAppendCmd represents the append command
+var timestampTagCmd = &cobra.Command{
+	Use:   "tag",
+	Short: "tag current entry",
+	Long:  `Depending on the persistor, this command adds or overwrites a tag`,
 	Run: func(cmd *cobra.Command, args []string) {
-		name := viper.GetString("project.name")
+		name := viper.GetString("tag.name")
 		persistence, err := factory.CreatePersistence(viper.GetString("persistor"), viper.GetString("dsn"))
 		if err != nil {
 			log.Fatal(err)
@@ -38,18 +38,18 @@ var projectCmd = &cobra.Command{
 				log.Fatal(err)
 			}
 		}()
-		err = persistence.Project(name)
+		err = persistence.Tag(name)
 		if err != nil {
-			log.Errorf("error setting project: %s", err)
+			log.Error(err)
 		}
 	},
 }
 
 func init() {
-	RootCmd.AddCommand(projectCmd)
+	timestampCmd.AddCommand(timestampTagCmd)
 
-	projectCmd.Flags().StringP("name", "", "", "Name for project")
-	_ = projectCmd.MarkFlagRequired("name")
+	timestampTagCmd.Flags().StringP("name", "", "", "Name for tag")
+	_ = timestampTagCmd.MarkFlagRequired("name")
 
-	_ = viper.BindPFlag("project.name", projectCmd.Flags().Lookup("name"))
+	_ = viper.BindPFlag("tag.name", timestampTagCmd.Flags().Lookup("name"))
 }

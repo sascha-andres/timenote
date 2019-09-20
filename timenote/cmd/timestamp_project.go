@@ -15,20 +15,19 @@
 package cmd
 
 import (
-	"livingit.de/code/timenote/persistence/factory"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"livingit.de/code/timenote/persistence/factory"
 )
 
-// appendCmd represents the append command
-var appendCmd = &cobra.Command{
-	Use:   "append",
-	Short: "append/overwrite description for running timeentry",
-	Long: `Depending on the persistor, this command appends
-to the description or sets the description`,
+// timestampAppendCmd represents the append command
+var timestampProjectCmd = &cobra.Command{
+	Use:   "project",
+	Short: "current entry is part of project",
+	Long:  `Depending on the persistor, this command sets the project`,
 	Run: func(cmd *cobra.Command, args []string) {
-		description := viper.GetString("append.description")
+		name := viper.GetString("project.name")
 		persistence, err := factory.CreatePersistence(viper.GetString("persistor"), viper.GetString("dsn"))
 		if err != nil {
 			log.Fatal(err)
@@ -39,19 +38,18 @@ to the description or sets the description`,
 				log.Fatal(err)
 			}
 		}()
-
-		err = persistence.Append(description)
+		err = persistence.Project(name)
 		if err != nil {
-			log.Error(err)
+			log.Errorf("error setting project: %s", err)
 		}
 	},
 }
 
 func init() {
-	RootCmd.AddCommand(appendCmd)
+	timestampCmd.AddCommand(timestampProjectCmd)
 
-	appendCmd.Flags().StringP("description", "", "", "Description for timestamp")
-	appendCmd.MarkFlagRequired("description")
+	timestampProjectCmd.Flags().StringP("name", "", "", "Name for project")
+	_ = timestampProjectCmd.MarkFlagRequired("name")
 
-	viper.BindPFlag("append.description", appendCmd.Flags().Lookup("description"))
+	_ = viper.BindPFlag("project.name", timestampProjectCmd.Flags().Lookup("name"))
 }
