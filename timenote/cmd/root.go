@@ -62,9 +62,11 @@ func init() {
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.timenote.yaml)")
 	RootCmd.PersistentFlags().StringP("persistor", "p", "mysql", "Which driver to use")
 	RootCmd.PersistentFlags().StringP("dsn", "d", "notetime:notetime@(127.0.0.1:4041)/notetime", "DSN for database")
+	RootCmd.PersistentFlags().StringP("output-format", "", "text", "test or json")
 
-	viper.BindPFlag("dsn", RootCmd.PersistentFlags().Lookup("dsn"))
-	viper.BindPFlag("persistor", RootCmd.PersistentFlags().Lookup("persistor"))
+	_ = viper.BindPFlag("dsn", RootCmd.PersistentFlags().Lookup("dsn"))
+	_ = viper.BindPFlag("persistor", RootCmd.PersistentFlags().Lookup("persistor"))
+	_ = viper.BindPFlag("output-format", RootCmd.PersistentFlags().Lookup("output-format"))
 }
 
 // initConfig reads in config file and ENV variables if set.

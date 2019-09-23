@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -47,14 +48,23 @@ var projectsCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		w := new(tabwriter.Writer)
-		// Format in tab-separated columns with a tab stop of 8.
-		w.Init(os.Stdout, 0, 8, 2, '\t', 0)
-		_, _ = fmt.Fprintln(w, "ID\tName\t")
-		for _, prj := range projects {
-			_, _ = fmt.Fprintln(w, fmt.Sprintf("%d\t%s\t", prj.ID, prj.Name))
+		if viper.GetString("output-format") != "json" {
+			w := new(tabwriter.Writer)
+			// Format in tab-separated columns with a tab stop of 8.
+			w.Init(os.Stdout, 0, 8, 2, '\t', 0)
+			_, _ = fmt.Fprintln(w, "ID\tName\t")
+			for _, prj := range projects {
+				_, _ = fmt.Fprintln(w, fmt.Sprintf("%d\t%s\t", prj.ID, prj.Name))
+			}
+			_ = w.Flush()
+		} else {
+			data, err := json.Marshal(projects)
+			if err != nil {
+				log.Fatal(err)
+				os.Exit(1)
+			}
+			_, _ = fmt.Println(string(data))
 		}
-		_ = w.Flush()
 	},
 }
 
