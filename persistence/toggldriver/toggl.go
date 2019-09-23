@@ -94,11 +94,6 @@ func (t *TogglPersistor) Done() error {
 func (t *TogglPersistor) Close() error {
 	return nil
 }
-
-/*func (t *TogglPersistor) ListForDay(delta int) ([]timenote.TimeEntry, error) {
-	return nil, errors.New("Not yet implemented")
-}*/
-
 func (t *TogglPersistor) Current() (*timenote.TimeEntry, error) {
 	account, err := t.session.GetAccount()
 	if err != nil {
@@ -126,7 +121,7 @@ func getCurrentTimeEntry(account toggl.Account) (*toggl.TimeEntry, error) {
 	return nil, fmt.Errorf("No current time entry")
 }
 
-func (t *TogglPersistor) Project(name string) error {
+func (t *TogglPersistor) SetProjectForCurrentTimestamp(name string) error {
 	var (
 		account   toggl.Account
 		projectID int
@@ -228,6 +223,29 @@ func (t *TogglPersistor) ListForDay() ([]timenote.TimeEntry, error) {
 			Start:    *entry.Start,
 			Stop:     entry.Stop,
 			Duration: entry.Duration,
+		})
+	}
+	return result, nil
+}
+
+func (t *TogglPersistor) Projects() ([]timenote.Project, error) {
+	account, err := t.session.GetAccount()
+	if err != nil {
+		return nil, errors.Wrap(err, "Unable to get account")
+	}
+
+	projects, err := t.session.GetProjects(account.Data.Workspaces[0].ID)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]timenote.Project, 0)
+	for _, prj := range projects {
+		result = append(result, timenote.Project{
+			ID:          prj.ID,
+			WorkspaceID: prj.Wid,
+			ClientID:    prj.Cid,
+			Name:        prj.Name,
+			Billable:    prj.Billable,
 		})
 	}
 	return result, nil

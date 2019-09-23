@@ -179,7 +179,7 @@ func (mysql *MySQLPersistor) prepareDb() error {
 	return nil
 }
 
-func (mysql *MySQLPersistor) Project(name string) error {
+func (mysql *MySQLPersistor) SetProjectForCurrentTimestamp(name string) error {
 	if err := mysql.prepareDb(); err != nil {
 		return errors.Wrap(err, "Connection to DB not valid")
 	}
@@ -266,5 +266,9 @@ func (mysql *MySQLPersistor) NewClient(name string) error {
 }
 
 func (mysql *MySQLPersistor) ListForDay() ([]timenote.TimeEntry, error) {
+	return nil, errors.New("not yet implemented")
+}
+
+func (mysql *MySQLPersistor) Projects() ([]timenote.Project, error) {
 	return nil, errors.New("not yet implemented")
 }

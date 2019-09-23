@@ -32,7 +32,7 @@ func executeLine(persistence persistence.Persistor, commandline string) error {
 	case "append":
 		return persistence.Append(strings.Join(tokenize[1:], " "))
 	case "project":
-		return persistence.Project(strings.Join(tokenize[1:], " "))
+		return persistence.SetProjectForCurrentTimestamp(strings.Join(tokenize[1:], " "))
 	case "tag":
 		return persistence.Tag(strings.Join(tokenize[1:], " "))
 	case "client":

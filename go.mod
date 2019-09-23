@@ -28,3 +28,5 @@ require (
 )
 
 go 1.13
+
+replace github.com/sascha-andres/go-toggl => ../go-toggl
