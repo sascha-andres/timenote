@@ -268,3 +268,7 @@ func (mysql *MySQLPersistor) NewClient(name string) error {
 func (mysql *MySQLPersistor) ListForDay() ([]timenote.TimeEntry, error) {
 	return nil, errors.New("not yet implemented")
 }
+
+func (mysql *MySQLPersistor) Projects() ([]timenote.Project, error) {
+	return nil, errors.New("not yet implemented")
+}

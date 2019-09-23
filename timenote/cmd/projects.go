@@ -15,16 +15,49 @@
 package cmd
 
 import (
+	"fmt"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"livingit.de/code/timenote/persistence/factory"
+	"os"
+	"text/tabwriter"
 )
 
 // timestampCmd represents the timestamp command
-var timestampCmd = &cobra.Command{
-	Use:   "timestamp",
-	Short: "timestamp management",
-	Long: `Manage timestamps by adding`,
+var projectsCmd = &cobra.Command{
+	Use:   "projects",
+	Short: "projects management",
+	Long:  `List projects and manage projects using sub commands`,
+	Run: func(cmd *cobra.Command, args []string) {
+		persistence, err := factory.CreatePersistence(viper.GetString("persistor"), viper.GetString("dsn"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer func() {
+			err := persistence.Close()
+			if err != nil {
+				log.Fatal(err)
+			}
+		}()
+
+		projects, err := persistence.Projects()
+		if err != nil {
+			log.Fatal(err)
+			os.Exit(1)
+		}
+
+		w := new(tabwriter.Writer)
+		// Format in tab-separated columns with a tab stop of 8.
+		w.Init(os.Stdout, 0, 8, 2, '\t', 0)
+		_, _ = fmt.Fprintln(w, "ID\tName\t")
+		for _, prj := range projects {
+			_, _ = fmt.Fprintln(w, fmt.Sprintf("%d\t%s\t", prj.ID, prj.Name))
+		}
+		_ = w.Flush()
+	},
 }
 
 func init() {
-	RootCmd.AddCommand(timestampCmd)
+	RootCmd.AddCommand(projectsCmd)
 }
