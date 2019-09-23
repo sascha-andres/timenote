@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"livingit.de/code/timenote"
 	"os"
@@ -50,30 +51,11 @@ var timestampTodayCmd = &cobra.Command{
 			return
 		}
 		if !viper.GetBool("timestamp.today.sum-only") {
-			w := new(tabwriter.Writer)
-			// Format in tab-separated columns with a tab stop of 8.
-			w.Init(os.Stdout, 0, 8, 2, '\t', 0)
-			_, _ = fmt.Fprintln(w, "ID\tTime\tNote\t")
-			for _, e := range ts {
-				humanTime := ""
-				if e.Duration >= 0 {
-					td, _ := timenote.NewTogglDuration(e.Duration)
-					if !viper.GetBool("timestamp.today.include-seconds") {
-						td.OmitSeconds()
-					}
-					humanTime = td.String()
-				} else {
-					t := time.Now().UTC().Add(time.Duration(e.Duration) * time.Second)
-					td2, _ := timenote.TogglDurationFromTime(t)
-					if !viper.GetBool("timestamp.today.include-seconds") {
-						td2.OmitSeconds()
-					}
-					humanTime = td2.String()
-				}
-				_, _ = fmt.Fprintln(w, fmt.Sprintf("%d\t%s\t%s\t", e.ID, humanTime, e.Note))
+			if viper.GetString("output-format") != "json" {
+				writeTimeEntriesTable(ts)
+			} else {
+				writeTimeEntriesJson(ts)
 			}
-			_, _ = fmt.Fprintln(w)
-			_ = w.Flush()
 		} else {
 			var sum int64
 			for _, e := range ts {
@@ -95,6 +77,42 @@ var timestampTodayCmd = &cobra.Command{
 			fmt.Println(td.String())
 		}
 	},
+}
+
+func writeTimeEntriesJson(ts []timenote.TimeEntry) {
+	data, err := json.Marshal(ts)
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+	_, _ = fmt.Println(string(data))
+}
+
+func writeTimeEntriesTable(ts []timenote.TimeEntry) {
+	w := new(tabwriter.Writer)
+	// Format in tab-separated columns with a tab stop of 8.
+	w.Init(os.Stdout, 0, 8, 2, '\t', 0)
+	_, _ = fmt.Fprintln(w, "ID\tTime\tNote\t")
+	for _, e := range ts {
+		humanTime := ""
+		if e.Duration >= 0 {
+			td, _ := timenote.NewTogglDuration(e.Duration)
+			if !viper.GetBool("timestamp.today.include-seconds") {
+				td.OmitSeconds()
+			}
+			humanTime = td.String()
+		} else {
+			t := time.Now().UTC().Add(time.Duration(e.Duration) * time.Second)
+			td2, _ := timenote.TogglDurationFromTime(t)
+			if !viper.GetBool("timestamp.today.include-seconds") {
+				td2.OmitSeconds()
+			}
+			humanTime = td2.String()
+		}
+		_, _ = fmt.Fprintln(w, fmt.Sprintf("%d\t%s\t%s\t", e.ID, humanTime, e.Note))
+	}
+	_, _ = fmt.Fprintln(w)
+	_ = w.Flush()
 }
 
 func init() {

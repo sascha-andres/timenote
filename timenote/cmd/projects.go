@@ -20,6 +20,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"livingit.de/code/timenote"
 	"livingit.de/code/timenote/persistence/factory"
 	"os"
 	"text/tabwriter"
@@ -49,23 +50,31 @@ var projectsCmd = &cobra.Command{
 		}
 
 		if viper.GetString("output-format") != "json" {
-			w := new(tabwriter.Writer)
-			// Format in tab-separated columns with a tab stop of 8.
-			w.Init(os.Stdout, 0, 8, 2, '\t', 0)
-			_, _ = fmt.Fprintln(w, "ID\tName\t")
-			for _, prj := range projects {
-				_, _ = fmt.Fprintln(w, fmt.Sprintf("%d\t%s\t", prj.ID, prj.Name))
-			}
-			_ = w.Flush()
+			writeProjectsTable(projects)
 		} else {
-			data, err := json.Marshal(projects)
-			if err != nil {
-				log.Fatal(err)
-				os.Exit(1)
-			}
-			_, _ = fmt.Println(string(data))
+			writeProjectsJson(projects)
 		}
 	},
+}
+
+func writeProjectsJson(projects []timenote.Project) {
+	data, err := json.Marshal(projects)
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+	_, _ = fmt.Println(string(data))
+}
+
+func writeProjectsTable(projects []timenote.Project) {
+	w := new(tabwriter.Writer)
+	// Format in tab-separated columns with a tab stop of 8.
+	w.Init(os.Stdout, 0, 8, 2, '\t', 0)
+	_, _ = fmt.Fprintln(w, "ID\tName\t")
+	for _, prj := range projects {
+		_, _ = fmt.Fprintln(w, fmt.Sprintf("%d\t%s\t", prj.ID, prj.Name))
+	}
+	_ = w.Flush()
 }
 
 func init() {
