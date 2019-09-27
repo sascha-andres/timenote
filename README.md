@@ -33,6 +33,7 @@ This is in an early phase but used regularly with the toggl backend and from tim
 |---|---|
 |0.X.X|add support for projects (add,delete and list|
 ||remove MySQL support|
+||Workspace flag|
 |0.5.0|add support for daily summary|
 ||better output for entry duration|
 |0.4.0|add project command|
