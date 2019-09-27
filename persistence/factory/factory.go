@@ -1,17 +1,12 @@
 package factory
 
 import (
-	"fmt"
-
-	"github.com/pkg/errors"
-	"livingit.de/code/timenote/persistence"
 	"livingit.de/code/timenote/persistence/toggldriver"
+
+	"livingit.de/code/timenote/persistence"
 )
 
 // CreatePersistence returns the selected backend
-func CreatePersistence(driver, dsn string) (persistence.Persistor, error) {
-	if driver == "toggl" {
-		return toggldriver.NewToggl(dsn)
-	}
-	return nil, errors.New(fmt.Sprintf("Driver %s does not exist", driver))
+func CreatePersistence(dsn string) (persistence.Persistor, error) {
+	return toggldriver.NewToggl(dsn, 0)
 }

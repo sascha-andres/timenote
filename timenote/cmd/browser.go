@@ -29,10 +29,9 @@ var browserCmd = &cobra.Command{
 	Use:   "browser",
 	Short: "open a browser with your overview",
 	Long: `Depending on your backend this may open a browser
-	with your dashboard. For local backends such as MySQL this
-	does not work.`,
+	with your dashboard.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		persistence, err := factory.CreatePersistence(viper.GetString("persistor"), viper.GetString("dsn"))
+		persistence, err := factory.CreatePersistence(viper.GetString("dsn"))
 		if err != nil {
 			log.Fatal(err)
 		}

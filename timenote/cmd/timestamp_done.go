@@ -15,10 +15,10 @@
 package cmd
 
 import (
-	"livingit.de/code/timenote/persistence/factory"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"livingit.de/code/timenote/persistence/factory"
 )
 
 // timestampDoneCmd represents the done command
@@ -27,7 +27,7 @@ var timestampDoneCmd = &cobra.Command{
 	Short: "done with current entry",
 	Long:  `Stops the current entry`,
 	Run: func(cmd *cobra.Command, args []string) {
-		persistence, err := factory.CreatePersistence(viper.GetString("persistor"), viper.GetString("dsn"))
+		persistence, err := factory.CreatePersistence(viper.GetString("dsn"))
 		if err != nil {
 			log.Fatal(err)
 		}

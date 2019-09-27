@@ -8,9 +8,9 @@ import (
 
 	"github.com/chzyer/readline"
 	"github.com/pkg/errors"
+	"github.com/spf13/viper"
 	"livingit.de/code/timenote/persistence"
 	"livingit.de/code/timenote/persistence/factory"
-	"github.com/spf13/viper"
 )
 
 var (
@@ -24,7 +24,7 @@ var (
 )
 
 func run() error {
-	persistence, err := factory.CreatePersistence(viper.GetString("persistor"), viper.GetString("dsn"))
+	persistence, err := factory.CreatePersistence(viper.GetString("dsn"))
 	if err != nil {
 		return errors.Wrap(err, "Could not create persistence layer")
 	}

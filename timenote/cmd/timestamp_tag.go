@@ -28,7 +28,7 @@ var timestampTagCmd = &cobra.Command{
 	Long:  `Depending on the persistor, this command adds or overwrites a tag`,
 	Run: func(cmd *cobra.Command, args []string) {
 		name := viper.GetString("tag.name")
-		persistence, err := factory.CreatePersistence(viper.GetString("persistor"), viper.GetString("dsn"))
+		persistence, err := factory.CreatePersistence(viper.GetString("dsn"))
 		if err != nil {
 			log.Fatal(err)
 		}

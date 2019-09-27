@@ -17,9 +17,9 @@ package cmd
 import (
 	log "github.com/sirupsen/logrus"
 
-	"livingit.de/code/timenote/persistence/factory"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"livingit.de/code/timenote/persistence/factory"
 )
 
 // timestampNewCmd represents the new command
@@ -29,7 +29,7 @@ var timestampNewCmd = &cobra.Command{
 	Long:  `Starts a new timestamp`,
 	Run: func(cmd *cobra.Command, args []string) {
 		description := viper.GetString("timestamp.new.description")
-		persistence, err := factory.CreatePersistence(viper.GetString("persistor"), viper.GetString("dsn"))
+		persistence, err := factory.CreatePersistence(viper.GetString("dsn"))
 		if err != nil {
 			log.Fatal(err)
 		}

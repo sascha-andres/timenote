@@ -13,17 +13,32 @@ import (
 
 type (
 	TogglPersistor struct {
-		dsn     string
-		session toggl.Session
+		dsn       string
+		workspace int
+		session   toggl.Session
 	}
 )
 
-func NewToggl(dsn string) (persistence.Persistor, error) {
-	var res TogglPersistor
-	res.dsn = dsn
-	res.session = toggl.OpenSession(dsn)
+func NewToggl(dsn string, workspace int) (persistence.Persistor, error) {
+	res := TogglPersistor{
+		dsn:       dsn,
+		workspace: workspace,
+		session:   toggl.OpenSession(dsn),
+	}
 	toggl.DisableLog()
-	return &res, nil
+	return &res, res.guessWork()
+}
+
+func (t *TogglPersistor) guessWork() error {
+	if t.workspace == 0 {
+		account, err := t.session.GetAccount()
+		if err != nil {
+			return errors.Wrap(err, "unable to get account")
+		}
+
+		t.workspace = account.Data.Workspaces[0].ID
+	}
+	return nil
 }
 
 func (t *TogglPersistor) New() error {
@@ -41,7 +56,7 @@ func (t *TogglPersistor) Append(line string) error {
 	}
 	te, err := getCurrentTimeEntry(account)
 	if err != nil {
-		return errors.Wrap(err, "Unable to get running time entry from toggl")
+		return errors.Wrap(err, "unable to get running time entry from toggl")
 	}
 	if te.Description == "" {
 		te.Description = line
@@ -50,7 +65,7 @@ func (t *TogglPersistor) Append(line string) error {
 	}
 	_, err = t.session.UpdateTimeEntry(*te)
 	if err != nil {
-		return errors.Wrap(err, "Unable to update time entry in toggl")
+		return errors.Wrap(err, "unable to update time entry in toggl")
 	}
 	return nil
 }
@@ -58,11 +73,11 @@ func (t *TogglPersistor) Append(line string) error {
 func (t *TogglPersistor) Tag(name string) error {
 	account, err := t.session.GetAccount()
 	if err != nil {
-		return errors.Wrap(err, "Unable to get account")
+		return errors.Wrap(err, "unable to get account")
 	}
 	te, err := getCurrentTimeEntry(account)
 	if err != nil {
-		return errors.Wrap(err, "Unable to get running time entry from toggl")
+		return errors.Wrap(err, "unable to get running time entry from toggl")
 	}
 	if te.HasTag(name) {
 		te.RemoveTag(name)
@@ -71,7 +86,7 @@ func (t *TogglPersistor) Tag(name string) error {
 	}
 	_, err = t.session.UpdateTimeEntry(*te)
 	if err != nil {
-		return errors.Wrap(err, "Unable to update time entry in toggl")
+		return errors.Wrap(err, "unable to update time entry in toggl")
 	}
 	return nil
 }
@@ -79,15 +94,15 @@ func (t *TogglPersistor) Tag(name string) error {
 func (t *TogglPersistor) Done() error {
 	account, err := t.session.GetAccount()
 	if err != nil {
-		return errors.Wrap(err, "Unable to get account")
+		return errors.Wrap(err, "unable to get account")
 	}
 	te, err := getCurrentTimeEntry(account)
 	if err != nil {
-		return errors.Wrap(err, "Unable to get running time entry from toggl")
+		return errors.Wrap(err, "unable to get running time entry from toggl")
 	}
 	_, err = t.session.StopTimeEntry(*te)
 	if err != nil {
-		return errors.Wrap(err, "Unable to stop running time entry in toggl")
+		return errors.Wrap(err, "unable to stop running time entry in toggl")
 	}
 	return nil
 }
@@ -99,11 +114,11 @@ func (t *TogglPersistor) Close() error {
 func (t *TogglPersistor) Current() (*timenote.TimeEntry, error) {
 	account, err := t.session.GetAccount()
 	if err != nil {
-		return nil, errors.Wrap(err, "Unable to get account")
+		return nil, errors.Wrap(err, "unable to get account")
 	}
 	te, err := getCurrentTimeEntry(account)
 	if err != nil {
-		return nil, errors.Wrap(err, "Unable to get running time entry from toggl")
+		return nil, errors.Wrap(err, "unable to get running time entry from toggl")
 	}
 	var res timenote.TimeEntry
 	res.Note = te.Description
@@ -120,7 +135,7 @@ func getCurrentTimeEntry(account toggl.Account) (*toggl.TimeEntry, error) {
 			return &te, nil
 		}
 	}
-	return nil, fmt.Errorf("No current time entry")
+	return nil, fmt.Errorf("no current time entry")
 }
 
 func (t *TogglPersistor) SetProjectForCurrentTimestamp(name string) error {
@@ -132,7 +147,7 @@ func (t *TogglPersistor) SetProjectForCurrentTimestamp(name string) error {
 
 	account, err = t.session.GetAccount()
 	if err != nil {
-		return errors.Wrap(err, "Unable to get account")
+		return errors.Wrap(err, "unable to get account")
 	}
 	if name == "" {
 		projectID = 0
@@ -141,14 +156,14 @@ func (t *TogglPersistor) SetProjectForCurrentTimestamp(name string) error {
 		if projectID == 0 {
 			projectID, err = t.createProject(account, name)
 			if err != nil {
-				return errors.Wrap(err, "Unable to create project")
+				return errors.Wrap(err, "unable to create project")
 			}
 		}
 	}
 
 	te, err := getCurrentTimeEntry(account)
 	if err != nil {
-		return errors.Wrap(err, "Unable to get running time entry from toggl")
+		return errors.Wrap(err, "unable to get running time entry from toggl")
 	}
 	te.Pid = projectID
 	_, err = t.session.UpdateTimeEntry(*te)
@@ -156,7 +171,7 @@ func (t *TogglPersistor) SetProjectForCurrentTimestamp(name string) error {
 }
 
 func (t *TogglPersistor) createProject(account toggl.Account, name string) (int, error) {
-	res, err := t.session.CreateProject(name, account.Data.Workspaces[0].ID)
+	res, err := t.session.CreateProject(name, t.workspace)
 	if err != nil {
 		return 0, err
 	}
@@ -199,7 +214,7 @@ func (t *TogglPersistor) DeleteProject(name string) error {
 	project, err = t.session.GetProject(id)
 
 	if nil == project {
-		return errors.New("No such project")
+		return errors.New("no such project")
 	}
 
 	_, err = t.session.DeleteProject(toggl.Project{
@@ -213,7 +228,7 @@ func (t *TogglPersistor) DeleteProject(name string) error {
 func (t *TogglPersistor) getProjectID(name string) (int, error) {
 	account, err := t.session.GetAccount()
 	if err != nil {
-		return 0, errors.Wrap(err, "Unable to get account")
+		return 0, errors.Wrap(err, "unable to get account")
 	}
 
 	for _, prj := range account.Data.Projects {
@@ -246,11 +261,7 @@ func (t *TogglPersistor) Clients() ([]timenote.Client, error) {
 }
 
 func (t *TogglPersistor) NewClient(name string) error {
-	account, err := t.session.GetAccount()
-	if err != nil {
-		return err
-	}
-	_, err = t.session.CreateClient(name, account.Data.Workspaces[0].ID)
+	_, err := t.session.CreateClient(name, t.workspace)
 	return err
 }
 
@@ -278,12 +289,7 @@ func (t *TogglPersistor) ListForDay() ([]timenote.TimeEntry, error) {
 }
 
 func (t *TogglPersistor) Projects() ([]timenote.Project, error) {
-	account, err := t.session.GetAccount()
-	if err != nil {
-		return nil, errors.Wrap(err, "Unable to get account")
-	}
-
-	projects, err := t.session.GetProjects(account.Data.Workspaces[0].ID)
+	projects, err := t.session.GetProjects(t.workspace)
 	if err != nil {
 		return nil, err
 	}

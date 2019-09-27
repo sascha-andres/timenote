@@ -34,7 +34,7 @@ var timestampTodayCmd = &cobra.Command{
 	Short: "Print timestamps from today",
 	Long:  `Print all timestamps with a date from today or being active`,
 	Run: func(cmd *cobra.Command, args []string) {
-		persistence, err := factory.CreatePersistence(viper.GetString("persistor"), viper.GetString("dsn"))
+		persistence, err := factory.CreatePersistence(viper.GetString("dsn"))
 		if err != nil {
 			log.Fatal(err)
 		}
