@@ -18,6 +18,8 @@ type Persistor interface {
 	SetProjectForCurrentTimestamp(name string) error
 	// Projects returns a list of projects
 	Projects() ([]timenote.Project, error)
+	// CreateProject creates a new project
+	CreateProject(name string) error
 	// Done writes the stop timestamp
 	Done() error
 	// Close the connection to the persistence backend

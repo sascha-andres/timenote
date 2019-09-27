@@ -209,10 +209,24 @@ func (mysql *MySQLPersistor) SetProjectForCurrentTimestamp(name string) error {
 		return errors.Wrap(err, "Could not start transaction")
 	}
 	if _, err = tx.Exec("update timenote set `id_project`=? where `stop` = '0000-00-00 00:00:00'", projectID); err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return errors.Wrap(err, "Could not set project")
 	}
 	return tx.Commit()
+}
+
+func (mysql *MySQLPersistor) CreateProject(name string) (err error) {
+	id, err := mysql.getProjectID(name)
+	if err != nil {
+		return
+	}
+	if id == 0 {
+		_, err = mysql.createProject(name)
+		if err != nil {
+			return
+		}
+	}
+	return
 }
 
 func (mysql *MySQLPersistor) createProject(name string) (int, error) {
@@ -226,7 +240,7 @@ func (mysql *MySQLPersistor) createProject(name string) (int, error) {
 	}
 	_, err = tx.Exec("insert into project (name) values (?)", name)
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return 0, errors.Wrap(err, "Could not insert project")
 	}
 	if err := tx.Commit(); err != nil {
@@ -246,9 +260,7 @@ func (mysql *MySQLPersistor) getProjectID(name string) (int, error) {
 		if err == sql.ErrNoRows {
 			return 0, nil
 		}
-		if err != nil {
-			return 0, errors.Wrap(err, "Could not load record")
-		}
+		return 0, errors.Wrap(err, "Could not load record")
 	}
 	return id, nil
 }

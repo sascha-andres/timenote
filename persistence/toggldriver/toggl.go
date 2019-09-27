@@ -161,6 +161,24 @@ func (t *TogglPersistor) createProject(account toggl.Account, name string) (int,
 	return res.ID, nil
 }
 
+func (t *TogglPersistor) CreateProject(name string) error {
+	id, err := t.getProjectID(name)
+	if err != nil {
+		return err
+	}
+	if id == 0 {
+		account, err := t.session.GetAccount()
+		if err != nil {
+			return err
+		}
+		_, err = t.createProject(account, name)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (t *TogglPersistor) getProjectID(name string) (int, error) {
 	account, err := t.session.GetAccount()
 	if err != nil {
