@@ -32,7 +32,7 @@ var projectsCmd = &cobra.Command{
 	Short: "projects management",
 	Long:  `List projects and manage projects using sub commands`,
 	Run: func(cmd *cobra.Command, args []string) {
-		persistence, err := factory.CreatePersistence(viper.GetString("dsn"))
+		persistence, err := factory.CreatePersistence(viper.GetString("dsn"), viper.GetInt("workspace"))
 		if err != nil {
 			log.Fatal(err)
 		}

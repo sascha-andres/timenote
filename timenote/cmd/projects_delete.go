@@ -30,7 +30,7 @@ var projectsDeleteCmd = &cobra.Command{
 If project already exists it will not do anything`,
 	Run: func(cmd *cobra.Command, args []string) {
 		name := viper.GetString("projects.delete.name")
-		persistence, err := factory.CreatePersistence(viper.GetString("dsn"))
+		persistence, err := factory.CreatePersistence(viper.GetString("dsn"), viper.GetInt("workspace"))
 		if err != nil {
 			log.Fatal(err)
 		}

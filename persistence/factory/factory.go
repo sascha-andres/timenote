@@ -7,6 +7,6 @@ import (
 )
 
 // CreatePersistence returns the selected backend
-func CreatePersistence(dsn string) (persistence.Persistor, error) {
-	return toggldriver.NewToggl(dsn, 0)
+func CreatePersistence(dsn string, workspace int) (persistence.Persistor, error) {
+	return toggldriver.NewToggl(dsn, workspace)
 }

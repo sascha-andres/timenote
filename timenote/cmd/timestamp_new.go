@@ -29,7 +29,7 @@ var timestampNewCmd = &cobra.Command{
 	Long:  `Starts a new timestamp`,
 	Run: func(cmd *cobra.Command, args []string) {
 		description := viper.GetString("timestamp.new.description")
-		persistence, err := factory.CreatePersistence(viper.GetString("dsn"))
+		persistence, err := factory.CreatePersistence(viper.GetString("dsn"), viper.GetInt("workspace"))
 		if err != nil {
 			log.Fatal(err)
 		}

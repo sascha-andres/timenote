@@ -10,7 +10,6 @@ There is one main option:
 
 1. dsn
 
-
 For toggl use your toggl token.
 
 You can Use a configuration file in your home directory, .timenote.yaml.

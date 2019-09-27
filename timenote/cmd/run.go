@@ -24,7 +24,7 @@ var (
 )
 
 func run() error {
-	persistence, err := factory.CreatePersistence(viper.GetString("dsn"))
+	persistence, err := factory.CreatePersistence(viper.GetString("dsn"), viper.GetInt("workspace"))
 	if err != nil {
 		return errors.Wrap(err, "Could not create persistence layer")
 	}
