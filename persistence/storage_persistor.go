@@ -20,6 +20,8 @@ type Persistor interface {
 	Projects() ([]timenote.Project, error)
 	// CreateProject creates a new project
 	CreateProject(name string) error
+	// DeleteProject removes a project
+	DeleteProject(name string) error
 	// Done writes the stop timestamp
 	Done() error
 	// Close the connection to the persistence backend

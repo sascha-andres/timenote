@@ -215,6 +215,10 @@ func (mysql *MySQLPersistor) SetProjectForCurrentTimestamp(name string) error {
 	return tx.Commit()
 }
 
+func (mysql *MySQLPersistor) DeleteProject(name string) (err error) {
+	return errors.New("Not yet implemented")
+}
+
 func (mysql *MySQLPersistor) CreateProject(name string) (err error) {
 	id, err := mysql.getProjectID(name)
 	if err != nil {

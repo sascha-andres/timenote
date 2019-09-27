@@ -3,6 +3,7 @@ package toggldriver
 import (
 	"fmt"
 	"github.com/pkg/errors"
+	"strconv"
 	"time"
 
 	"github.com/sascha-andres/go-toggl"
@@ -94,6 +95,7 @@ func (t *TogglPersistor) Done() error {
 func (t *TogglPersistor) Close() error {
 	return nil
 }
+
 func (t *TogglPersistor) Current() (*timenote.TimeEntry, error) {
 	account, err := t.session.GetAccount()
 	if err != nil {
@@ -177,6 +179,35 @@ func (t *TogglPersistor) CreateProject(name string) error {
 		}
 	}
 	return nil
+}
+
+func (t *TogglPersistor) DeleteProject(name string) error {
+	var (
+		project *toggl.Project
+		id      int
+		err     error
+	)
+
+	if id, err = strconv.Atoi(name); !(err == nil && id != 0) {
+		id, err = t.getProjectID(name)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	project, err = t.session.GetProject(id)
+
+	if nil == project {
+		return errors.New("No such project")
+	}
+
+	_, err = t.session.DeleteProject(toggl.Project{
+		Wid: project.Wid,
+		ID:  project.ID,
+		Cid: project.Cid,
+	})
+	return err
 }
 
 func (t *TogglPersistor) getProjectID(name string) (int, error) {
