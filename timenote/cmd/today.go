@@ -51,11 +51,33 @@ var timestampTodayCmd = &cobra.Command{
 			return
 		}
 		if !viper.GetBool("timestamp.today.sum-only") {
-			if viper.GetString("output-format") != "json" {
-				writeTimeEntriesTable(ts)
-			} else {
+			if viper.GetString("output-format") == "json" {
 				writeTimeEntriesJson(ts)
+				return
 			}
+			if viper.GetBool("timestamp.today.group") {
+				ts2 := make(map[string]timenote.TimeEntry, 0)
+				ts3 := make([]timenote.TimeEntry, 0)
+				for _, e := range ts {
+					if e.Duration <= 0 {
+						e.Note = "[running] " + e.Note
+						ts3 = append(ts3, e)
+						continue
+					}
+					if val, ok := ts2[e.Note]; ok {
+						v := ts2[val.Note]
+						v.Duration += val.Duration
+						ts2[e.Note] = v
+					} else {
+						ts2[e.Note] = e
+					}
+				}
+				for _, e := range ts2 {
+					ts3 = append(ts3, e)
+				}
+				ts = ts3
+			}
+			writeTimeEntriesTable(ts)
 		} else {
 			var sum int64
 			for _, e := range ts {
@@ -119,7 +141,10 @@ func init() {
 	RootCmd.AddCommand(timestampTodayCmd)
 
 	timestampTodayCmd.Flags().BoolP("sum-only", "", false, "Just print sum of timestamps")
+	timestampTodayCmd.Flags().BoolP("group", "", false, "Print grouped by name")
 	timestampTodayCmd.Flags().BoolP("include-seconds", "", true, "Include seconds when writing out time entry")
+
 	_ = viper.BindPFlag("timestamp.today.include-seconds", timestampTodayCmd.Flags().Lookup("include-seconds"))
 	_ = viper.BindPFlag("timestamp.today.sum-only", timestampTodayCmd.Flags().Lookup("sum-only"))
+	_ = viper.BindPFlag("timestamp.today.group", timestampTodayCmd.Flags().Lookup("group"))
 }
