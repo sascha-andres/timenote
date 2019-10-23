@@ -31,7 +31,7 @@ This is in an early phase but used regularly with the toggl backend and from tim
 
 |Version|Description|
 |---|---|
-|0.X.X|add support for projects (add,delete and list|
+|0.6.0|add support for projects (add,delete and list|
 ||remove MySQL support|
 ||Workspace flag|
 ||Grouping for timenote today|
