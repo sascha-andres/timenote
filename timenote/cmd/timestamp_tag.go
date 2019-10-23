@@ -18,7 +18,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"livingit.de/code/timenote/persistence/factory"
+	"livingit.de/code/timenote/persistence"
 )
 
 // timestampAppendCmd represents the append command
@@ -28,17 +28,17 @@ var timestampTagCmd = &cobra.Command{
 	Long:  `Depending on the persistor, this command adds or overwrites a tag`,
 	Run: func(cmd *cobra.Command, args []string) {
 		name := viper.GetString("tag.name")
-		persistence, err := factory.CreatePersistence(viper.GetString("dsn"), viper.GetInt("workspace"))
+		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"))
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer func() {
-			err := persistence.Close()
+			err := p.Close()
 			if err != nil {
 				log.Fatal(err)
 			}
 		}()
-		err = persistence.Tag(name)
+		err = p.Tag(name)
 		if err != nil {
 			log.Error(err)
 		}

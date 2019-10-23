@@ -20,7 +20,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"livingit.de/code/timenote"
-	"livingit.de/code/timenote/persistence/factory"
+	"livingit.de/code/timenote/persistence"
 	"time"
 )
 
@@ -31,18 +31,18 @@ var timestampDurationCmd = &cobra.Command{
 	Long: `Prints the current timestamp's duration in
 hh:mm:ss'`,
 	Run: func(cmd *cobra.Command, args []string) {
-		persistence, err := factory.CreatePersistence(viper.GetString("dsn"), viper.GetInt("workspace"))
+		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"))
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer func() {
-			err := persistence.Close()
+			err := p.Close()
 			if err != nil {
 				log.Fatal(err)
 			}
 		}()
 
-		ts, err := persistence.Current()
+		ts, err := p.Current()
 		if err != nil {
 			log.Error(err)
 			return

@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"livingit.de/code/timenote"
+	"livingit.de/code/timenote/persistence"
 	"os"
 	"text/tabwriter"
 	"time"
@@ -25,7 +26,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"livingit.de/code/timenote/persistence/factory"
 )
 
 // timestampCurrentCmd represents the current command
@@ -34,18 +34,18 @@ var timestampTodayCmd = &cobra.Command{
 	Short: "Print timestamps from today",
 	Long:  `Print all timestamps with a date from today or being active`,
 	Run: func(cmd *cobra.Command, args []string) {
-		persistence, err := factory.CreatePersistence(viper.GetString("dsn"), viper.GetInt("workspace"))
+		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"))
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer func() {
-			err := persistence.Close()
+			err := p.Close()
 			if err != nil {
 				log.Fatal(err)
 			}
 		}()
 
-		ts, err := persistence.ListForDay()
+		ts, err := p.ListForDay()
 		if err != nil {
 			log.Error(err)
 			return

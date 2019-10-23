@@ -21,7 +21,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"livingit.de/code/timenote"
-	"livingit.de/code/timenote/persistence/factory"
+	"livingit.de/code/timenote/persistence"
 	"os"
 	"text/tabwriter"
 )
@@ -32,18 +32,18 @@ var projectsCmd = &cobra.Command{
 	Short: "projects management",
 	Long:  `List projects and manage projects using sub commands`,
 	Run: func(cmd *cobra.Command, args []string) {
-		persistence, err := factory.CreatePersistence(viper.GetString("dsn"), viper.GetInt("workspace"))
+		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"))
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer func() {
-			err := persistence.Close()
+			err := p.Close()
 			if err != nil {
 				log.Fatal(err)
 			}
 		}()
 
-		projects, err := persistence.Projects()
+		projects, err := p.Projects()
 		if err != nil {
 			log.Fatal(err)
 			os.Exit(1)
