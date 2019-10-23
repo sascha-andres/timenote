@@ -18,38 +18,38 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"livingit.de/code/timenote/persistence/factory"
+	"livingit.de/code/timenote/persistence"
 )
 
-// appendCmd represents the append command
-var tagCmd = &cobra.Command{
-	Use:   "tag",
-	Short: "tag current entry",
-	Long:  `Depending on the persistor, this command adds or overwrites a tag`,
+// timestampAppendCmd represents the append command
+var timestampProjectCmd = &cobra.Command{
+	Use:   "project",
+	Short: "current entry is part of project",
+	Long:  `Depending on the persistor, this command sets the project`,
 	Run: func(cmd *cobra.Command, args []string) {
-		name := viper.GetString("tag.name")
-		persistence, err := factory.CreatePersistence(viper.GetString("persistor"), viper.GetString("dsn"))
+		name := viper.GetString("project.name")
+		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"))
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer func() {
-			err := persistence.Close()
+			err := p.Close()
 			if err != nil {
 				log.Fatal(err)
 			}
 		}()
-		err = persistence.Tag(name)
+		err = p.SetProjectForCurrentTimestamp(name)
 		if err != nil {
-			log.Error(err)
+			log.Errorf("error setting project: %s", err)
 		}
 	},
 }
 
 func init() {
-	RootCmd.AddCommand(tagCmd)
+	timestampCmd.AddCommand(timestampProjectCmd)
 
-	tagCmd.Flags().StringP("name", "", "", "Name for tag")
-	_ = tagCmd.MarkFlagRequired("name")
+	timestampProjectCmd.Flags().StringP("name", "", "", "Name for project")
+	_ = timestampProjectCmd.MarkFlagRequired("name")
 
-	_ = viper.BindPFlag("tag.name", tagCmd.Flags().Lookup("name"))
+	_ = viper.BindPFlag("project.name", timestampProjectCmd.Flags().Lookup("name"))
 }

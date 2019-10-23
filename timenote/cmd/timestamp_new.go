@@ -16,8 +16,8 @@ package cmd
 
 import (
 	log "github.com/sirupsen/logrus"
+	"livingit.de/code/timenote/persistence"
 
-	"livingit.de/code/timenote/persistence/factory"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -29,21 +29,21 @@ var timestampNewCmd = &cobra.Command{
 	Long:  `Starts a new timestamp`,
 	Run: func(cmd *cobra.Command, args []string) {
 		description := viper.GetString("timestamp.new.description")
-		persistence, err := factory.CreatePersistence(viper.GetString("persistor"), viper.GetString("dsn"))
+		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"))
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer func() {
-			err := persistence.Close()
+			err := p.Close()
 			if err != nil {
 				log.Fatal(err)
 			}
 		}()
 
-		if err := persistence.New(); err != nil {
+		if err := p.New(); err != nil {
 			log.Fatal(err)
 		} else {
-			persistence.Append(description)
+			_ = p.Append(description)
 		}
 
 	},
@@ -52,6 +52,6 @@ var timestampNewCmd = &cobra.Command{
 func init() {
 	timestampCmd.AddCommand(timestampNewCmd)
 	timestampNewCmd.Flags().StringP("description", "", "", "Description for timestamp")
-	timestampNewCmd.MarkFlagRequired("description")
-	viper.BindPFlag("timestamp.new.description", timestampNewCmd.Flags().Lookup("description"))
+	_ = timestampNewCmd.MarkFlagRequired("description")
+	_ = viper.BindPFlag("timestamp.new.description", timestampNewCmd.Flags().Lookup("description"))
 }

@@ -4,7 +4,6 @@ require (
 	github.com/chzyer/logex v1.1.10 // indirect
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
 	github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1 // indirect
-	github.com/go-sql-driver/mysql v1.4.1
 	github.com/google/gops v0.3.6
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
@@ -23,8 +22,11 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/viper v1.4.0
 	github.com/stretchr/testify v1.3.0 // indirect
+	golang.org/x/net v0.0.0-20190603091049-60506f45cf65 // indirect
 	golang.org/x/sys v0.0.0-20190610200419-93c9922d18ae // indirect
-	google.golang.org/appengine v1.6.1 // indirect
+	golang.org/x/text v0.3.2 // indirect
 )
 
 go 1.13
+
+replace github.com/sascha-andres/go-toggl => ../go-toggl

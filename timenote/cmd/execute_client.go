@@ -7,9 +7,9 @@ import (
 	"strings"
 )
 
-func executeClient(persistence persistence.Persistor, commandline string) error {
+func executeClient(p *persistence.TogglPersistor, commandline string) error {
 	if commandline == "" {
-		clients, err := persistence.Clients()
+		clients, err := p.Clients()
 		if err != nil {
 			return err
 		}
@@ -21,7 +21,7 @@ func executeClient(persistence persistence.Persistor, commandline string) error 
 	if strings.HasPrefix(commandline, "new ") {
 		tokenize := str.ToArgv(commandline)
 		clientName := strings.Join(tokenize[1:], " ")
-		return persistence.NewClient(clientName)
+		return p.NewClient(clientName)
 	}
 
 	return nil

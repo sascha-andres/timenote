@@ -20,7 +20,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/google/gops/agent"
-	homedir "github.com/mitchellh/go-homedir"
+	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -60,11 +60,12 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.timenote.yaml)")
-	RootCmd.PersistentFlags().StringP("persistor", "p", "mysql", "Which driver to use")
-	RootCmd.PersistentFlags().StringP("dsn", "d", "notetime:notetime@(127.0.0.1:4041)/notetime", "DSN for database")
+	RootCmd.PersistentFlags().StringP("dsn", "d", "toggl-token", "Token to access Toggl API")
+	RootCmd.PersistentFlags().IntP("workspace", "w", 0, "Set to work within this workspace, leave to zero to have it guessed (first workspace)")
+	RootCmd.PersistentFlags().StringP("output-format", "", "text", "test or json")
 
-	viper.BindPFlag("dsn", RootCmd.PersistentFlags().Lookup("dsn"))
-	viper.BindPFlag("persistor", RootCmd.PersistentFlags().Lookup("persistor"))
+	_ = viper.BindPFlag("dsn", RootCmd.PersistentFlags().Lookup("dsn"))
+	_ = viper.BindPFlag("output-format", RootCmd.PersistentFlags().Lookup("output-format"))
 }
 
 // initConfig reads in config file and ENV variables if set.

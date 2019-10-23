@@ -15,20 +15,21 @@
 package cmd
 
 import (
-	"fmt"
-	"livingit.de/code/timenote/persistence"
-
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"livingit.de/code/timenote/persistence"
 )
 
-// timestampCurrentCmd represents the current command
-var timestampCurrentCmd = &cobra.Command{
-	Use:   "current",
-	Short: "Print current timestamp",
-	Long:  `Prints the current timestamp`,
+// timestampAppendCmd represents the append command
+var projectsDeleteCmd = &cobra.Command{
+	Use:   "delete",
+	Short: "Add a new project to the project list",
+	Long: `This will add a new project to the time backend
+
+If project already exists it will not do anything`,
 	Run: func(cmd *cobra.Command, args []string) {
+		name := viper.GetString("projects.delete.name")
 		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"))
 		if err != nil {
 			log.Fatal(err)
@@ -40,15 +41,18 @@ var timestampCurrentCmd = &cobra.Command{
 			}
 		}()
 
-		ts, err := p.Current()
+		err = p.DeleteProject(name)
 		if err != nil {
 			log.Error(err)
-			return
 		}
-		fmt.Println(ts)
 	},
 }
 
 func init() {
-	timestampCmd.AddCommand(timestampCurrentCmd)
+	projectsCmd.AddCommand(projectsDeleteCmd)
+
+	projectsDeleteCmd.Flags().StringP("name", "", "", "name for project. id can also be used")
+	_ = projectsDeleteCmd.MarkFlagRequired("name")
+
+	_ = viper.BindPFlag("projects.delete.name", projectsDeleteCmd.Flags().Lookup("name"))
 }

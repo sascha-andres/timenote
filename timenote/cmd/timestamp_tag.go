@@ -15,32 +15,30 @@
 package cmd
 
 import (
-	"livingit.de/code/timenote/persistence/factory"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"livingit.de/code/timenote/persistence"
 )
 
-// appendCmd represents the append command
-var appendCmd = &cobra.Command{
-	Use:   "append",
-	Short: "append/overwrite description for running timeentry",
-	Long: `Depending on the persistor, this command appends
-to the description or sets the description`,
+// timestampAppendCmd represents the append command
+var timestampTagCmd = &cobra.Command{
+	Use:   "tag",
+	Short: "tag current entry",
+	Long:  `Depending on the persistor, this command adds or overwrites a tag`,
 	Run: func(cmd *cobra.Command, args []string) {
-		description := viper.GetString("append.description")
-		persistence, err := factory.CreatePersistence(viper.GetString("persistor"), viper.GetString("dsn"))
+		name := viper.GetString("tag.name")
+		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"))
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer func() {
-			err := persistence.Close()
+			err := p.Close()
 			if err != nil {
 				log.Fatal(err)
 			}
 		}()
-
-		err = persistence.Append(description)
+		err = p.Tag(name)
 		if err != nil {
 			log.Error(err)
 		}
@@ -48,10 +46,10 @@ to the description or sets the description`,
 }
 
 func init() {
-	RootCmd.AddCommand(appendCmd)
+	timestampCmd.AddCommand(timestampTagCmd)
 
-	appendCmd.Flags().StringP("description", "", "", "Description for timestamp")
-	appendCmd.MarkFlagRequired("description")
+	timestampTagCmd.Flags().StringP("name", "", "", "Name for tag")
+	_ = timestampTagCmd.MarkFlagRequired("name")
 
-	viper.BindPFlag("append.description", appendCmd.Flags().Lookup("description"))
+	_ = viper.BindPFlag("tag.name", timestampTagCmd.Flags().Lookup("name"))
 }

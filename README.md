@@ -1,20 +1,16 @@
 # timenote
 
-timenote is a tool to take notes with timestamps. You can choose between two different backends:
+timenote is a tool to take notes with timestamps using Toggl as a backend.
 
-* MySQL/MariaDB
-* Toggl
+Essentially this is a commandline client to track your time
 
 ## Configuration
 
-There are two main options:
+There is one main option:
 
-1. persistor
-2. dsn
+1. dsn
 
-The first is the type of backend and can be either mysql or toggl, the latter one provides the information to connect.
-
-For MySQL you can must use a valid connection string ( see https://github.com/go-sql-driver/mysql ). For toggl use your toggl token.
+For toggl use your toggl token.
 
 You can Use a configuration file in your home directory, .timenote.yaml.
 
@@ -22,7 +18,6 @@ A sample looks like this:
 
     ---
     dsn: /
-    persistor: mysql
 
 ## State
 
@@ -36,6 +31,11 @@ This is in an early phase but used regularly with the toggl backend and from tim
 
 |Version|Description|
 |---|---|
+|0.6.0|add support for projects (add,delete and list|
+||remove MySQL support|
+||Workspace flag|
+||Grouping for timenote today|
+||reduce code complexity|
 |0.5.0|add support for daily summary|
 ||better output for entry duration|
 |0.4.0|add project command|

@@ -16,12 +16,11 @@ package cmd
 
 import (
 	"fmt"
-
 	"github.com/pkg/browser"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"livingit.de/code/timenote/persistence/factory"
+	"livingit.de/code/timenote/persistence"
 )
 
 // browserCmd represents the browser command
@@ -29,27 +28,29 @@ var browserCmd = &cobra.Command{
 	Use:   "browser",
 	Short: "open a browser with your overview",
 	Long: `Depending on your backend this may open a browser
-	with your dashboard. For local backends such as MySQL this
-	does not work.`,
+	with your dashboard.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		persistence, err := factory.CreatePersistence(viper.GetString("persistor"), viper.GetString("dsn"))
+		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"))
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer func() {
-			err := persistence.Close()
+			err := p.Close()
 			if err != nil {
 				log.Fatal(err)
 			}
 		}()
 
-		has, url, err := persistence.GetWebsite()
+		has, url, err := p.GetWebsite()
 		if err != nil {
 			log.Error(err)
 			return
 		}
 		if has {
-			browser.OpenURL(url)
+			err = browser.OpenURL(url)
+			if err != nil {
+				log.Warnf("error executing browser: %s", err)
+			}
 		} else {
 			fmt.Println("no url for backend")
 		}

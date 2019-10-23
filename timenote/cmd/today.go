@@ -15,8 +15,10 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"livingit.de/code/timenote"
+	"livingit.de/code/timenote/persistence"
 	"os"
 	"text/tabwriter"
 	"time"
@@ -24,7 +26,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"livingit.de/code/timenote/persistence/factory"
 )
 
 // timestampCurrentCmd represents the current command
@@ -33,47 +34,50 @@ var timestampTodayCmd = &cobra.Command{
 	Short: "Print timestamps from today",
 	Long:  `Print all timestamps with a date from today or being active`,
 	Run: func(cmd *cobra.Command, args []string) {
-		persistence, err := factory.CreatePersistence(viper.GetString("persistor"), viper.GetString("dsn"))
+		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"))
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer func() {
-			err := persistence.Close()
+			err := p.Close()
 			if err != nil {
 				log.Fatal(err)
 			}
 		}()
 
-		ts, err := persistence.ListForDay()
+		ts, err := p.ListForDay()
 		if err != nil {
 			log.Error(err)
 			return
 		}
 		if !viper.GetBool("timestamp.today.sum-only") {
-			w := new(tabwriter.Writer)
-			// Format in tab-separated columns with a tab stop of 8.
-			w.Init(os.Stdout, 0, 8, 2, '\t', 0)
-			_, _ = fmt.Fprintln(w, "ID\tTime\tNote\t")
-			for _, e := range ts {
-				humanTime := ""
-				if e.Duration >= 0 {
-					td, _ := timenote.NewTogglDuration(e.Duration)
-					if !viper.GetBool("timestamp.today.include-seconds") {
-						td.OmitSeconds()
-					}
-					humanTime = td.String()
-				} else {
-					t := time.Now().UTC().Add(time.Duration(e.Duration) * time.Second)
-					td2, _ := timenote.TogglDurationFromTime(t)
-					if !viper.GetBool("timestamp.today.include-seconds") {
-						td2.OmitSeconds()
-					}
-					humanTime = td2.String()
-				}
-				_, _ = fmt.Fprintln(w, fmt.Sprintf("%d\t%s\t%s\t", e.ID, humanTime, e.Note))
+			if viper.GetString("output-format") == "json" {
+				writeTimeEntriesJson(ts)
+				return
 			}
-			_, _ = fmt.Fprintln(w)
-			_ = w.Flush()
+			if viper.GetBool("timestamp.today.group") {
+				ts2 := make(map[string]timenote.TimeEntry, 0)
+				ts3 := make([]timenote.TimeEntry, 0)
+				for _, e := range ts {
+					if e.Duration <= 0 {
+						e.Note = "[running] " + e.Note
+						ts3 = append(ts3, e)
+						continue
+					}
+					if val, ok := ts2[e.Note]; ok {
+						v := ts2[val.Note]
+						v.Duration += val.Duration
+						ts2[e.Note] = v
+					} else {
+						ts2[e.Note] = e
+					}
+				}
+				for _, e := range ts2 {
+					ts3 = append(ts3, e)
+				}
+				ts = ts3
+			}
+			writeTimeEntriesTable(ts)
 		} else {
 			var sum int64
 			for _, e := range ts {
@@ -97,11 +101,50 @@ var timestampTodayCmd = &cobra.Command{
 	},
 }
 
+func writeTimeEntriesJson(ts []timenote.TimeEntry) {
+	data, err := json.Marshal(ts)
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+	_, _ = fmt.Println(string(data))
+}
+
+func writeTimeEntriesTable(ts []timenote.TimeEntry) {
+	w := new(tabwriter.Writer)
+	// Format in tab-separated columns with a tab stop of 8.
+	w.Init(os.Stdout, 0, 8, 2, '\t', 0)
+	_, _ = fmt.Fprintln(w, "ID\tTime\tNote\t")
+	for _, e := range ts {
+		humanTime := ""
+		if e.Duration >= 0 {
+			td, _ := timenote.NewTogglDuration(e.Duration)
+			if !viper.GetBool("timestamp.today.include-seconds") {
+				td.OmitSeconds()
+			}
+			humanTime = td.String()
+		} else {
+			t := time.Now().UTC().Add(time.Duration(e.Duration) * time.Second)
+			td2, _ := timenote.TogglDurationFromTime(t)
+			if !viper.GetBool("timestamp.today.include-seconds") {
+				td2.OmitSeconds()
+			}
+			humanTime = td2.String()
+		}
+		_, _ = fmt.Fprintln(w, fmt.Sprintf("%d\t%s\t%s\t", e.ID, humanTime, e.Note))
+	}
+	_, _ = fmt.Fprintln(w)
+	_ = w.Flush()
+}
+
 func init() {
-	timestampCmd.AddCommand(timestampTodayCmd)
+	RootCmd.AddCommand(timestampTodayCmd)
 
 	timestampTodayCmd.Flags().BoolP("sum-only", "", false, "Just print sum of timestamps")
+	timestampTodayCmd.Flags().BoolP("group", "", false, "Print grouped by name")
 	timestampTodayCmd.Flags().BoolP("include-seconds", "", true, "Include seconds when writing out time entry")
+
 	_ = viper.BindPFlag("timestamp.today.include-seconds", timestampTodayCmd.Flags().Lookup("include-seconds"))
 	_ = viper.BindPFlag("timestamp.today.sum-only", timestampTodayCmd.Flags().Lookup("sum-only"))
+	_ = viper.BindPFlag("timestamp.today.group", timestampTodayCmd.Flags().Lookup("group"))
 }

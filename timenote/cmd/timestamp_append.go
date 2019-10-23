@@ -15,20 +15,20 @@
 package cmd
 
 import (
-	"fmt"
-	"livingit.de/code/timenote/persistence"
-
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"livingit.de/code/timenote/persistence"
 )
 
-// timestampCurrentCmd represents the current command
-var timestampCurrentCmd = &cobra.Command{
-	Use:   "current",
-	Short: "Print current timestamp",
-	Long:  `Prints the current timestamp`,
+// timestampAppendCmd represents the append command
+var timestampAppendCmd = &cobra.Command{
+	Use:   "append",
+	Short: "append/overwrite description for running timeentry",
+	Long: `Depending on the persistor, this command appends
+to the description or sets the description`,
 	Run: func(cmd *cobra.Command, args []string) {
+		description := viper.GetString("append.description")
 		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"))
 		if err != nil {
 			log.Fatal(err)
@@ -40,15 +40,18 @@ var timestampCurrentCmd = &cobra.Command{
 			}
 		}()
 
-		ts, err := p.Current()
+		err = p.Append(description)
 		if err != nil {
 			log.Error(err)
-			return
 		}
-		fmt.Println(ts)
 	},
 }
 
 func init() {
-	timestampCmd.AddCommand(timestampCurrentCmd)
+	timestampCmd.AddCommand(timestampAppendCmd)
+
+	timestampAppendCmd.Flags().StringP("description", "", "", "Description for timestamp")
+	_ = timestampAppendCmd.MarkFlagRequired("description")
+
+	_ = viper.BindPFlag("append.description", timestampAppendCmd.Flags().Lookup("description"))
 }

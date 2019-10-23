@@ -18,38 +18,41 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"livingit.de/code/timenote/persistence/factory"
+	"livingit.de/code/timenote/persistence"
 )
 
-// appendCmd represents the append command
-var projectCmd = &cobra.Command{
-	Use:   "project",
-	Short: "current entry is part of project",
-	Long:  `Depending on the persistor, this command sets the project`,
+// timestampAppendCmd represents the append command
+var projectsCreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Add a new project to the project list",
+	Long: `This will add a new project to the time backend
+
+If project already exists it will not do anything`,
 	Run: func(cmd *cobra.Command, args []string) {
-		name := viper.GetString("project.name")
-		persistence, err := factory.CreatePersistence(viper.GetString("persistor"), viper.GetString("dsn"))
+		name := viper.GetString("projects.create.name")
+		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"))
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer func() {
-			err := persistence.Close()
+			err := p.Close()
 			if err != nil {
 				log.Fatal(err)
 			}
 		}()
-		err = persistence.Project(name)
+
+		err = p.CreateProject(name)
 		if err != nil {
-			log.Errorf("error setting project: %s", err)
+			log.Error(err)
 		}
 	},
 }
 
 func init() {
-	RootCmd.AddCommand(projectCmd)
+	projectsCmd.AddCommand(projectsCreateCmd)
 
-	projectCmd.Flags().StringP("name", "", "", "Name for project")
-	_ = projectCmd.MarkFlagRequired("name")
+	projectsCreateCmd.Flags().StringP("name", "", "", "name for project")
+	_ = projectsCreateCmd.MarkFlagRequired("name")
 
-	_ = viper.BindPFlag("project.name", projectCmd.Flags().Lookup("name"))
+	_ = viper.BindPFlag("projects.create.name", projectsCreateCmd.Flags().Lookup("name"))
 }
