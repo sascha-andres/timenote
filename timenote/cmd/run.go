@@ -10,7 +10,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"livingit.de/code/timenote/persistence"
-	"livingit.de/code/timenote/persistence/factory"
 )
 
 var (
@@ -24,21 +23,21 @@ var (
 )
 
 func run() error {
-	persistence, err := factory.CreatePersistence(viper.GetString("dsn"), viper.GetInt("workspace"))
+	p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"))
 	if err != nil {
-		return errors.Wrap(err, "Could not create persistence layer")
+		return errors.Wrap(err, "Could not create p layer")
 	}
 	defer func() {
-		err := persistence.Close()
+		err := p.Close()
 		if err != nil {
 			log.Fatal(err)
 		}
 	}()
 
-	return runInputLoop(persistence)
+	return runInputLoop(p)
 }
 
-func runInputLoop(persistence persistence.Persistor) error {
+func runInputLoop(p *persistence.TogglPersistor) error {
 	l, err := getReadlineConfig()
 	if err != nil {
 		return errors.Wrap(err, "Error creating readline config")
@@ -59,7 +58,7 @@ func runInputLoop(persistence persistence.Persistor) error {
 		case "quit", "q":
 			return nil
 		default:
-			err := executeLine(persistence, line)
+			err := executeLine(p, line)
 			if err != nil {
 				log.Printf("Error: %#v\n", err)
 			}

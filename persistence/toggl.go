@@ -1,4 +1,4 @@
-package toggldriver
+package persistence
 
 import (
 	"fmt"
@@ -8,7 +8,6 @@ import (
 
 	"github.com/sascha-andres/go-toggl"
 	"livingit.de/code/timenote"
-	"livingit.de/code/timenote/persistence"
 )
 
 type (
@@ -19,7 +18,7 @@ type (
 	}
 )
 
-func NewToggl(dsn string, workspace int) (persistence.Persistor, error) {
+func NewToggl(dsn string, workspace int) (*TogglPersistor, error) {
 	res := TogglPersistor{
 		dsn:       dsn,
 		workspace: workspace,

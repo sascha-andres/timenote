@@ -11,18 +11,18 @@ import (
 	"livingit.de/code/timenote/persistence"
 )
 
-func executeLine(persistence persistence.Persistor, commandline string) error {
+func executeLine(p *persistence.TogglPersistor, commandline string) error {
 	if strings.TrimSpace(commandline) == "" {
 		return nil
 	}
 	tokenize := str.ToArgv(commandline)
 	switch tokenize[0] {
 	case "new":
-		return persistence.New()
+		return p.New()
 	case "done":
-		return persistence.Done()
+		return p.Done()
 	case "current":
-		entry, err := persistence.Current()
+		entry, err := p.Current()
 		if err != nil {
 			return err
 		}
@@ -30,15 +30,15 @@ func executeLine(persistence persistence.Persistor, commandline string) error {
 		fmt.Println(humanizeDuration(diff))
 		break
 	case "append":
-		return persistence.Append(strings.Join(tokenize[1:], " "))
+		return p.Append(strings.Join(tokenize[1:], " "))
 	case "project":
-		return persistence.SetProjectForCurrentTimestamp(strings.Join(tokenize[1:], " "))
+		return p.SetProjectForCurrentTimestamp(strings.Join(tokenize[1:], " "))
 	case "tag":
-		return persistence.Tag(strings.Join(tokenize[1:], " "))
+		return p.Tag(strings.Join(tokenize[1:], " "))
 	case "client":
-		return executeClient(persistence, strings.Join(tokenize[1:], " "))
+		return executeClient(p, strings.Join(tokenize[1:], " "))
 	case "open":
-		hasOne, url, err := persistence.GetWebsite()
+		hasOne, url, err := p.GetWebsite()
 		if err != nil {
 			return err
 		}
