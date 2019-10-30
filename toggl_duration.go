@@ -46,28 +46,28 @@ func (td *TogglDuration) ShowSeconds() {
 
 func (td *TogglDuration) withSeconds() string {
 	if td.days > 0 {
-		return fmt.Sprintf("%dd %dh %dm %ds", td.days, td.hours, td.minutes, td.seconds)
+		return fmt.Sprintf("%dd %dh %02dm %02ds", td.days, td.hours, td.minutes, td.seconds)
 	}
 	if td.hours > 0 {
-		return fmt.Sprintf("%dh %dm %ds", td.hours, td.minutes, td.seconds)
+		return fmt.Sprintf("%dh %02dm %02ds", td.hours, td.minutes, td.seconds)
 	}
 	if td.minutes > 0 {
-		return fmt.Sprintf("%dm %ds", td.minutes, td.seconds)
+		return fmt.Sprintf("%dm %02ds", td.minutes, td.seconds)
 	}
 	return fmt.Sprintf("%ds", td.seconds)
 }
 
 func (td *TogglDuration) withoutSeconds() string {
 	if td.days > 0 {
-		return fmt.Sprintf("%dd %dh %dm", td.days, td.hours, td.minutes)
+		return fmt.Sprintf("%dd %dh %02dm", td.days, td.hours, td.minutes)
 	}
 	if td.hours > 0 {
-		return fmt.Sprintf("%dh %dm", td.hours, td.minutes)
+		return fmt.Sprintf("%dh %02dm", td.hours, td.minutes)
 	}
 	if td.minutes > 0 {
 		return fmt.Sprintf("%dm", td.minutes)
 	}
-	return ""
+	return "<1m"
 }
 
 // NewTogglDuration creates a new instance

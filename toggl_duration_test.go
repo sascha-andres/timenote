@@ -30,17 +30,17 @@ func dotesterror(n int64, exp string) {
 var _ = Describe("Human readable duration in seconds", func() {
 	It("should handle finished tasks", func() {
 		dotest(10, "10s")
-		dotest(60, "1m 0s")
-		dotest(3600, "1h 0m 0s")
-		dotest(3666, "1h 1m 6s")
-		dotest(3600*24, "1d 0h 0m 0s")
+		dotest(60, "1m 00s")
+		dotest(3600, "1h 00m 00s")
+		dotest(3666, "1h 01m 06s")
+		dotest(3600*24, "1d 0h 00m 00s")
 	})
 	It("should omit seconds when asked", func() {
-		dotestnoseconds(10, "")
+		dotestnoseconds(10, "<1m")
 		dotestnoseconds(60, "1m")
-		dotestnoseconds(3600, "1h 0m")
-		dotestnoseconds(3666, "1h 1m")
-		dotestnoseconds(3600*24, "1d 0h 0m")
+		dotestnoseconds(3600, "1h 00m")
+		dotestnoseconds(3666, "1h 01m")
+		dotestnoseconds(3600*24, "1d 0h 00m")
 	})
 	It("should handle open tasks", func() {
 		dotesterror(-10, "negative values not allowed")
