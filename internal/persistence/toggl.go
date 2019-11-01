@@ -30,7 +30,7 @@ func NewToggl(token string, workspace int, caching *cache.Cache) (*TogglPersisto
 		session:   toggl.OpenSession(token),
 		caching:   caching,
 	}
-	// toggl.DisableLog()
+	toggl.DisableLog()
 	err := res.guessWorkspace()
 	if res.caching.NeedUpdate(res.workspace) {
 		projects, err := res.session.GetProjects(res.workspace)
@@ -281,12 +281,11 @@ func (t *TogglPersistor) DeleteProject(name string) error {
 }
 
 func (t *TogglPersistor) getProjectID(name string) (int, error) {
-	account, err := t.session.GetAccount()
+	projects, err := t.caching.Projects(t.workspace)
 	if err != nil {
-		return 0, errors.Wrap(err, "unable to get account")
+		return 0, err
 	}
-
-	for _, prj := range account.Data.Projects {
+	for _, prj := range projects {
 		if prj.Name == name {
 			return prj.ID, nil
 		}
@@ -296,20 +295,8 @@ func (t *TogglPersistor) getProjectID(name string) (int, error) {
 }
 
 // Clients ereturn all clients
-func (t *TogglPersistor) Clients() ([]timenote.Client, error) {
-	clients, err := t.session.GetClients()
-	if err != nil {
-		return nil, err
-	}
-	var result = make([]timenote.Client, 0)
-	for _, c := range clients {
-		result = append(result, timenote.Client{
-			ID:          c.ID,
-			Name:        c.Name,
-			Description: c.Notes,
-		})
-	}
-	return result, nil
+func (t *TogglPersistor) Clients() ([]toggl.Client, error) {
+	return t.caching.Clients(t.workspace)
 }
 
 // NewClient creates a new client
@@ -360,20 +347,6 @@ func (t *TogglPersistor) ListForDay() ([]timenote.TimeEntry, error) {
 }
 
 // Projects returns a list of all projects
-func (t *TogglPersistor) Projects() ([]timenote.Project, error) {
-	projects, err := t.session.GetProjects(t.workspace)
-	if err != nil {
-		return nil, err
-	}
-	result := make([]timenote.Project, 0)
-	for _, prj := range projects {
-		result = append(result, timenote.Project{
-			ID:          prj.ID,
-			WorkspaceID: prj.Wid,
-			ClientID:    prj.Cid,
-			Name:        prj.Name,
-			Billable:    prj.Billable,
-		})
-	}
-	return result, nil
+func (t *TogglPersistor) Projects() ([]toggl.Project, error) {
+	return t.caching.Projects(t.workspace)
 }

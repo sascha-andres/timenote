@@ -15,7 +15,6 @@ func (c *Cache) NeedUpdate(workspace int) bool {
 func (c *Cache) needUpdate(workspace int, bucket string) (needUpdate bool) {
 	_ = c.db.Update(func(tx *bbolt.Tx) error {
 		bucketName := fmt.Sprintf("%6d-%s", workspace, bucket)
-		fmt.Println(bucketName)
 		bucket, err := tx.CreateBucketIfNotExists([]byte(bucketName))
 		if err != nil {
 			return err
