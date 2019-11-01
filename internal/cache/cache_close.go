@@ -1,5 +1,5 @@
 package cache
 
 func (c *Cache) Close() error {
-	return nil
+	return c.db.Close()
 }
