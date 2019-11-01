@@ -31,6 +31,10 @@ This is in an early phase but used regularly with the toggl backend and from tim
 
 |Version|Description|
 |---|---|
+|0.7.0|Better formating of time values|
+||Make append separator configurable|
+||Display client for time entry|
+||Display project for time entry|
 |0.6.0|add support for projects (add,delete and list|
 ||remove MySQL support|
 ||Workspace flag|
