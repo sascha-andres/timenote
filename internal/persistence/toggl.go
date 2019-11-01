@@ -8,6 +8,7 @@ import (
 
 	"github.com/sascha-andres/go-toggl"
 	"livingit.de/code/timenote"
+	"livingit.de/code/timenote/internal/cache"
 )
 
 type (
@@ -15,17 +16,19 @@ type (
 		dsn       string
 		workspace int
 		session   toggl.Session
+		caching   *cache.Cache
 	}
 )
 
 // NewToggl establishes a session to toggl api
 // token constains the api token to access the toggl pai
 // workspace defines the workspace to work within
-func NewToggl(token string, workspace int) (*TogglPersistor, error) {
+func NewToggl(token string, workspace int, caching *cache.Cache) (*TogglPersistor, error) {
 	res := TogglPersistor{
 		dsn:       token,
 		workspace: workspace,
 		session:   toggl.OpenSession(token),
+		caching:   caching,
 	}
 	toggl.DisableLog()
 	return &res, res.guessWorkspace()

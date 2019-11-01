@@ -28,7 +28,7 @@ var timestampProjectCmd = &cobra.Command{
 	Long:  `Depending on the persistor, this command sets the project`,
 	Run: func(cmd *cobra.Command, args []string) {
 		name := viper.GetString("project.name")
-		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"))
+		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"), caching)
 		if err != nil {
 			log.Fatal(err)
 		}

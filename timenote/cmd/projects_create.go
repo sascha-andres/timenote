@@ -30,7 +30,7 @@ var projectsCreateCmd = &cobra.Command{
 If project already exists it will not do anything`,
 	Run: func(cmd *cobra.Command, args []string) {
 		name := viper.GetString("projects.create.name")
-		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"))
+		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"), caching)
 		if err != nil {
 			log.Fatal(err)
 		}

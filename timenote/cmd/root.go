@@ -15,6 +15,7 @@ package cmd
 
 import (
 	"fmt"
+	"livingit.de/code/timenote/internal/cache"
 	"os"
 
 	log "github.com/sirupsen/logrus"
@@ -26,6 +27,7 @@ import (
 )
 
 var cfgFile string
+var caching *cache.Cache
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
@@ -50,7 +52,20 @@ You can tag notes`,
 // Execute adds all child commands to the root command sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	if err := RootCmd.Execute(); err != nil {
+	c, err := cache.NewCache()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	caching = c
+	defer func() {
+		err := caching.Close()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	}()
+	if err = RootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}

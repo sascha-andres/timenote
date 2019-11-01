@@ -31,7 +31,7 @@ var timestampDurationCmd = &cobra.Command{
 	Long: `Prints the current timestamp's duration in
 hh:mm:ss'`,
 	Run: func(cmd *cobra.Command, args []string) {
-		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"))
+		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"), caching)
 		if err != nil {
 			log.Fatal(err)
 		}

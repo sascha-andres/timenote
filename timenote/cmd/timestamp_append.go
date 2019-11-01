@@ -30,7 +30,7 @@ to the description or sets the description`,
 	Run: func(cmd *cobra.Command, args []string) {
 		description := viper.GetString("append.description")
 		separator := viper.GetString("separator")
-		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"))
+		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"), caching)
 		if err != nil {
 			log.Fatal(err)
 		}
