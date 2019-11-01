@@ -63,7 +63,9 @@ func init() {
 	RootCmd.PersistentFlags().StringP("dsn", "d", "toggl-token", "Token to access Toggl API")
 	RootCmd.PersistentFlags().IntP("workspace", "w", 0, "Set to work within this workspace, leave to zero to have it guessed (first workspace)")
 	RootCmd.PersistentFlags().StringP("output-format", "", "text", "test or json")
+	RootCmd.PersistentFlags().StringP("separator", "", ";", "Separator for existing value and new value")
 
+	_ = viper.BindPFlag("separator", RootCmd.PersistentFlags().Lookup("separator"))
 	_ = viper.BindPFlag("dsn", RootCmd.PersistentFlags().Lookup("dsn"))
 	_ = viper.BindPFlag("output-format", RootCmd.PersistentFlags().Lookup("output-format"))
 }

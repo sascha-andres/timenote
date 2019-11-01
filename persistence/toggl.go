@@ -53,7 +53,7 @@ func (t *TogglPersistor) New() error {
 }
 
 // Append adds text to the description separated by ;
-func (t *TogglPersistor) Append(line string) error {
+func (t *TogglPersistor) Append(line, separator string) error {
 	account, err := t.session.GetAccount()
 	if err != nil {
 		return errors.Wrap(err, "Unable to get account")
@@ -65,7 +65,7 @@ func (t *TogglPersistor) Append(line string) error {
 	if te.Description == "" {
 		te.Description = line
 	} else {
-		te.Description = fmt.Sprintf("%s;%s", te.Description, line)
+		te.Description = fmt.Sprintf("%s%s%s", te.Description, separator, line)
 	}
 	_, err = t.session.UpdateTimeEntry(*te)
 	if err != nil {
