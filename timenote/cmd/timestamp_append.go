@@ -33,12 +33,6 @@ to the description or sets the description`,
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer func() {
-			err := p.Close()
-			if err != nil {
-				log.Fatal(err)
-			}
-		}()
 
 		err = p.Append(description)
 		if err != nil {

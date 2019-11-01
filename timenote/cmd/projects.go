@@ -36,12 +36,6 @@ var projectsCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer func() {
-			err := p.Close()
-			if err != nil {
-				log.Fatal(err)
-			}
-		}()
 
 		projects, err := p.Projects()
 		if err != nil {
