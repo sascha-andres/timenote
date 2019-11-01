@@ -18,17 +18,20 @@ type (
 	}
 )
 
-func NewToggl(dsn string, workspace int) (*TogglPersistor, error) {
+// NewToggl establishes a session to toggl api
+// token constains the api token to access the toggl pai
+// workspace defines the workspace to work within
+func NewToggl(token string, workspace int) (*TogglPersistor, error) {
 	res := TogglPersistor{
-		dsn:       dsn,
+		dsn:       token,
 		workspace: workspace,
-		session:   toggl.OpenSession(dsn),
+		session:   toggl.OpenSession(token),
 	}
 	toggl.DisableLog()
-	return &res, res.guessWork()
+	return &res, res.guessWorkspace()
 }
 
-func (t *TogglPersistor) guessWork() error {
+func (t *TogglPersistor) guessWorkspace() error {
 	if t.workspace == 0 {
 		account, err := t.session.GetAccount()
 		if err != nil {
@@ -40,6 +43,7 @@ func (t *TogglPersistor) guessWork() error {
 	return nil
 }
 
+// New starts a new time entry with no description
 func (t *TogglPersistor) New() error {
 	_, err := t.session.StartTimeEntry("")
 	if err != nil {
@@ -48,6 +52,7 @@ func (t *TogglPersistor) New() error {
 	return nil
 }
 
+// Append adds text to the description separated by ;
 func (t *TogglPersistor) Append(line string) error {
 	account, err := t.session.GetAccount()
 	if err != nil {
@@ -69,6 +74,8 @@ func (t *TogglPersistor) Append(line string) error {
 	return nil
 }
 
+// Tag toggle the tags associated with the running time entry
+// name is the name of the tag
 func (t *TogglPersistor) Tag(name string) error {
 	account, err := t.session.GetAccount()
 	if err != nil {
@@ -90,6 +97,7 @@ func (t *TogglPersistor) Tag(name string) error {
 	return nil
 }
 
+// Done ends the currently running time entry
 func (t *TogglPersistor) Done() error {
 	account, err := t.session.GetAccount()
 	if err != nil {
@@ -106,10 +114,7 @@ func (t *TogglPersistor) Done() error {
 	return nil
 }
 
-func (t *TogglPersistor) Close() error {
-	return nil
-}
-
+// Current returns the currently running time entry
 func (t *TogglPersistor) Current() (*timenote.TimeEntry, error) {
 	account, err := t.session.GetAccount()
 	if err != nil {
@@ -125,7 +130,46 @@ func (t *TogglPersistor) Current() (*timenote.TimeEntry, error) {
 	res.Tag = fmt.Sprintf("%v", te.Tags)
 	res.Start = *te.Start
 	res.Duration = te.Duration
+	if te.Pid > 0 {
+		p, err := t.GetProject(te.Pid)
+		if err != nil {
+			res.Project = "- unknown project -"
+		} else {
+			res.Project = p.Name
+			if p.Cid > 0 {
+				c, err := t.GetClientByID(p.Cid)
+				if err != nil {
+					res.Client = "- unknown client -"
+				} else {
+					res.Client = c.Name
+				}
+			}
+		}
+	}
 	return &res, nil
+}
+
+// GetClientByID gets all clients and returns the one with the given ID
+func (t *TogglPersistor) GetClientByID(clientID int) (*timenote.Client, error) {
+	cs, err := t.Clients()
+	if err != nil {
+		return nil, err
+	}
+	for _, c := range cs {
+		if c.ID == clientID {
+			return &c, nil
+		}
+	}
+	return nil, nil
+}
+
+// GetProject returns the given project
+func (t *TogglPersistor) GetProject(projectID int) (*toggl.Project, error) {
+	p, err := t.session.GetProject(projectID)
+	if err != nil {
+		return nil, err
+	}
+	return p, nil
 }
 
 func getCurrentTimeEntry(account toggl.Account) (*toggl.TimeEntry, error) {
@@ -137,6 +181,7 @@ func getCurrentTimeEntry(account toggl.Account) (*toggl.TimeEntry, error) {
 	return nil, fmt.Errorf("no current time entry")
 }
 
+// SetProjectForCurrentTimestamp apply project to running time entry
 func (t *TogglPersistor) SetProjectForCurrentTimestamp(name string) error {
 	var (
 		account   toggl.Account
@@ -177,6 +222,7 @@ func (t *TogglPersistor) createProject(account toggl.Account, name string) (int,
 	return res.ID, nil
 }
 
+// CreateProject creates a new project within the workspace
 func (t *TogglPersistor) CreateProject(name string) error {
 	id, err := t.getProjectID(name)
 	if err != nil {
@@ -195,6 +241,7 @@ func (t *TogglPersistor) CreateProject(name string) error {
 	return nil
 }
 
+// DeleteProject removes a project from the workspace
 func (t *TogglPersistor) DeleteProject(name string) error {
 	var (
 		project *toggl.Project
@@ -239,10 +286,7 @@ func (t *TogglPersistor) getProjectID(name string) (int, error) {
 	return 0, nil
 }
 
-func (t *TogglPersistor) GetWebsite() (bool, string, error) {
-	return true, "https://toggl.com/app/timer", nil
-}
-
+// Clients ereturn all clients
 func (t *TogglPersistor) Clients() ([]timenote.Client, error) {
 	clients, err := t.session.GetClients()
 	if err != nil {
@@ -259,11 +303,13 @@ func (t *TogglPersistor) Clients() ([]timenote.Client, error) {
 	return result, nil
 }
 
+// NewClient creates a new client
 func (t *TogglPersistor) NewClient(name string) error {
 	_, err := t.session.CreateClient(name, t.workspace)
 	return err
 }
 
+// ListForDay returns all time entries for a day
 func (t *TogglPersistor) ListForDay() ([]timenote.TimeEntry, error) {
 	year, month, day := time.Now().Date()
 	loc, _ := time.LoadLocation("")
@@ -287,6 +333,7 @@ func (t *TogglPersistor) ListForDay() ([]timenote.TimeEntry, error) {
 	return result, nil
 }
 
+// Projects returns a list of all projects
 func (t *TogglPersistor) Projects() ([]timenote.Project, error) {
 	projects, err := t.session.GetProjects(t.workspace)
 	if err != nil {

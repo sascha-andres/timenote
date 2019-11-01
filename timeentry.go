@@ -3,12 +3,7 @@ package timenote
 import (
 	"fmt"
 	"time"
-
-	"github.com/pkg/errors"
 )
-
-// ErrNoCurrentTimeEntry should be returned in case no running timeentry is found
-var ErrNoCurrentTimeEntry = errors.New("timenote: no current timeentry")
 
 type (
 	// TimeEntry represents a simple note
@@ -25,6 +20,10 @@ type (
 		Stop *time.Time
 		// time entry duration in seconds. If the time entry is currently running, the duration attribute contains a negative value, denoting the start of the time entry in seconds since epoch (Jan 1 1970). The correct duration can be calculated as current_time + duration, where current_time is the current time in seconds since epoch.
 		Duration int64
+		// TimeEntry belongs to project
+		Project string
+		// // TimeEntry belongs to client
+		Client string
 	}
 )
 
