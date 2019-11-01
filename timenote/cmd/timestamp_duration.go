@@ -20,7 +20,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"livingit.de/code/timenote"
-	"livingit.de/code/timenote/persistence"
+	"livingit.de/code/timenote/internal/persistence"
 	"time"
 )
 

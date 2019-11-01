@@ -9,7 +9,7 @@ import (
 	"github.com/chzyer/readline"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
-	"livingit.de/code/timenote/persistence"
+	"livingit.de/code/timenote/internal/persistence"
 )
 
 var (

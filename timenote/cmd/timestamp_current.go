@@ -16,7 +16,7 @@ package cmd
 
 import (
 	"fmt"
-	"livingit.de/code/timenote/persistence"
+	"livingit.de/code/timenote/internal/persistence"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
