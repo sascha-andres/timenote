@@ -108,7 +108,7 @@ func writeTimeEntriesTable(ts []timenote.TimeEntry) {
 	w := new(tabwriter.Writer)
 	// Format in tab-separated columns with a tab stop of 8.
 	w.Init(os.Stdout, 0, 8, 2, '\t', 0)
-	_, _ = fmt.Fprintln(w, "ID\tTime\tNote\t")
+	_, _ = fmt.Fprintln(w, "ID\tTime\tClient\tProject\tNote\t")
 	for _, e := range ts {
 		humanTime := ""
 		if e.Duration >= 0 {
@@ -125,7 +125,7 @@ func writeTimeEntriesTable(ts []timenote.TimeEntry) {
 			}
 			humanTime = td2.String()
 		}
-		_, _ = fmt.Fprintln(w, fmt.Sprintf("%d\t%s\t%s\t", e.ID, humanTime, e.Note))
+		_, _ = fmt.Fprintln(w, fmt.Sprintf("%d\t%s\t%s\t%s\t%s\t", e.ID, humanTime, e.Client, e.Project, e.Note))
 	}
 	_, _ = fmt.Fprintln(w)
 	_ = w.Flush()
