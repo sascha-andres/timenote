@@ -15,12 +15,9 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/pkg/browser"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"livingit.de/code/timenote/persistence"
 )
 
 // browserCmd represents the browser command
@@ -30,29 +27,9 @@ var browserCmd = &cobra.Command{
 	Long: `Depending on your backend this may open a browser
 	with your dashboard.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"))
+		err := browser.OpenURL("https://toggl.com/app/timer")
 		if err != nil {
-			log.Fatal(err)
-		}
-		defer func() {
-			err := p.Close()
-			if err != nil {
-				log.Fatal(err)
-			}
-		}()
-
-		has, url, err := p.GetWebsite()
-		if err != nil {
-			log.Error(err)
-			return
-		}
-		if has {
-			err = browser.OpenURL(url)
-			if err != nil {
-				log.Warnf("error executing browser: %s", err)
-			}
-		} else {
-			fmt.Println("no url for backend")
+			log.Warnf("error executing browser: %s", err)
 		}
 	},
 }

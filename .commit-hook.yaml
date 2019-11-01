@@ -1,0 +1,23 @@
+---
+
+version: 2
+
+subject-line-length: 50
+body-required: false
+separate-body: true
+body-line-length: 72
+enforce-body-line-length: true
+
+external-tools:
+  - name: detect local replacements
+    command:
+      - go-dlr
+    severity: error
+
+ignore:
+  - ^#.*
+
+subject:
+  - severity: error
+    expression: ^[a-z]+(\([a-z]+\))?:.*[^\.]$
+    name: subject line test

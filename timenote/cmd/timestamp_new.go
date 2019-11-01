@@ -33,17 +33,11 @@ var timestampNewCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer func() {
-			err := p.Close()
-			if err != nil {
-				log.Fatal(err)
-			}
-		}()
 
 		if err := p.New(); err != nil {
 			log.Fatal(err)
 		} else {
-			_ = p.Append(description)
+			_ = p.Append(description, viper.GetString("separator"))
 		}
 
 	},

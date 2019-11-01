@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/spf13/viper"
 	"math"
 	"strings"
 	"time"
@@ -30,7 +31,7 @@ func executeLine(p *persistence.TogglPersistor, commandline string) error {
 		fmt.Println(humanizeDuration(diff))
 		break
 	case "append":
-		return p.Append(strings.Join(tokenize[1:], " "))
+		return p.Append(strings.Join(tokenize[1:], " "), viper.GetString("separator"))
 	case "project":
 		return p.SetProjectForCurrentTimestamp(strings.Join(tokenize[1:], " "))
 	case "tag":
@@ -38,14 +39,7 @@ func executeLine(p *persistence.TogglPersistor, commandline string) error {
 	case "client":
 		return executeClient(p, strings.Join(tokenize[1:], " "))
 	case "open":
-		hasOne, url, err := p.GetWebsite()
-		if err != nil {
-			return err
-		}
-		if hasOne {
-			return browser.OpenURL(url)
-		}
-		break
+		return browser.OpenURL("https://toggl.com/app/timer")
 	}
 	return nil
 }

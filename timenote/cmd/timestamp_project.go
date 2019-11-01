@@ -32,12 +32,7 @@ var timestampProjectCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer func() {
-			err := p.Close()
-			if err != nil {
-				log.Fatal(err)
-			}
-		}()
+
 		err = p.SetProjectForCurrentTimestamp(name)
 		if err != nil {
 			log.Errorf("error setting project: %s", err)

@@ -34,12 +34,6 @@ If project already exists it will not do anything`,
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer func() {
-			err := p.Close()
-			if err != nil {
-				log.Fatal(err)
-			}
-		}()
 
 		err = p.DeleteProject(name)
 		if err != nil {

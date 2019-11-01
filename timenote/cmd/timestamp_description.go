@@ -32,12 +32,6 @@ var timestampDescriptionCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer func() {
-			err := p.Close()
-			if err != nil {
-				log.Fatal(err)
-			}
-		}()
 
 		ts, err := p.Current()
 		if err != nil {

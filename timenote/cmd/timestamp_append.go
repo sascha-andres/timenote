@@ -29,18 +29,13 @@ var timestampAppendCmd = &cobra.Command{
 to the description or sets the description`,
 	Run: func(cmd *cobra.Command, args []string) {
 		description := viper.GetString("append.description")
+		separator := viper.GetString("separator")
 		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"))
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer func() {
-			err := p.Close()
-			if err != nil {
-				log.Fatal(err)
-			}
-		}()
 
-		err = p.Append(description)
+		err = p.Append(description, separator)
 		if err != nil {
 			log.Error(err)
 		}

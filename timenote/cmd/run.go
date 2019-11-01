@@ -27,12 +27,6 @@ func run() error {
 	if err != nil {
 		return errors.Wrap(err, "Could not create p layer")
 	}
-	defer func() {
-		err := p.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
 
 	return runInputLoop(p)
 }
