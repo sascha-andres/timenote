@@ -172,17 +172,8 @@ func (t *TogglPersistor) Current() (*timenote.TimeEntry, error) {
 }
 
 // GetClientByID gets all clients and returns the one with the given ID
-func (t *TogglPersistor) GetClientByID(clientID int) (*timenote.Client, error) {
-	cs, err := t.Clients()
-	if err != nil {
-		return nil, err
-	}
-	for _, c := range cs {
-		if c.ID == clientID {
-			return &c, nil
-		}
-	}
-	return nil, nil
+func (t *TogglPersistor) GetClientByID(clientID int) (*toggl.Client, error) {
+	return t.caching.ClientByID(clientID, t.workspace)
 }
 
 // GetProject returns the given project
