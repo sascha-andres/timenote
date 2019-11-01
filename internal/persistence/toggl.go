@@ -178,11 +178,7 @@ func (t *TogglPersistor) GetClientByID(clientID int) (*toggl.Client, error) {
 
 // GetProject returns the given project
 func (t *TogglPersistor) GetProject(projectID int) (*toggl.Project, error) {
-	p, err := t.session.GetProject(projectID)
-	if err != nil {
-		return nil, err
-	}
-	return p, nil
+	return t.caching.ProjectByID(projectID, t.workspace)
 }
 
 func getCurrentTimeEntry(account toggl.Account) (*toggl.TimeEntry, error) {

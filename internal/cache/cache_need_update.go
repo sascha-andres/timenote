@@ -21,7 +21,6 @@ func (c *Cache) needUpdate(workspace int, bucket string) (needUpdate bool) {
 			return err
 		}
 		v := bucket.Get([]byte("_meta"))
-		fmt.Println(v)
 		needUpdate = len(v) == 0 || checkIfUpdateRequired(v)
 		return nil
 	})
