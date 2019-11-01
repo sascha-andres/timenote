@@ -321,14 +321,31 @@ func (t *TogglPersistor) ListForDay() ([]timenote.TimeEntry, error) {
 	}
 	result := make([]timenote.TimeEntry, 0)
 	for _, entry := range entries {
-		result = append(result, timenote.TimeEntry{
+		te := timenote.TimeEntry{
 			ID:       entry.ID,
 			Tag:      fmt.Sprintf("%v", entry.Tags),
 			Note:     entry.Description,
 			Start:    *entry.Start,
 			Stop:     entry.Stop,
 			Duration: entry.Duration,
-		})
+		}
+		if entry.Pid > 0 {
+			p, err := t.GetProject(entry.Pid)
+			if err != nil {
+				te.Project = "- unknown project -"
+			} else {
+				te.Project = p.Name
+				if p.Cid > 0 {
+					c, err := t.GetClientByID(p.Cid)
+					if err != nil {
+						te.Client = "- unknown client -"
+					} else {
+						te.Client = c.Name
+					}
+				}
+			}
+		}
+		result = append(result, te)
 	}
 	return result, nil
 }
