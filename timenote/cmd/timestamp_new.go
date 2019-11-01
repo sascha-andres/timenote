@@ -33,12 +33,6 @@ var timestampNewCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer func() {
-			err := p.Close()
-			if err != nil {
-				log.Fatal(err)
-			}
-		}()
 
 		if err := p.New(); err != nil {
 			log.Fatal(err)
