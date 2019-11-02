@@ -15,7 +15,9 @@ package cmd
 
 import (
 	"fmt"
+	"livingit.de/code/timenote/internal/cache"
 	"os"
+	"path"
 
 	log "github.com/sirupsen/logrus"
 
@@ -26,6 +28,7 @@ import (
 )
 
 var cfgFile string
+var caching *cache.Cache
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
@@ -50,7 +53,20 @@ You can tag notes`,
 // Execute adds all child commands to the root command sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	if err := RootCmd.Execute(); err != nil {
+	c, err := cache.NewCache(viper.GetInt("cache.max-age"), viper.GetString("cache.path"))
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	caching = c
+	defer func() {
+		err := caching.Close()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	}()
+	if err = RootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
@@ -59,15 +75,27 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
+	// Find home directory.
+	home, err := homedir.Dir()
+	if err != nil {
+		fmt.Println(home)
+		os.Exit(1)
+	}
+
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.timenote.yaml)")
 	RootCmd.PersistentFlags().StringP("dsn", "d", "toggl-token", "Token to access Toggl API")
 	RootCmd.PersistentFlags().IntP("workspace", "w", 0, "Set to work within this workspace, leave to zero to have it guessed (first workspace)")
 	RootCmd.PersistentFlags().StringP("output-format", "", "text", "test or json")
 	RootCmd.PersistentFlags().StringP("separator", "", ";", "Separator for existing value and new value")
+	RootCmd.PersistentFlags().IntP("cache-max-age", "", 360, "Maximum age of cache in minutes")
+	RootCmd.PersistentFlags().StringP("cache-path", "", path.Join(home, ".timenote"), "Where to store cache")
 
 	_ = viper.BindPFlag("separator", RootCmd.PersistentFlags().Lookup("separator"))
 	_ = viper.BindPFlag("dsn", RootCmd.PersistentFlags().Lookup("dsn"))
 	_ = viper.BindPFlag("output-format", RootCmd.PersistentFlags().Lookup("output-format"))
+
+	_ = viper.BindPFlag("cache.max-age", RootCmd.PersistentFlags().Lookup("cache-max-age"))
+	_ = viper.BindPFlag("cache.path", RootCmd.PersistentFlags().Lookup("cache-path"))
 }
 
 // initConfig reads in config file and ENV variables if set.

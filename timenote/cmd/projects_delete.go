@@ -18,7 +18,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"livingit.de/code/timenote/persistence"
+	"livingit.de/code/timenote/internal/persistence"
 )
 
 // timestampAppendCmd represents the append command
@@ -30,7 +30,7 @@ var projectsDeleteCmd = &cobra.Command{
 If project already exists it will not do anything`,
 	Run: func(cmd *cobra.Command, args []string) {
 		name := viper.GetString("projects.delete.name")
-		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"))
+		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"), caching)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -8,6 +8,7 @@ import (
 
 	"github.com/sascha-andres/go-toggl"
 	"livingit.de/code/timenote"
+	"livingit.de/code/timenote/internal/cache"
 )
 
 type (
@@ -15,20 +16,50 @@ type (
 		dsn       string
 		workspace int
 		session   toggl.Session
+		caching   *cache.Cache
 	}
 )
 
 // NewToggl establishes a session to toggl api
 // token constains the api token to access the toggl pai
 // workspace defines the workspace to work within
-func NewToggl(token string, workspace int) (*TogglPersistor, error) {
+func NewToggl(token string, workspace int, caching *cache.Cache) (*TogglPersistor, error) {
 	res := TogglPersistor{
 		dsn:       token,
 		workspace: workspace,
 		session:   toggl.OpenSession(token),
+		caching:   caching,
 	}
 	toggl.DisableLog()
-	return &res, res.guessWorkspace()
+	err := res.guessWorkspace()
+	if res.caching.NeedUpdate(res.workspace) {
+		err := res.UpdateCache()
+		if err != nil {
+			return &res, err
+		}
+	}
+	return &res, err
+}
+
+// UpdateCache sets new data in the cache
+func (t *TogglPersistor) UpdateCache() error {
+	projects, err := t.session.GetProjects(t.workspace)
+	if err != nil {
+		return err
+	}
+	err = t.caching.SetProjects(t.workspace, projects)
+	if err != nil {
+		return err
+	}
+	clients, err := t.session.GetClients()
+	if err != nil {
+		return err
+	}
+	err = t.caching.SetClients(t.workspace, clients)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (t *TogglPersistor) guessWorkspace() error {
@@ -41,6 +72,11 @@ func (t *TogglPersistor) guessWorkspace() error {
 		t.workspace = account.Data.Workspaces[0].ID
 	}
 	return nil
+}
+
+// Workspace returns the workspace ID
+func (t *TogglPersistor) Workspace() int {
+	return t.workspace
 }
 
 // New starts a new time entry with no description
@@ -150,26 +186,13 @@ func (t *TogglPersistor) Current() (*timenote.TimeEntry, error) {
 }
 
 // GetClientByID gets all clients and returns the one with the given ID
-func (t *TogglPersistor) GetClientByID(clientID int) (*timenote.Client, error) {
-	cs, err := t.Clients()
-	if err != nil {
-		return nil, err
-	}
-	for _, c := range cs {
-		if c.ID == clientID {
-			return &c, nil
-		}
-	}
-	return nil, nil
+func (t *TogglPersistor) GetClientByID(clientID int) (*toggl.Client, error) {
+	return t.caching.ClientByID(clientID, t.workspace)
 }
 
 // GetProject returns the given project
 func (t *TogglPersistor) GetProject(projectID int) (*toggl.Project, error) {
-	p, err := t.session.GetProject(projectID)
-	if err != nil {
-		return nil, err
-	}
-	return p, nil
+	return t.caching.ProjectByID(projectID, t.workspace)
 }
 
 func getCurrentTimeEntry(account toggl.Account) (*toggl.TimeEntry, error) {
@@ -272,12 +295,11 @@ func (t *TogglPersistor) DeleteProject(name string) error {
 }
 
 func (t *TogglPersistor) getProjectID(name string) (int, error) {
-	account, err := t.session.GetAccount()
+	projects, err := t.caching.Projects(t.workspace)
 	if err != nil {
-		return 0, errors.Wrap(err, "unable to get account")
+		return 0, err
 	}
-
-	for _, prj := range account.Data.Projects {
+	for _, prj := range projects {
 		if prj.Name == name {
 			return prj.ID, nil
 		}
@@ -287,20 +309,8 @@ func (t *TogglPersistor) getProjectID(name string) (int, error) {
 }
 
 // Clients ereturn all clients
-func (t *TogglPersistor) Clients() ([]timenote.Client, error) {
-	clients, err := t.session.GetClients()
-	if err != nil {
-		return nil, err
-	}
-	var result = make([]timenote.Client, 0)
-	for _, c := range clients {
-		result = append(result, timenote.Client{
-			ID:          c.ID,
-			Name:        c.Name,
-			Description: c.Notes,
-		})
-	}
-	return result, nil
+func (t *TogglPersistor) Clients() ([]toggl.Client, error) {
+	return t.caching.Clients(t.workspace)
 }
 
 // NewClient creates a new client
@@ -351,20 +361,6 @@ func (t *TogglPersistor) ListForDay() ([]timenote.TimeEntry, error) {
 }
 
 // Projects returns a list of all projects
-func (t *TogglPersistor) Projects() ([]timenote.Project, error) {
-	projects, err := t.session.GetProjects(t.workspace)
-	if err != nil {
-		return nil, err
-	}
-	result := make([]timenote.Project, 0)
-	for _, prj := range projects {
-		result = append(result, timenote.Project{
-			ID:          prj.ID,
-			WorkspaceID: prj.Wid,
-			ClientID:    prj.Cid,
-			Name:        prj.Name,
-			Billable:    prj.Billable,
-		})
-	}
-	return result, nil
+func (t *TogglPersistor) Projects() ([]toggl.Project, error) {
+	return t.caching.Projects(t.workspace)
 }

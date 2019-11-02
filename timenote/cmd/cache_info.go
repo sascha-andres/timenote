@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -22,31 +23,40 @@ import (
 )
 
 // timestampAppendCmd represents the append command
-var timestampAppendCmd = &cobra.Command{
-	Use:   "append",
-	Short: "append/overwrite description for running timeentry",
-	Long: `Depending on the persistor, this command appends
-to the description or sets the description`,
+var cacheInfoCmd = &cobra.Command{
+	Use:   "info",
+	Short: "see information about cache",
+	Long: `See some information about the cache. When it was updated
+and when it will be updated`,
 	Run: func(cmd *cobra.Command, args []string) {
-		description := viper.GetString("append.description")
-		separator := viper.GetString("separator")
 		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"), caching)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		err = p.Append(description, separator)
+		mdProjects, err := caching.ProjectMetaData(p.Workspace())
 		if err != nil {
-			log.Error(err)
+			log.Fatal(err)
 		}
+		mdClients, err := caching.ClientMetaData(p.Workspace())
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Println("Project cache")
+		fmt.Println("-------------")
+		fmt.Println()
+		fmt.Printf("Updated:     %s\n", mdProjects.Updated.String())
+		fmt.Printf("Next update: %s\n", mdProjects.NextUpdate.String())
+		fmt.Println()
+		fmt.Println("Client cache")
+		fmt.Println("------------")
+		fmt.Println()
+		fmt.Printf("Updated:     %s\n", mdClients.Updated.String())
+		fmt.Printf("Next update: %s\n", mdClients.NextUpdate.String())
 	},
 }
 
 func init() {
-	timestampCmd.AddCommand(timestampAppendCmd)
-
-	timestampAppendCmd.Flags().StringP("description", "", "", "Description for timestamp")
-	_ = timestampAppendCmd.MarkFlagRequired("description")
-
-	_ = viper.BindPFlag("append.description", timestampAppendCmd.Flags().Lookup("description"))
+	cacheCmd.AddCommand(cacheInfoCmd)
 }
