@@ -4,6 +4,7 @@ import (
 	"github.com/sascha-andres/go-toggl"
 	"go.etcd.io/bbolt"
 	"gopkg.in/yaml.v2"
+	"time"
 )
 
 // AccountSet can be used to update the value of the account in the cache
@@ -14,6 +15,19 @@ func (c *Cache) AccountSet(account *toggl.Account) error {
 		if err != nil {
 			return err
 		}
-		return b.Put([]byte(accountValueKeyName), v)
+		err = b.Put([]byte(accountValueKeyName), v)
+		if err != nil {
+			return err
+		}
+		m := MetaData{
+			Updated:    time.Now(),
+			NextUpdate: time.Now().Add(time.Duration(c.maxAge) * time.Minute),
+		}
+		meta, err := yaml.Marshal(m)
+		if err != nil {
+			return err
+		}
+		err = b.Put([]byte(metaKeyName), meta)
+		return err
 	})
 }

@@ -8,7 +8,7 @@ const accountBucketName = "account"
 const accountValueKeyName = "value"
 
 // NeedUpdate returns true if cache needs a refresh
-func (c *Cache) AccountNeedUpdate(workspace int) (needUpdate bool) {
+func (c *Cache) AccountNeedUpdate() (needUpdate bool) {
 	_ = c.db.Update(func(tx *bbolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists([]byte(accountBucketName))
 		if err != nil {
