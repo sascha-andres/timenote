@@ -33,24 +33,33 @@ func NewToggl(token string, workspace int, caching *cache.Cache) (*TogglPersisto
 	toggl.DisableLog()
 	err := res.guessWorkspace()
 	if res.caching.NeedUpdate(res.workspace) {
-		projects, err := res.session.GetProjects(res.workspace)
+		err := res.UpdateCache()
 		if err != nil {
-			return nil, err
-		}
-		err = caching.SetProjects(res.workspace, projects)
-		if err != nil {
-			return nil, err
-		}
-		clients, err := res.session.GetClients()
-		if err != nil {
-			return nil, err
-		}
-		err = caching.SetClients(res.workspace, clients)
-		if err != nil {
-			return nil, err
+			return &res, err
 		}
 	}
 	return &res, err
+}
+
+// UpdateCache sets new data in the cache
+func (t *TogglPersistor) UpdateCache() error {
+	projects, err := t.session.GetProjects(t.workspace)
+	if err != nil {
+		return err
+	}
+	err = t.caching.SetProjects(t.workspace, projects)
+	if err != nil {
+		return err
+	}
+	clients, err := t.session.GetClients()
+	if err != nil {
+		return err
+	}
+	err = t.caching.SetClients(t.workspace, clients)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (t *TogglPersistor) guessWorkspace() error {
