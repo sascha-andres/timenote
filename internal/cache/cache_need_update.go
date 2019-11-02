@@ -19,7 +19,7 @@ func (c *Cache) needUpdate(workspace int, bucket string) (needUpdate bool) {
 		if err != nil {
 			return err
 		}
-		v := bucket.Get([]byte("_meta"))
+		v := bucket.Get([]byte(metaKeyName))
 		needUpdate = len(v) == 0 || checkIfUpdateRequired(v)
 		return nil
 	})
