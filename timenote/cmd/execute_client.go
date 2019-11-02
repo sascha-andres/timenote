@@ -14,7 +14,7 @@ func executeClient(p *persistence.TogglPersistor, commandline string) error {
 			return err
 		}
 		for _, client := range clients {
-			fmt.Printf("%s", client)
+			fmt.Printf("%s", client.Name)
 		}
 	}
 
