@@ -65,6 +65,11 @@ func (t *TogglPersistor) guessWorkspace() error {
 	return nil
 }
 
+// Workspace returns the workspace ID
+func (t *TogglPersistor) Workspace() int {
+	return t.workspace
+}
+
 // New starts a new time entry with no description
 func (t *TogglPersistor) New() error {
 	_, err := t.session.StartTimeEntry("")

@@ -9,7 +9,7 @@ import (
 
 func (c *Cache) ProjectByID(projectID, workspace int) (project *toggl.Project, err error) {
 	err = c.db.View(func(tx *bbolt.Tx) error {
-		b := tx.Bucket([]byte(fmt.Sprintf("%6d-projects", workspace)))
+		b := tx.Bucket([]byte(fmt.Sprintf(projectBucketNameTemplate, workspace)))
 		v := b.Get([]byte(fmt.Sprintf("%10d", projectID)))
 		var proj toggl.Project
 		err = yaml.Unmarshal(v, &proj)

@@ -1,11 +1,13 @@
 package cache
 
 import (
-	"fmt"
 	"go.etcd.io/bbolt"
 	"path"
 	"time"
 )
+
+const clientBucketNameTemplate = "%6d-clients"
+const projectBucketNameTemplate = "%6d-projects"
 
 type (
 	Cache struct {
@@ -20,8 +22,10 @@ type (
 	}
 )
 
+// NewCache creates a cache layer instance and returns it
+// inner workings like options are not yet available
 func NewCache(maxAge int, pathToDatabase string) (*Cache, error) {
-	db, err := bbolt.Open(path.Join(pathToDatabase, "db"), 0600, &bbolt.Options{Timeout: 1 * time.Second})
+	db, err := bbolt.Open(path.Join(pathToDatabase, "db"), 0600, &bbolt.Options{Timeout: 2 * time.Second})
 	if err != nil {
 		return nil, err
 	}
@@ -31,24 +35,4 @@ func NewCache(maxAge int, pathToDatabase string) (*Cache, error) {
 
 		db: db,
 	}, nil
-}
-
-func setupDatabase(db *bbolt.DB) error {
-	if err := createBucket(db, "projects"); err != nil {
-		return err
-	}
-	if err := createBucket(db, "clients"); err != nil {
-		return err
-	}
-	return nil
-}
-
-func createBucket(db *bbolt.DB, name string) error {
-	return db.Update(func(tx *bbolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte(name))
-		if err != nil {
-			return fmt.Errorf("create bucket: %s", err)
-		}
-		return nil
-	})
 }
