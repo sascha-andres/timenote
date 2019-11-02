@@ -8,6 +8,8 @@ import (
 
 const clientBucketNameTemplate = "%6d-clients"
 const projectBucketNameTemplate = "%6d-projects"
+const metaKeyName = "_meta"
+const allKeyName = "_all"
 
 type (
 	Cache struct {

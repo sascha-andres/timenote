@@ -10,7 +10,7 @@ import (
 func (c *Cache) ProjectMetaData(workspace int) (m *MetaData, err error) {
 	_ = c.db.Update(func(tx *bbolt.Tx) error {
 		b := tx.Bucket([]byte(fmt.Sprintf(projectBucketNameTemplate, workspace)))
-		v := b.Get([]byte("_meta"))
+		v := b.Get([]byte(metaKeyName))
 		var md MetaData
 		err = yaml.Unmarshal(v, &md)
 		m = &md

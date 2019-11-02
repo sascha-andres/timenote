@@ -9,7 +9,7 @@ import (
 
 // NeedUpdate returns true if cache needs a refresh
 func (c *Cache) NeedUpdate(workspace int) bool {
-	return c.needUpdate(workspace, "projects") || c.needUpdate(workspace, "clients")
+	return c.needUpdate(workspace, "projects") || c.needUpdate(workspace, "clients") || c.AccountNeedUpdate()
 }
 
 func (c *Cache) needUpdate(workspace int, bucket string) (needUpdate bool) {
@@ -19,7 +19,7 @@ func (c *Cache) needUpdate(workspace int, bucket string) (needUpdate bool) {
 		if err != nil {
 			return err
 		}
-		v := bucket.Get([]byte("_meta"))
+		v := bucket.Get([]byte(metaKeyName))
 		needUpdate = len(v) == 0 || checkIfUpdateRequired(v)
 		return nil
 	})
