@@ -100,7 +100,7 @@ func (t *TogglPersistor) New() error {
 	if err != nil {
 		return errors.Wrap(err, "Unable to start a new entry")
 	}
-	return nil
+	return t.cacheAccount()
 }
 
 // Append adds text to the description separated by ;
@@ -122,7 +122,7 @@ func (t *TogglPersistor) Append(line, separator string) error {
 	if err != nil {
 		return errors.Wrap(err, "unable to update time entry in toggl")
 	}
-	return nil
+	return t.cacheAccount()
 }
 
 // Tag toggle the tags associated with the running time entry
@@ -145,7 +145,7 @@ func (t *TogglPersistor) Tag(name string) error {
 	if err != nil {
 		return errors.Wrap(err, "unable to update time entry in toggl")
 	}
-	return nil
+	return t.cacheAccount()
 }
 
 // Done ends the currently running time entry
@@ -162,7 +162,7 @@ func (t *TogglPersistor) Done() error {
 	if err != nil {
 		return errors.Wrap(err, "unable to stop running time entry in toggl")
 	}
-	return nil
+	return t.cacheAccount()
 }
 
 // Current returns the currently running time entry
