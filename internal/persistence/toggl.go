@@ -167,6 +167,10 @@ func (t *TogglPersistor) Done() error {
 
 // Current returns the currently running time entry
 func (t *TogglPersistor) Current() (*timenote.TimeEntry, error) {
+	err := t.cacheAccount()
+	if err != nil {
+		return nil, err
+	}
 	account, err := t.caching.GetAccount()
 	if err != nil {
 		return nil, fmt.Errorf("unable to get account: %w", err)
