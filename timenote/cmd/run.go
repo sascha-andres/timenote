@@ -9,7 +9,7 @@ import (
 	"github.com/chzyer/readline"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
-	"livingit.de/code/timenote/persistence"
+	"livingit.de/code/timenote/internal/persistence"
 )
 
 var (
@@ -23,7 +23,7 @@ var (
 )
 
 func run() error {
-	p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"))
+	p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"), caching)
 	if err != nil {
 		return errors.Wrap(err, "Could not create p layer")
 	}

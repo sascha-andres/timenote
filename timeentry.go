@@ -29,16 +29,13 @@ type (
 
 func (te *TimeEntry) String() string {
 	humanTime := te.getHumanTime()
-	if "[]" == te.Tag {
-		if "" == te.Note {
-			return fmt.Sprintf("client, project: %s, %s\nduration: %s\n", te.Client, te.Project, humanTime)
-		}
-		return fmt.Sprintf("client, project: %s, %s\nduration: %s\nnote: %s\n", te.Client, te.Project, humanTime, te.Note)
+	result := fmt.Sprintf("client, project: %s, %s\n", te.Client, te.Project)
+	result = result + fmt.Sprintf("duration: %s\n", humanTime)
+	if "[]" != te.Tag {
+		result = result + fmt.Sprintf("tags: %s\n", te.Tag)
 	}
-	if "" == te.Note {
-		return fmt.Sprintf("client, project: %s, %s\nduration: %s - tags:%s\n", te.Client, te.Project, humanTime, te.Tag)
-	}
-	return fmt.Sprintf("client, project: %s, %s\nduration: %s - tags:%s\nnote: %s\n", te.Client, te.Project, humanTime, te.Tag, te.Note)
+	result = result + fmt.Sprintf("note: %s\n", te.Note)
+	return result
 }
 
 func (te *TimeEntry) getHumanTime() string {

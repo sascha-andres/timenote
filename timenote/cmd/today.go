@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"livingit.de/code/timenote"
-	"livingit.de/code/timenote/persistence"
+	"livingit.de/code/timenote/internal/persistence"
 	"os"
 	"text/tabwriter"
 	"time"
@@ -34,7 +34,7 @@ var timestampTodayCmd = &cobra.Command{
 	Short: "Print timestamps from today",
 	Long:  `Print all timestamps with a date from today or being active`,
 	Run: func(cmd *cobra.Command, args []string) {
-		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"))
+		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"), caching)
 		if err != nil {
 			log.Fatal(err)
 		}

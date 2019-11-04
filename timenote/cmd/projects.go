@@ -17,11 +17,11 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/sascha-andres/go-toggl"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"livingit.de/code/timenote"
-	"livingit.de/code/timenote/persistence"
+	"livingit.de/code/timenote/internal/persistence"
 	"os"
 	"text/tabwriter"
 )
@@ -32,7 +32,7 @@ var projectsCmd = &cobra.Command{
 	Short: "projects management",
 	Long:  `List projects and manage projects using sub commands`,
 	Run: func(cmd *cobra.Command, args []string) {
-		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"))
+		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"), caching)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -51,7 +51,7 @@ var projectsCmd = &cobra.Command{
 	},
 }
 
-func writeProjectsJson(projects []timenote.Project) {
+func writeProjectsJson(projects []toggl.Project) {
 	data, err := json.Marshal(projects)
 	if err != nil {
 		log.Fatal(err)
@@ -60,7 +60,7 @@ func writeProjectsJson(projects []timenote.Project) {
 	_, _ = fmt.Println(string(data))
 }
 
-func writeProjectsTable(projects []timenote.Project) {
+func writeProjectsTable(projects []toggl.Project) {
 	w := new(tabwriter.Writer)
 	// Format in tab-separated columns with a tab stop of 8.
 	w.Init(os.Stdout, 0, 8, 2, '\t', 0)

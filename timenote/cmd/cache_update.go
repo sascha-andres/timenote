@@ -22,31 +22,22 @@ import (
 )
 
 // timestampAppendCmd represents the append command
-var timestampAppendCmd = &cobra.Command{
-	Use:   "append",
-	Short: "append/overwrite description for running timeentry",
-	Long: `Depending on the persistor, this command appends
-to the description or sets the description`,
+var cacheUpdateCmd = &cobra.Command{
+	Use:   "update",
+	Short: "Retrieve new data and store in cache",
+	Long:  `Reaches out to toggl and refreshes local data`,
 	Run: func(cmd *cobra.Command, args []string) {
-		description := viper.GetString("append.description")
-		separator := viper.GetString("separator")
 		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"), caching)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		err = p.Append(description, separator)
-		if err != nil {
-			log.Error(err)
+		if err := p.UpdateCache(); err != nil {
+			log.Fatal(err)
 		}
 	},
 }
 
 func init() {
-	timestampCmd.AddCommand(timestampAppendCmd)
-
-	timestampAppendCmd.Flags().StringP("description", "", "", "Description for timestamp")
-	_ = timestampAppendCmd.MarkFlagRequired("description")
-
-	_ = viper.BindPFlag("append.description", timestampAppendCmd.Flags().Lookup("description"))
+	cacheCmd.AddCommand(cacheUpdateCmd)
 }
