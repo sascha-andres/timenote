@@ -88,7 +88,7 @@ func init() {
 	RootCmd.PersistentFlags().StringP("output-format", "", "text", "test or json")
 	RootCmd.PersistentFlags().StringP("separator", "", ";", "Separator for existing value and new value")
 	RootCmd.PersistentFlags().IntP("cache-max-age", "", 360, "Maximum age of cache in minutes")
-	RootCmd.PersistentFlags().StringP("cache-path", "", path.Join(home, ".timenote"), "Where to store cache")
+	RootCmd.PersistentFlags().StringP("cache-path", "", path.Join(home, ".config/timenote"), "Where to store cache")
 
 	_ = viper.BindPFlag("separator", RootCmd.PersistentFlags().Lookup("separator"))
 	_ = viper.BindPFlag("dsn", RootCmd.PersistentFlags().Lookup("dsn"))
