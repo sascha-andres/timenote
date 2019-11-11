@@ -112,16 +112,12 @@ func initConfig() {
 		}
 
 		// Search config in home directory with name ".cobra" (without extension).
+		viper.AddConfigPath(path.Join(home, ".config/timenote"))
 		viper.AddConfigPath(home)
 		viper.AddConfigPath(".")
 		viper.SetConfigName(".timenote")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
-	//if err := viper.ReadInConfig(); err == nil {
-	//	fmt.Println("Using config file:", viper.ConfigFileUsed())
-	//}
 	_ = viper.ReadInConfig()
 }
