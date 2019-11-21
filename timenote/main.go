@@ -13,10 +13,18 @@
 
 package main
 
-import "livingit.de/code/timenote/timenote/cmd"
+import (
+	"github.com/google/gops/agent"
+	"livingit.de/code/timenote/timenote/cmd"
+	"log"
+)
 
 var version string = "develop"
 
 func main() {
+	if err := agent.Listen(agent.Options{}); err != nil {
+		log.Fatal(err)
+	}
+
 	cmd.Execute()
 }
