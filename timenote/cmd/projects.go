@@ -44,9 +44,9 @@ var projectsCmd = &cobra.Command{
 		}
 
 		if viper.GetString("output-format") != "json" {
-			writeProjectsTable(projects)
+			writeProjectsTable(filterProjects(projects))
 		} else {
-			writeProjectsJson(projects)
+			writeProjectsJson(filterProjects(projects))
 		}
 	},
 }
@@ -69,6 +69,26 @@ func writeProjectsTable(projects []toggl.Project) {
 		_, _ = fmt.Fprintln(w, fmt.Sprintf("%d\t%s\t", prj.ID, prj.Name))
 	}
 	_ = w.Flush()
+}
+
+// isProjectInExcludeList returns true if project is filtered by exclude
+func filterProjects(projects []toggl.Project) []toggl.Project {
+	excludeList := viper.GetStringSlice("excluded-projects")
+	filteredProjectList := make([]toggl.Project, 0)
+	for _, prj := range projects {
+		c := false
+		for _, v := range excludeList {
+			if v == prj.Name {
+				c = true
+				break
+			}
+		}
+		if c {
+			continue
+		}
+		filteredProjectList = append(filteredProjectList, prj)
+	}
+	return filteredProjectList
 }
 
 func init() {

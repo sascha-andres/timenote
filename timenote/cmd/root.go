@@ -21,7 +21,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/google/gops/agent"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -39,11 +38,6 @@ one as soon as you stop working on that note
 
 You can tag notes`,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		if err := agent.Listen(agent.Options{}); err != nil {
-			log.Fatal(err)
-		}
-
 		if err := run(); err != nil {
 			log.Fatal(err)
 		}
@@ -90,9 +84,13 @@ func init() {
 	RootCmd.PersistentFlags().IntP("cache-max-age", "", 360, "Maximum age of cache in minutes")
 	RootCmd.PersistentFlags().StringP("cache-path", "", path.Join(home, ".config/timenote"), "Where to store cache")
 
+	RootCmd.PersistentFlags().StringArrayP("excluded-projects", "x", []string{}, "exclude projects from the list by name")
+
 	_ = viper.BindPFlag("separator", RootCmd.PersistentFlags().Lookup("separator"))
 	_ = viper.BindPFlag("dsn", RootCmd.PersistentFlags().Lookup("dsn"))
 	_ = viper.BindPFlag("output-format", RootCmd.PersistentFlags().Lookup("output-format"))
+
+	_ = viper.BindPFlag("excluded-projects", RootCmd.PersistentFlags().Lookup("excluded-projects"))
 
 	_ = viper.BindPFlag("cache.max-age", RootCmd.PersistentFlags().Lookup("cache-max-age"))
 	_ = viper.BindPFlag("cache.path", RootCmd.PersistentFlags().Lookup("cache-path"))
