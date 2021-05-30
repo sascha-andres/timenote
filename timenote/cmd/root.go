@@ -16,15 +16,16 @@ package cmd
 import (
 	"fmt"
 	"livingit.de/code/timenote/internal/cache"
+	"livingit.de/code/timenote/internal/persistence"
 	"os"
 	"path"
-
-	log "github.com/sirupsen/logrus"
+	"strings"
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
+import log "github.com/sirupsen/logrus"
 
 var cfgFile string
 var caching *cache.Cache
@@ -38,7 +39,24 @@ one as soon as you stop working on that note
 
 You can tag notes`,
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Info("deactivated in favor of timenote i")
+		if len(args) == 0 {
+			return
+		}
+
+		description := strings.Join(args, " ")
+		if args[0] == "--" {
+			description = strings.Join(args[1:], "")
+		}
+
+		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"), caching)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if err := p.New(); err != nil {
+			log.Fatal(err)
+		}
+		_ = p.Append(description, viper.GetString("separator"))
 	},
 }
 
