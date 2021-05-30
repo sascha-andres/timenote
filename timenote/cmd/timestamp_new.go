@@ -36,9 +36,8 @@ var timestampNewCmd = &cobra.Command{
 
 		if err := p.New(); err != nil {
 			log.Fatal(err)
-		} else {
-			_ = p.Append(description, viper.GetString("separator"))
 		}
+		_ = p.Append(description, viper.GetString("separator"))
 
 	},
 }
