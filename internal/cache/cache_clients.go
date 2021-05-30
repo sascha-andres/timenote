@@ -2,7 +2,7 @@ package cache
 
 import (
 	"fmt"
-	"github.com/sascha-andres/go-toggl"
+	"github.com/jason0x43/go-toggl"
 	"go.etcd.io/bbolt"
 	"gopkg.in/yaml.v2"
 )

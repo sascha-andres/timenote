@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/sascha-andres/go-toggl"
+	"github.com/jason0x43/go-toggl"
 	"livingit.de/code/timenote"
 	"livingit.de/code/timenote/internal/cache"
 )
