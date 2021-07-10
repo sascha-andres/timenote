@@ -26,7 +26,7 @@ import (
 	"text/tabwriter"
 )
 
-// timestampCmd represents the timestamp command
+// projectsCmd represents the project command
 var projectsCmd = &cobra.Command{
 	Use:   "projects",
 	Short: "projects management",
