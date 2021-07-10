@@ -240,7 +240,7 @@ func (t *TogglPersistor) SetProjectForCurrentTimestamp(name string) error {
 	} else {
 		projectID, err = t.getProjectID(name)
 		if projectID == 0 {
-			projectID, err = t.createProject(account, name)
+			projectID, err = t.createProject(name)
 			if err != nil {
 				return errors.Wrap(err, "unable to create project")
 			}
@@ -256,12 +256,39 @@ func (t *TogglPersistor) SetProjectForCurrentTimestamp(name string) error {
 	return err
 }
 
-func (t *TogglPersistor) createProject(account toggl.Account, name string) (int, error) {
+func (t *TogglPersistor) createProject(name string) (int, error) {
 	res, err := t.session.CreateProject(name, t.workspace)
 	if err != nil {
 		return 0, err
 	}
 	return res.ID, nil
+}
+
+func (t *TogglPersistor) createClient(name, comment string) (int, error) {
+	res, err := t.session.CreateClient(name, t.workspace)
+	if err != nil {
+		return 0, err
+	}
+	return res.ID, nil
+}
+
+// CreateClients creates a new client within the workspace
+func (t *TogglPersistor) CreateClients(name, comment string) error {
+	id, err := t.getClientId(name)
+	if err != nil {
+		return err
+	}
+	if id == 0 {
+		_, err = t.createClient(name, comment)
+		if err != nil {
+			return err
+		}
+		err = t.UpdateCache()
+		if err != nil {
+			return err
+		}
+	}
+	return err
 }
 
 // CreateProject creates a new project within the workspace
@@ -271,11 +298,7 @@ func (t *TogglPersistor) CreateProject(name string) error {
 		return err
 	}
 	if id == 0 {
-		account, err := t.caching.GetAccount()
-		if err != nil {
-			return fmt.Errorf("unable to get account: %w", err)
-		}
-		_, err = t.createProject(account, name)
+		_, err = t.createProject(name)
 		if err != nil {
 			return err
 		}
@@ -335,6 +358,7 @@ func (t *TogglPersistor) Clients() ([]toggl.Client, error) {
 // NewClient creates a new client
 func (t *TogglPersistor) NewClient(name string) error {
 	_, err := t.session.CreateClient(name, t.workspace)
+	t.UpdateCache()
 	return err
 }
 
@@ -382,4 +406,18 @@ func (t *TogglPersistor) ListForDay() ([]timenote.TimeEntry, error) {
 // Projects returns a list of all projects
 func (t *TogglPersistor) Projects() ([]toggl.Project, error) {
 	return t.caching.Projects(t.workspace)
+}
+
+//getClientId returns an id for the client name (exact match)
+func (t *TogglPersistor) getClientId(name string) (int, error) {
+	clients, err := t.caching.Clients(t.workspace)
+	if err != nil {
+		return 0, err
+	}
+	for i := range clients {
+		if clients[i].Name == name {
+			return clients[i].ID, nil
+		}
+	}
+	return 0, nil
 }
