@@ -31,6 +31,7 @@ This is in an early phase but used regularly with the toggl backend and from tim
 
 |Version|Description|
 |---|---|
+|0.8.1|update Dependencies|
 |0.8.0|Add caching layer|
 |0.7.0|Better formating of time values|
 ||Make append separator configurable|
