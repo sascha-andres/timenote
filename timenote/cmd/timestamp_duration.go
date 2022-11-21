@@ -16,11 +16,11 @@ package cmd
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"livingit.de/code/timenote"
 	"livingit.de/code/timenote/internal/persistence"
+	"log"
 	"time"
 )
 
@@ -38,7 +38,7 @@ hh:mm:ss'`,
 
 		ts, err := p.Current()
 		if err != nil {
-			log.Error(err)
+			log.Fatal(err)
 			return
 		}
 		var td *timenote.TogglDuration

@@ -16,10 +16,10 @@ package cmd
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"livingit.de/code/timenote/internal/persistence"
+	"log"
 )
 
 // timestampCmd represents the timestamp command
@@ -35,7 +35,7 @@ var timestampCmd = &cobra.Command{
 
 		ts, err := p.Current()
 		if err != nil {
-			log.Error(err)
+			log.Printf("Error reading timestamp: %s", err)
 			return
 		}
 		fmt.Println(ts)

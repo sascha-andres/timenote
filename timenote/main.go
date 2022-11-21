@@ -22,6 +22,9 @@ import (
 var version string = "develop"
 
 func main() {
+	log.SetFlags(log.LUTC | log.LstdFlags | log.Lshortfile)
+	log.SetPrefix("[timenote] ")
+
 	if err := agent.Listen(agent.Options{}); err != nil {
 		log.Fatal(err)
 	}

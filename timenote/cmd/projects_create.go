@@ -15,10 +15,10 @@
 package cmd
 
 import (
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"livingit.de/code/timenote/internal/persistence"
+	"log"
 )
 
 // timestampAppendCmd represents the append command
@@ -37,7 +37,7 @@ If project already exists it will not do anything`,
 
 		err = p.CreateProject(name)
 		if err != nil {
-			log.Error(err)
+			log.Fatal(err)
 		}
 	},
 }

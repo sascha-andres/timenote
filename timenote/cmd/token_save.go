@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/zalando/go-keyring"
+	"log"
 )
 
 // timestampAppendCmd represents the append command
@@ -15,7 +15,7 @@ var tokenSaveCmd = &cobra.Command{
 		t := viper.GetString("token.save.token")
 		err := keyring.Set("timenote", "token", t)
 		if err != nil {
-			log.Warnf("could not set token: %s", err)
+			log.Printf("could not set token: %s", err)
 		} else {
 			log.Print("token set")
 		}

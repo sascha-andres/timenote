@@ -23,9 +23,9 @@ import (
 	"text/tabwriter"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"log"
 )
 
 // timestampCurrentCmd represents the current command
@@ -41,7 +41,7 @@ var timestampTodayCmd = &cobra.Command{
 
 		ts, err := p.ListForDay()
 		if err != nil {
-			log.Error(err)
+			log.Fatal(err)
 			return
 		}
 		if !viper.GetBool("timestamp.today.sum-only") {
@@ -99,7 +99,6 @@ func writeTimeEntriesJson(ts []timenote.TimeEntry) {
 	data, err := json.Marshal(ts)
 	if err != nil {
 		log.Fatal(err)
-		os.Exit(1)
 	}
 	_, _ = fmt.Println(string(data))
 }

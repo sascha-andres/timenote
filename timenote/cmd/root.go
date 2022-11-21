@@ -18,6 +18,7 @@ import (
 	"github.com/zalando/go-keyring"
 	"livingit.de/code/timenote/internal/cache"
 	"livingit.de/code/timenote/internal/persistence"
+	"log"
 	"os"
 	"path"
 	"strings"
@@ -26,7 +27,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
-import log "github.com/sirupsen/logrus"
 
 var (
 	cfgFile, token string

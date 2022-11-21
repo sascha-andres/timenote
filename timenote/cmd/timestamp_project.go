@@ -15,10 +15,10 @@
 package cmd
 
 import (
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"livingit.de/code/timenote/internal/persistence"
+	"log"
 )
 
 // timestampAppendCmd represents the append command
@@ -35,7 +35,7 @@ var timestampProjectCmd = &cobra.Command{
 
 		err = p.SetProjectForCurrentTimestamp(name)
 		if err != nil {
-			log.Errorf("error setting project: %s", err)
+			log.Fatalf("error setting project: %s", err)
 		}
 	},
 }

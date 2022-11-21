@@ -15,10 +15,10 @@
 package cmd
 
 import (
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"livingit.de/code/timenote/internal/persistence"
+	"log"
 )
 
 // timestampDoneCmd represents the done command
@@ -34,7 +34,7 @@ var timestampDoneCmd = &cobra.Command{
 
 		err = p.Done()
 		if err != nil {
-			log.Error(err)
+			log.Fatal(err)
 			return
 		}
 	},

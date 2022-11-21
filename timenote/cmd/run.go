@@ -4,7 +4,7 @@ import (
 	"io"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
+	"log"
 
 	"github.com/chzyer/readline"
 	"github.com/pkg/errors"

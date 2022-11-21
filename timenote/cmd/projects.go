@@ -18,10 +18,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/jason0x43/go-toggl"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"livingit.de/code/timenote/internal/persistence"
+	"log"
 	"os"
 	"text/tabwriter"
 )
@@ -40,7 +40,6 @@ var projectsCmd = &cobra.Command{
 		projects, err := p.Projects()
 		if err != nil {
 			log.Fatal(err)
-			os.Exit(1)
 		}
 
 		if viper.GetString("output-format") != "json" {
@@ -55,7 +54,6 @@ func writeProjectsJson(projects []toggl.Project) {
 	data, err := json.Marshal(projects)
 	if err != nil {
 		log.Fatal(err)
-		os.Exit(1)
 	}
 	_, _ = fmt.Println(string(data))
 }

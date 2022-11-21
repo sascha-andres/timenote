@@ -16,8 +16,8 @@ package cmd
 
 import (
 	"github.com/pkg/browser"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"log"
 )
 
 // browserCmd represents the browser command
@@ -29,7 +29,7 @@ var browserCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		err := browser.OpenURL("https://toggl.com/app/timer")
 		if err != nil {
-			log.Warnf("error executing browser: %s", err)
+			log.Printf("error executing browser: %s", err)
 		}
 	},
 }

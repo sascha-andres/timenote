@@ -1,11 +1,10 @@
 package cmd
 
 import (
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"livingit.de/code/timenote/internal/persistence"
-	"os"
+	"log"
 )
 
 var clientsCreateCmd = &cobra.Command{
@@ -22,8 +21,7 @@ var clientsCreateCmd = &cobra.Command{
 
 		err = p.CreateClients(name, "")
 		if err != nil {
-			log.Error(err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 	},
 }

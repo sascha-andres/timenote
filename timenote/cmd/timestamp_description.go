@@ -16,10 +16,10 @@ package cmd
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"livingit.de/code/timenote/internal/persistence"
+	"log"
 )
 
 // timestampCurrentCmd represents the current command
@@ -35,7 +35,7 @@ var timestampDescriptionCmd = &cobra.Command{
 
 		ts, err := p.Current()
 		if err != nil {
-			log.Error(err)
+			log.Fatal(err)
 			return
 		}
 		fmt.Println(ts.Note)
