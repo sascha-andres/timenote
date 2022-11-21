@@ -15,14 +15,31 @@
 package cmd
 
 import (
+	"fmt"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"livingit.de/code/timenote/internal/persistence"
 )
 
 // timestampCmd represents the timestamp command
 var timestampCmd = &cobra.Command{
 	Use:   "timestamp",
 	Short: "timestamp management",
-	Long: `Manage timestamps by adding`,
+	Long:  `Manage timestamps by adding`,
+	Run: func(cmd *cobra.Command, args []string) {
+		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		ts, err := p.Current()
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		fmt.Println(ts)
+	},
 }
 
 func init() {
