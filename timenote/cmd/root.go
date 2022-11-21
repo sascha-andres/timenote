@@ -15,6 +15,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/zalando/go-keyring"
 	"livingit.de/code/timenote/internal/cache"
 	"livingit.de/code/timenote/internal/persistence"
 	"os"
@@ -27,8 +28,10 @@ import (
 )
 import log "github.com/sirupsen/logrus"
 
-var cfgFile string
-var caching *cache.Cache
+var (
+	cfgFile, token string
+	caching        *cache.Cache
+)
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
@@ -48,7 +51,7 @@ You can tag notes`,
 			description = strings.Join(args[1:], "")
 		}
 
-		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"), caching)
+		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -83,6 +86,8 @@ func Execute() {
 }
 
 func init() {
+	token, _ = keyring.Get("timenote", "token")
+
 	cobra.OnInitialize(initConfig)
 
 	// Find home directory.
@@ -93,7 +98,6 @@ func init() {
 	}
 
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.timenote.yaml)")
-	RootCmd.PersistentFlags().StringP("dsn", "d", "toggl-token", "Token to access Toggl API")
 	RootCmd.PersistentFlags().IntP("workspace", "w", 0, "Set to work within this workspace, leave to zero to have it guessed (first workspace)")
 	RootCmd.PersistentFlags().StringP("output-format", "", "text", "test or json")
 	RootCmd.PersistentFlags().StringP("separator", "", ";", "Separator for existing value and new value")
@@ -103,7 +107,6 @@ func init() {
 	RootCmd.PersistentFlags().StringArrayP("excluded-projects", "x", []string{}, "exclude projects from the list by name")
 
 	_ = viper.BindPFlag("separator", RootCmd.PersistentFlags().Lookup("separator"))
-	_ = viper.BindPFlag("dsn", RootCmd.PersistentFlags().Lookup("dsn"))
 	_ = viper.BindPFlag("output-format", RootCmd.PersistentFlags().Lookup("output-format"))
 
 	_ = viper.BindPFlag("excluded-projects", RootCmd.PersistentFlags().Lookup("excluded-projects"))

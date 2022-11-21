@@ -27,7 +27,7 @@ var cacheUpdateCmd = &cobra.Command{
 	Short: "Retrieve new data and store in cache",
 	Long:  `Reaches out to toggl and refreshes local data`,
 	Run: func(cmd *cobra.Command, args []string) {
-		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"), caching)
+		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
 		if err != nil {
 			log.Fatal(err)
 		}

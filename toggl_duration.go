@@ -100,7 +100,7 @@ func (td *TogglDuration) calculateDone() {
 	td.seconds = localDuration
 }
 
-// FromTime formats a time like the duration
+// TogglDurationFromTime formats a time like the duration
 //
 // Known caveat: this forgets about days
 func TogglDurationFromTime(t time.Time) (*TogglDuration, error) {

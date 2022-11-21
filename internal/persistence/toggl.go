@@ -24,6 +24,9 @@ type (
 // token constains the api token to access the toggl pai
 // workspace defines the workspace to work within
 func NewToggl(token string, workspace int, caching *cache.Cache) (*TogglPersistor, error) {
+	if token == "" {
+		return nil, errors.New("no token provided")
+	}
 	res := TogglPersistor{
 		dsn:       token,
 		workspace: workspace,
@@ -408,7 +411,7 @@ func (t *TogglPersistor) Projects() ([]toggl.Project, error) {
 	return t.caching.Projects(t.workspace)
 }
 
-//getClientId returns an id for the client name (exact match)
+// getClientId returns an id for the client name (exact match)
 func (t *TogglPersistor) getClientId(name string) (int, error) {
 	clients, err := t.caching.Clients(t.workspace)
 	if err != nil {

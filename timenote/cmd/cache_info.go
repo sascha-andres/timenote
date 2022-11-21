@@ -29,7 +29,7 @@ var cacheInfoCmd = &cobra.Command{
 	Long: `See some information about the cache. When it was updated
 and when it will be updated`,
 	Run: func(cmd *cobra.Command, args []string) {
-		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"), caching)
+		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
 		if err != nil {
 			log.Fatal(err)
 		}

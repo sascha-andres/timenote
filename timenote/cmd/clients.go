@@ -17,7 +17,7 @@ var clientsCmd = &cobra.Command{
 	Short: "clients management",
 	Long:  `List clients and manage clients using sub commands`,
 	Run: func(cmd *cobra.Command, args []string) {
-		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"), caching)
+		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
 		if err != nil {
 			log.Fatal(err)
 		}

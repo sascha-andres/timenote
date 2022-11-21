@@ -27,7 +27,7 @@ var timestampDoneCmd = &cobra.Command{
 	Short: "done with current entry",
 	Long:  `Stops the current entry`,
 	Run: func(cmd *cobra.Command, args []string) {
-		p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"), caching)
+		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -23,7 +23,7 @@ var (
 )
 
 func run() error {
-	p, err := persistence.NewToggl(viper.GetString("dsn"), viper.GetInt("workspace"), caching)
+	p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
 	if err != nil {
 		return errors.Wrap(err, "Could not create p layer")
 	}
