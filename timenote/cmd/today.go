@@ -108,17 +108,20 @@ func writeTimeEntriesTable(ts []timenote.TimeEntry) {
 	// Format in tab-separated columns with a tab stop of 8.
 	w.Init(os.Stdout, 0, 8, 2, '\t', 0)
 	_, _ = fmt.Fprintln(w, "ID\tTime\tClient\tProject\tNote\t")
+	var totalDuration int64 = 0
 	for _, e := range ts {
 		humanTime := ""
 		if e.Duration >= 0 {
+			totalDuration += e.Duration
 			td, _ := timenote.NewTogglDuration(e.Duration)
 			if !viper.GetBool("timestamp.today.include-seconds") {
 				td.OmitSeconds()
 			}
 			humanTime = td.String()
-		} else {
+		} else { // TODO(sa) missing running task
 			t := time.Now().UTC().Add(time.Duration(e.Duration) * time.Second)
 			td2, _ := timenote.TogglDurationFromTime(t)
+			totalDuration += td2.GetDuration()
 			if !viper.GetBool("timestamp.today.include-seconds") {
 				td2.OmitSeconds()
 			}
@@ -126,6 +129,9 @@ func writeTimeEntriesTable(ts []timenote.TimeEntry) {
 		}
 		_, _ = fmt.Fprintln(w, fmt.Sprintf("%d\t%s\t%s\t%s\t%s\t", e.ID, humanTime, e.Client, e.Project, e.Note))
 	}
+	td, _ := timenote.NewTogglDuration(totalDuration)
+	_, _ = fmt.Fprintln(w, "------------\t------------\t------------\t------------\t------------\t")
+	_, _ = fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t\t\t\t", "total", td.String()))
 	_, _ = fmt.Fprintln(w)
 	_ = w.Flush()
 }
