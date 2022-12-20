@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
 	"math"
 	"strings"
 	"time"
+
+	"github.com/spf13/viper"
 
 	"github.com/mgutz/str"
 	"github.com/pkg/browser"
@@ -38,6 +39,8 @@ func executeLine(p *persistence.TogglPersistor, commandline string) error {
 		return p.Tag(strings.Join(tokenize[1:], " "))
 	case "client":
 		return executeClient(p, strings.Join(tokenize[1:], " "))
+	case "like-previous":
+		return p.StartPrevious()
 	case "open":
 		return browser.OpenURL("https://toggl.com/app/timer")
 	}

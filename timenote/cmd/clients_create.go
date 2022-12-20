@@ -1,10 +1,11 @@
 package cmd
 
 import (
+	"log"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"livingit.de/code/timenote/internal/persistence"
-	"log"
 )
 
 var clientsCreateCmd = &cobra.Command{
@@ -19,7 +20,7 @@ var clientsCreateCmd = &cobra.Command{
 
 		name := viper.GetString("clients.create.name")
 
-		err = p.CreateClient(name, "")
+		err = p.CreateClient(name)
 		if err != nil {
 			log.Fatal(err)
 		}

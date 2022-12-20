@@ -268,7 +268,7 @@ func (t *TogglPersistor) createProject(name string) (int, error) {
 	return res.ID, nil
 }
 
-func (t *TogglPersistor) createClient(name, comment string) (int, error) {
+func (t *TogglPersistor) createClient(name string) (int, error) {
 	res, err := t.session.CreateClient(name, t.workspace)
 	if err != nil {
 		return 0, err
@@ -277,13 +277,13 @@ func (t *TogglPersistor) createClient(name, comment string) (int, error) {
 }
 
 // CreateClient creates a new client within the workspace
-func (t *TogglPersistor) CreateClient(name, comment string) error {
+func (t *TogglPersistor) CreateClient(name string) error {
 	id, err := t.getClientId(name)
 	if err != nil {
 		return err
 	}
 	if id == 0 {
-		_, err = t.createClient(name, comment)
+		_, err = t.createClient(name)
 		if err != nil {
 			return err
 		}
@@ -362,8 +362,10 @@ func (t *TogglPersistor) Clients() ([]toggl.Client, error) {
 // NewClient creates a new client
 func (t *TogglPersistor) NewClient(name string) error {
 	_, err := t.session.CreateClient(name, t.workspace)
-	t.UpdateCache()
-	return err
+	if err != nil {
+		return err
+	}
+	return t.UpdateCache()
 }
 
 // ListForDay returns all time entries for a day
