@@ -2,9 +2,10 @@ package persistence
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"strconv"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/jason0x43/go-toggl"
 	"livingit.de/code/timenote"
@@ -275,8 +276,8 @@ func (t *TogglPersistor) createClient(name, comment string) (int, error) {
 	return res.ID, nil
 }
 
-// CreateClients creates a new client within the workspace
-func (t *TogglPersistor) CreateClients(name, comment string) error {
+// CreateClient creates a new client within the workspace
+func (t *TogglPersistor) CreateClient(name, comment string) error {
 	id, err := t.getClientId(name)
 	if err != nil {
 		return err
@@ -423,4 +424,39 @@ func (t *TogglPersistor) getClientId(name string) (int, error) {
 		}
 	}
 	return 0, nil
+}
+
+// StartPrevious will start a new timeentry based on the last finished time entry
+func (t *TogglPersistor) StartPrevious() error {
+	var (
+		entries []toggl.TimeEntry
+		err error
+		sub time.Duration
+	)
+	sub = 0
+	for {
+		if sub < -30 {
+			return errors.New("no time entries in the last 30 days")
+		}
+		year, month, day := time.Now().Add((sub * 24) * time.Hour).Date()
+		loc, _ := time.LoadLocation("")
+		startDate := time.Date(year, month, day, 0, 0, 0, 0, loc)
+		endDate := time.Date(year, month, day, 23, 59, 59, 0, loc)
+		entries, err = t.session.GetTimeEntries(startDate, endDate)
+		if err != nil {
+			return err
+		}
+		if len(entries) != 0 {
+			if entries[len(entries) - 1].Duration < 1 {
+				entries = entries[:len(entries)-1]
+			}
+			break
+		}
+		if len(entries) != 0 {
+			break
+		}
+		sub --
+	}
+	_, err = t.session.StartTimeEntryForProject(entries[len(entries)-1].Description, entries[len(entries)-1].Pid, false)
+	return err
 }

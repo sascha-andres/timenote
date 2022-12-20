@@ -19,7 +19,7 @@ var clientsCreateCmd = &cobra.Command{
 
 		name := viper.GetString("clients.create.name")
 
-		err = p.CreateClients(name, "")
+		err = p.CreateClient(name, "")
 		if err != nil {
 			log.Fatal(err)
 		}
