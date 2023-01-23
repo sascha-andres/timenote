@@ -228,7 +228,7 @@ func getCurrentTimeEntry(account toggl.Account) (*toggl.TimeEntry, error) {
 }
 
 // SetProjectForCurrentTimestamp apply project to running time entry
-func (t *TogglPersistor) SetProjectForCurrentTimestamp(name string) error {
+func (t *TogglPersistor) SetProjectForCurrentTimestamp(name string, autoCreateProject bool) error {
 	var (
 		account   toggl.Account
 		projectID int
@@ -244,6 +244,9 @@ func (t *TogglPersistor) SetProjectForCurrentTimestamp(name string) error {
 	} else {
 		projectID, err = t.getProjectID(name)
 		if projectID == 0 {
+			if !autoCreateProject {
+				return errors.New("project does not exist")
+			}
 			projectID, err = t.createProject(name)
 			if err != nil {
 				return errors.Wrap(err, "unable to create project")
@@ -432,8 +435,8 @@ func (t *TogglPersistor) getClientId(name string) (int, error) {
 func (t *TogglPersistor) StartPrevious() error {
 	var (
 		entries []toggl.TimeEntry
-		err error
-		sub time.Duration
+		err     error
+		sub     time.Duration
 	)
 	sub = 0
 	for {
@@ -449,7 +452,7 @@ func (t *TogglPersistor) StartPrevious() error {
 			return err
 		}
 		if len(entries) != 0 {
-			if entries[len(entries) - 1].Duration < 1 {
+			if entries[len(entries)-1].Duration < 1 {
 				entries = entries[:len(entries)-1]
 			}
 			break
@@ -457,7 +460,7 @@ func (t *TogglPersistor) StartPrevious() error {
 		if len(entries) != 0 {
 			break
 		}
-		sub --
+		sub--
 	}
 	_, err = t.session.StartTimeEntryForProject(entries[len(entries)-1].Description, entries[len(entries)-1].Pid, false)
 	return err

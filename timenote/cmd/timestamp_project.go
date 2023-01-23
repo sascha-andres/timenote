@@ -15,25 +15,24 @@
 package cmd
 
 import (
+	"log"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"livingit.de/code/timenote/internal/persistence"
-	"log"
 )
 
-// timestampAppendCmd represents the append command
 var timestampProjectCmd = &cobra.Command{
 	Use:   "project",
 	Short: "current entry is part of project",
 	Long:  `Depending on the persistor, this command sets the project`,
 	Run: func(cmd *cobra.Command, args []string) {
-		name := viper.GetString("project.name")
 		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		err = p.SetProjectForCurrentTimestamp(name)
+		err = p.SetProjectForCurrentTimestamp(viper.GetString("project.name"), viper.GetBool("project.auto-create-project"))
 		if err != nil {
 			log.Fatalf("error setting project: %s", err)
 		}
@@ -44,7 +43,9 @@ func init() {
 	timestampCmd.AddCommand(timestampProjectCmd)
 
 	timestampProjectCmd.Flags().StringP("name", "", "", "Name for project")
+	timestampProjectCmd.Flags().BoolP("auto-create-project", "", false, "automatically create project if it does not exist")
 	_ = timestampProjectCmd.MarkFlagRequired("name")
 
 	_ = viper.BindPFlag("project.name", timestampProjectCmd.Flags().Lookup("name"))
+	_ = viper.BindPFlag("project.auth-create-project", timestampProjectCmd.Flags().Lookup("auto-create-project"))
 }

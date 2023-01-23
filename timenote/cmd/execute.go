@@ -34,7 +34,7 @@ func executeLine(p *persistence.TogglPersistor, commandline string) error {
 	case "append":
 		return p.Append(strings.Join(tokenize[1:], " "), viper.GetString("separator"))
 	case "project":
-		return p.SetProjectForCurrentTimestamp(strings.Join(tokenize[1:], " "))
+		return p.SetProjectForCurrentTimestamp(strings.Join(tokenize[1:], " "), false)
 	case "tag":
 		return p.Tag(strings.Join(tokenize[1:], " "))
 	case "client":
@@ -48,7 +48,7 @@ func executeLine(p *persistence.TogglPersistor, commandline string) error {
 }
 
 // humanizeDuration humanizes time.Duration output to a meaningful value,
-// golang's default ``time.Duration`` output is badly formatted and unreadable.
+// golang's default “time.Duration“ output is badly formatted and unreadable.
 func humanizeDuration(duration time.Duration) string {
 	if duration.Seconds() < 60.0 {
 		return fmt.Sprintf("%d seconds", int64(duration.Seconds()))
