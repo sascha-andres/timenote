@@ -34,7 +34,7 @@ func NewToggl(token string, workspace int, caching *cache.Cache) (*TogglPersisto
 		session:   toggl.OpenSession(token),
 		caching:   caching,
 	}
-	toggl.DisableLog()
+	toggl.EnableLog()
 	if res.caching.AccountNeedUpdate() {
 		err := res.cacheAccount()
 		if err != nil {
@@ -100,7 +100,7 @@ func (t *TogglPersistor) Workspace() int {
 
 // New starts a new time entry with no description
 func (t *TogglPersistor) New() error {
-	_, err := t.session.StartTimeEntry("")
+	_, err := t.session.StartTimeEntry("", t.workspace)
 	if err != nil {
 		return errors.Wrap(err, "Unable to start a new entry")
 	}
@@ -462,6 +462,6 @@ func (t *TogglPersistor) StartPrevious() error {
 		}
 		sub--
 	}
-	_, err = t.session.StartTimeEntryForProject(entries[len(entries)-1].Description, entries[len(entries)-1].Pid, false)
+	_, err = t.session.StartTimeEntryForProject(entries[len(entries)-1].Description, t.workspace, entries[len(entries)-1].Pid, false)
 	return err
 }

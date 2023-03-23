@@ -1,0 +1,10 @@
+path := fmt.Sprintf("/workspaces/%v/projects", wid)
+data, err := session.get(TogglAPI, "/me/clients", nil)
+respData, err := session.post(TogglAPI, fmt.Sprintf("/workspaces/%d/clients", wid), data) -> error
+data, err := session.get(TogglAPI, "/me", params)
+respData, err := session.post(TogglAPI, fmt.Sprintf("/workspaces/%d/time_entries", workspace), data) -> error
+path := fmt.Sprintf("/workspaces/%v/time_entries/%v", timer.Wid, timer.ID) (update timeentry evtl put)
+path := fmt.Sprintf("/workspaces/%d/time_entries/%d/stop", timer.Wid, timer.ID)
+respData, err := session.post(TogglAPI, "/projects", data)
+path := fmt.Sprintf("/projects/%v", project.ID)
+data, err := session.get(TogglAPI, "/me/time_entries", params)
