@@ -62,7 +62,7 @@ func (t *TogglPersistor) UpdateCache() error {
 	if err != nil {
 		return err
 	}
-	clients, err := t.session.GetClients()
+	clients, err := t.session.GetClients(t.Workspace())
 	if err != nil {
 		return err
 	}
@@ -88,7 +88,7 @@ func (t *TogglPersistor) guessWorkspace() error {
 			return fmt.Errorf("unable to get account: %w", err)
 		}
 
-		t.workspace = account.Data.Workspaces[0].ID
+		t.workspace = account.Workspaces[0].ID
 	}
 	return nil
 }
@@ -100,7 +100,7 @@ func (t *TogglPersistor) Workspace() int {
 
 // New starts a new time entry with no description
 func (t *TogglPersistor) New() error {
-	_, err := t.session.StartTimeEntry("")
+	_, err := t.session.StartTimeEntry("", t.Workspace())
 	if err != nil {
 		return errors.Wrap(err, "Unable to start a new entry")
 	}
@@ -189,14 +189,14 @@ func (t *TogglPersistor) Current() (*timenote.TimeEntry, error) {
 	res.Tag = fmt.Sprintf("%v", te.Tags)
 	res.Start = *te.Start
 	res.Duration = te.Duration
-	if te.Pid > 0 {
-		p, err := t.GetProject(te.Pid)
+	if *te.Pid > 0 {
+		p, err := t.GetProject(*te.Pid)
 		if err != nil {
 			res.Project = "- unknown project -"
 		} else {
 			res.Project = p.Name
-			if p.Cid > 0 {
-				c, err := t.GetClientByID(p.Cid)
+			if *p.Cid > 0 {
+				c, err := t.GetClientByID(*p.Cid)
 				if err != nil {
 					res.Client = "- unknown client -"
 				} else {
@@ -219,7 +219,7 @@ func (t *TogglPersistor) GetProject(projectID int) (*toggl.Project, error) {
 }
 
 func getCurrentTimeEntry(account toggl.Account) (*toggl.TimeEntry, error) {
-	for _, te := range account.Data.TimeEntries {
+	for _, te := range account.TimeEntries {
 		if nil == te.Stop {
 			return &te, nil
 		}
@@ -258,7 +258,7 @@ func (t *TogglPersistor) SetProjectForCurrentTimestamp(name string, autoCreatePr
 	if err != nil {
 		return errors.Wrap(err, "unable to get running time entry from toggl")
 	}
-	te.Pid = projectID
+	te.Pid = &projectID
 	_, err = t.session.UpdateTimeEntry(*te)
 	return err
 }
@@ -316,7 +316,7 @@ func (t *TogglPersistor) CreateProject(name string) error {
 // DeleteProject removes a project from the workspace
 func (t *TogglPersistor) DeleteProject(name string) error {
 	var (
-		project *toggl.Project
+		project toggl.Project
 		id      int
 		err     error
 	)
@@ -329,10 +329,9 @@ func (t *TogglPersistor) DeleteProject(name string) error {
 		return err
 	}
 
-	project, err = t.session.GetProject(id)
-
-	if nil == project {
-		return errors.New("no such project")
+	project, err = t.session.GetProject(id, t.Workspace())
+	if err != nil {
+		return err
 	}
 
 	_, err = t.session.DeleteProject(toggl.Project{
@@ -391,14 +390,14 @@ func (t *TogglPersistor) ListForDay() ([]timenote.TimeEntry, error) {
 			Stop:     entry.Stop,
 			Duration: entry.Duration,
 		}
-		if entry.Pid > 0 {
-			p, err := t.GetProject(entry.Pid)
+		if *entry.Pid > 0 {
+			p, err := t.GetProject(*entry.Pid)
 			if err != nil {
 				te.Project = "- unknown project -"
 			} else {
 				te.Project = p.Name
-				if p.Cid > 0 {
-					c, err := t.GetClientByID(p.Cid)
+				if *p.Cid > 0 {
+					c, err := t.GetClientByID(*p.Cid)
 					if err != nil {
 						te.Client = "- unknown client -"
 					} else {
@@ -462,6 +461,6 @@ func (t *TogglPersistor) StartPrevious() error {
 		}
 		sub--
 	}
-	_, err = t.session.StartTimeEntryForProject(entries[len(entries)-1].Description, entries[len(entries)-1].Pid, false)
+	_, err = t.session.StartTimeEntryForProject(entries[len(entries)-1].Description, t.Workspace(), *entries[len(entries)-1].Pid, nil)
 	return err
 }
