@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/jason0x43/go-toggl"
+
 	"livingit.de/code/timenote"
 	"livingit.de/code/timenote/internal/cache"
 )
@@ -390,13 +391,13 @@ func (t *TogglPersistor) ListForDay() ([]timenote.TimeEntry, error) {
 			Stop:     entry.Stop,
 			Duration: entry.Duration,
 		}
-		if *entry.Pid > 0 {
+		if entry.Pid != nil && *entry.Pid > 0 {
 			p, err := t.GetProject(*entry.Pid)
 			if err != nil {
 				te.Project = "- unknown project -"
 			} else {
 				te.Project = p.Name
-				if *p.Cid > 0 {
+				if p.Cid != nil && *p.Cid > 0 {
 					c, err := t.GetClientByID(*p.Cid)
 					if err != nil {
 						te.Client = "- unknown client -"
