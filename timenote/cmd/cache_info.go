@@ -19,7 +19,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.livingit.de/timenote/internal/persistence"
-	"log"
 )
 
 // timestampAppendCmd represents the append command
@@ -31,16 +30,16 @@ and when it will be updated`,
 	Run: func(cmd *cobra.Command, args []string) {
 		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
 		if err != nil {
-			log.Fatal(err)
+			fatal(err)
 		}
 
 		mdProjects, err := caching.ProjectMetaData(p.Workspace())
 		if err != nil {
-			log.Fatal(err)
+			fatal(err)
 		}
 		mdClients, err := caching.ClientMetaData(p.Workspace())
 		if err != nil {
-			log.Fatal(err)
+			fatal(err)
 		}
 
 		fmt.Println("Project cache")

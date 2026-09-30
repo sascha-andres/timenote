@@ -15,7 +15,6 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"log"
 )
 
 // timestampCmd represents the timestamp command
@@ -25,7 +24,7 @@ var interactiveCmd = &cobra.Command{
 	Long:  `Interact with toggl interactively with a "shell"`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := run(); err != nil {
-			log.Fatal(err)
+			fatal(err)
 		}
 	},
 }

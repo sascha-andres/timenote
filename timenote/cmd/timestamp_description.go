@@ -19,7 +19,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.livingit.de/timenote/internal/persistence"
-	"log"
 )
 
 // timestampCurrentCmd represents the current command
@@ -30,12 +29,12 @@ var timestampDescriptionCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
 		if err != nil {
-			log.Fatal(err)
+			fatal(err)
 		}
 
 		ts, err := p.Current()
 		if err != nil {
-			log.Fatal(err)
+			fatal(err)
 			return
 		}
 		fmt.Println(ts.Note)

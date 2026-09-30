@@ -18,7 +18,7 @@ import (
 	"github.com/zalando/go-keyring"
 	"go.livingit.de/timenote/internal/cache"
 	"go.livingit.de/timenote/internal/persistence"
-	"log"
+	"log/slog"
 	"os"
 	"path"
 	"strings"
@@ -53,14 +53,26 @@ You can tag notes`,
 
 		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
 		if err != nil {
-			log.Fatal(err)
+			fatal(err)
 		}
 
 		if err := p.New(); err != nil {
-			log.Fatal(err)
+			fatal(err)
 		}
 		_ = p.Append(description, viper.GetString("separator"))
 	},
+}
+
+// fatal logs err and terminates the process.
+func fatal(err error) {
+	slog.Error(err.Error())
+	os.Exit(1)
+}
+
+// fatalf logs msg with err and terminates the process.
+func fatalf(msg string, err error) {
+	slog.Error(msg, "error", err)
+	os.Exit(1)
 }
 
 // Execute adds all child commands to the root command sets flags appropriately.

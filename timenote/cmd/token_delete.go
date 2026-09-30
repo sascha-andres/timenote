@@ -3,7 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"github.com/zalando/go-keyring"
-	"log"
+	"log/slog"
 )
 
 // tokenDeleteCmd represents the current command
@@ -14,9 +14,9 @@ var tokenDeleteCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		err := keyring.Delete("timenote", "token")
 		if err != nil {
-			log.Printf("error deleting token: %s", err)
+			slog.Error("error deleting token", "error", err)
 		} else {
-			log.Print("token successfully deleted")
+			slog.Info("token successfully deleted")
 		}
 	},
 }

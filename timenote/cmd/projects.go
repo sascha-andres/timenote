@@ -21,7 +21,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.livingit.de/timenote/internal/persistence"
-	"log"
 	"os"
 	"text/tabwriter"
 )
@@ -34,12 +33,12 @@ var projectsCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
 		if err != nil {
-			log.Fatal(err)
+			fatal(err)
 		}
 
 		projects, err := p.Projects()
 		if err != nil {
-			log.Fatal(err)
+			fatal(err)
 		}
 
 		if viper.GetString("output-format") != "json" {
@@ -53,7 +52,7 @@ var projectsCmd = &cobra.Command{
 func writeProjectsJson(projects []toggl.Project) {
 	data, err := json.Marshal(projects)
 	if err != nil {
-		log.Fatal(err)
+		fatal(err)
 	}
 	_, _ = fmt.Println(string(data))
 }

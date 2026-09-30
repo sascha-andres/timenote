@@ -18,7 +18,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.livingit.de/timenote/internal/persistence"
-	"log"
 )
 
 // timestampAppendCmd represents the append command
@@ -30,12 +29,12 @@ var timestampTagCmd = &cobra.Command{
 		name := viper.GetString("tag.name")
 		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
 		if err != nil {
-			log.Fatal(err)
+			fatal(err)
 		}
 
 		err = p.Tag(name)
 		if err != nil {
-			log.Fatal(err)
+			fatal(err)
 		}
 	},
 }

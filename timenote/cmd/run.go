@@ -4,7 +4,7 @@ import (
 	"io"
 	"strings"
 
-	"log"
+	"log/slog"
 
 	"github.com/chzyer/readline"
 	"github.com/pkg/errors"
@@ -38,7 +38,7 @@ func runInputLoop(p *persistence.TogglPersistor) error {
 	}
 	defer func() {
 		if err := l.Close(); err != nil {
-			log.Fatalf("Error closing readline: %s", err.Error())
+			fatalf("error closing readline", err)
 		}
 	}()
 
@@ -54,7 +54,7 @@ func runInputLoop(p *persistence.TogglPersistor) error {
 		default:
 			err := executeLine(p, line)
 			if err != nil {
-				log.Printf("Error: %#v\n", err)
+				slog.Error("error", "error", err)
 			}
 			break
 		}

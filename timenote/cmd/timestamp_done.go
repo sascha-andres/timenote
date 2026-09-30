@@ -18,7 +18,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.livingit.de/timenote/internal/persistence"
-	"log"
 )
 
 // timestampDoneCmd represents the done command
@@ -29,12 +28,12 @@ var timestampDoneCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
 		if err != nil {
-			log.Fatal(err)
+			fatal(err)
 		}
 
 		err = p.Done()
 		if err != nil {
-			log.Fatal(err)
+			fatal(err)
 			return
 		}
 	},

@@ -20,7 +20,6 @@ import (
 	"github.com/spf13/viper"
 	"go.livingit.de/timenote"
 	"go.livingit.de/timenote/internal/persistence"
-	"log"
 	"time"
 )
 
@@ -33,12 +32,12 @@ hh:mm:ss'`,
 	Run: func(cmd *cobra.Command, args []string) {
 		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
 		if err != nil {
-			log.Fatal(err)
+			fatal(err)
 		}
 
 		ts, err := p.Current()
 		if err != nil {
-			log.Fatal(err)
+			fatal(err)
 			return
 		}
 		var td *timenote.TogglDuration

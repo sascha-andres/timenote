@@ -15,8 +15,6 @@
 package cmd
 
 import (
-	"log"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.livingit.de/timenote/internal/persistence"
@@ -29,12 +27,12 @@ var timestampProjectCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
 		if err != nil {
-			log.Fatal(err)
+			fatal(err)
 		}
 
 		err = p.SetProjectForCurrentTimestamp(viper.GetString("project.name"), viper.GetBool("project.auto-create-project"))
 		if err != nil {
-			log.Fatalf("error setting project: %s", err)
+			fatalf("error setting project", err)
 		}
 	},
 }

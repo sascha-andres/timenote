@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.livingit.de/timenote/internal/persistence"
-	"log"
 	"os"
 	"text/tabwriter"
 )
@@ -19,12 +18,12 @@ var clientsCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
 		if err != nil {
-			log.Fatal(err)
+			fatal(err)
 		}
 
 		clients, err := p.Clients()
 		if err != nil {
-			log.Fatal(err)
+			fatal(err)
 			os.Exit(1)
 		}
 
@@ -39,7 +38,7 @@ var clientsCmd = &cobra.Command{
 func writeClientsJson(clients []toggl.Client) {
 	data, err := json.Marshal(clients)
 	if err != nil {
-		log.Fatal(err)
+		fatal(err)
 		os.Exit(1)
 	}
 	_, _ = fmt.Println(string(data))

@@ -19,7 +19,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.livingit.de/timenote/internal/persistence"
-	"log"
+	"log/slog"
 )
 
 // timestampCmd represents the timestamp command
@@ -30,12 +30,12 @@ var timestampCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
 		if err != nil {
-			log.Fatal(err)
+			fatal(err)
 		}
 
 		ts, err := p.Current()
 		if err != nil {
-			log.Printf("Error reading timestamp: %s", err)
+			slog.Error("error reading timestamp", "error", err)
 			return
 		}
 		fmt.Println(ts)

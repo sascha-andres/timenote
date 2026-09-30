@@ -25,7 +25,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"log"
 )
 
 // timestampCurrentCmd represents the current command
@@ -36,12 +35,12 @@ var timestampTodayCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
 		if err != nil {
-			log.Fatal(err)
+			fatal(err)
 		}
 
 		ts, err := p.ListForDay()
 		if err != nil {
-			log.Fatal(err)
+			fatal(err)
 			return
 		}
 		if !viper.GetBool("timestamp.today.sum-only") {
@@ -98,7 +97,7 @@ var timestampTodayCmd = &cobra.Command{
 func writeTimeEntriesJson(ts []timenote.TimeEntry) {
 	data, err := json.Marshal(ts)
 	if err != nil {
-		log.Fatal(err)
+		fatal(err)
 	}
 	_, _ = fmt.Println(string(data))
 }

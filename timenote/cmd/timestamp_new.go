@@ -16,7 +16,6 @@ package cmd
 
 import (
 	"go.livingit.de/timenote/internal/persistence"
-	"log"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -31,11 +30,11 @@ var timestampNewCmd = &cobra.Command{
 		description := viper.GetString("timestamp.new.description")
 		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
 		if err != nil {
-			log.Fatal(err)
+			fatal(err)
 		}
 
 		if err := p.New(); err != nil {
-			log.Fatal(err)
+			fatal(err)
 		}
 		_ = p.Append(description, viper.GetString("separator"))
 

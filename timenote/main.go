@@ -16,17 +16,26 @@ package main
 import (
 	"github.com/google/gops/agent"
 	"go.livingit.de/timenote/timenote/cmd"
-	"log"
+	"log/slog"
+	"os"
 )
 
 var version string = "develop"
 
 func main() {
-	log.SetFlags(log.LUTC | log.LstdFlags | log.Lshortfile)
-	log.SetPrefix("[timenote] ")
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+		AddSource: true,
+		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+			if a.Key == slog.TimeKey {
+				a.Value = slog.TimeValue(a.Value.Time().UTC())
+			}
+			return a
+		},
+	})))
 
 	if err := agent.Listen(agent.Options{}); err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 
 	cmd.Execute()

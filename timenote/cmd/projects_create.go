@@ -18,7 +18,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.livingit.de/timenote/internal/persistence"
-	"log"
 )
 
 // timestampAppendCmd represents the append command
@@ -32,12 +31,12 @@ If project already exists it will not do anything`,
 		name := viper.GetString("projects.create.name")
 		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
 		if err != nil {
-			log.Fatal(err)
+			fatal(err)
 		}
 
 		err = p.CreateProject(name)
 		if err != nil {
-			log.Fatal(err)
+			fatal(err)
 		}
 	},
 }
