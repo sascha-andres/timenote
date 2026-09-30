@@ -14,29 +14,10 @@
 
 package cmd
 
-import (
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"go.livingit.de/timenote/internal/persistence"
-)
-
-// timestampAppendCmd represents the append command
-var cacheUpdateCmd = &cobra.Command{
-	Use:   "update",
-	Short: "Retrieve new data and store in cache",
-	Long:  `Reaches out to toggl and refreshes local data`,
-	Run: func(cmd *cobra.Command, args []string) {
-		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
-		if err != nil {
-			fatal(err)
-		}
-
-		if err := p.UpdateCache(); err != nil {
-			fatal(err)
-		}
-	},
-}
-
-func init() {
-	cacheCmd.AddCommand(cacheUpdateCmd)
+// cacheUpdate reaches out to toggl and refreshes local data.
+func cacheUpdate() {
+	p := newPersistor()
+	if err := p.UpdateCache(); err != nil {
+		fatal(err)
+	}
 }

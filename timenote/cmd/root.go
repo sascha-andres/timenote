@@ -15,52 +15,23 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/zalando/go-keyring"
-	"go.livingit.de/timenote/internal/cache"
-	"go.livingit.de/timenote/internal/persistence"
 	"log/slog"
 	"os"
-	"path"
 	"strings"
 
-	"github.com/mitchellh/go-homedir"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"github.com/zalando/go-keyring"
+	"go.livingit.de/reuse/flag"
+	"go.livingit.de/timenote/internal/cache"
+	"go.livingit.de/timenote/internal/persistence"
 )
 
 var (
-	cfgFile, token string
-	caching        *cache.Cache
+	token   string
+	caching *cache.Cache
 )
 
-// RootCmd represents the base command when called without any subcommands
-var RootCmd = &cobra.Command{
-	Use:   "timenote",
-	Short: "Take notes with attached timestamps",
-	Long: `A timestamp will be attached when you start a not and a second
-one as soon as you stop working on that note
-
-You can tag notes`,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			return
-		}
-
-		description := strings.Join(args, " ")
-		if args[0] == "--" {
-			description = strings.Join(args[1:], "")
-		}
-
-		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
-		if err != nil {
-			fatal(err)
-		}
-
-		if err := p.New(); err != nil {
-			fatal(err)
-		}
-		_ = p.Append(description, viper.GetString("separator"))
-	},
+func init() {
+	token, _ = keyring.Get("timenote", "token")
 }
 
 // fatal logs err and terminates the process.
@@ -75,78 +46,80 @@ func fatalf(msg string, err error) {
 	os.Exit(1)
 }
 
-// Execute adds all child commands to the root command sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
+// requireString exits the process if value is empty, naming flagName in the error.
+func requireString(flagName, value string) string {
+	if value == "" {
+		fatal(fmt.Errorf("--%s is required", flagName))
+	}
+	return value
+}
+
+// newPersistor builds the persistence layer for the configured workspace, or
+// terminates the process if that fails.
+func newPersistor() *persistence.TogglPersistor {
+	p, err := persistence.NewToggl(token, *workspace, caching)
+	if err != nil {
+		fatal(err)
+	}
+	return p
+}
+
+// Execute parses flags and dispatches to the requested command.
 func Execute() {
-	c, err := cache.NewCache(viper.GetInt("cache.max-age"), viper.GetString("cache.path"))
+	flag.Parse()
+
+	c, err := cache.NewCache(*cacheMaxAge, *cachePath)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 	caching = c
 	defer func() {
-		err := caching.Close()
-		if err != nil {
+		if err := caching.Close(); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 	}()
-	if err = RootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+
+	dispatch(flag.GetVerbs())
 }
 
-func init() {
-	token, _ = keyring.Get("timenote", "token")
-
-	cobra.OnInitialize(initConfig)
-
-	// Find home directory.
-	home, err := homedir.Dir()
-	if err != nil {
-		fmt.Println(home)
-		os.Exit(1)
+// dispatch routes the leading verb to its command group, falling back to
+// treating the whole verb list as a new timestamp's description.
+func dispatch(verbs []string) {
+	if len(verbs) == 0 {
+		return
 	}
-
-	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.timenote.yaml)")
-	RootCmd.PersistentFlags().IntP("workspace", "w", 0, "Set to work within this workspace, leave to zero to have it guessed (first workspace)")
-	RootCmd.PersistentFlags().StringP("output-format", "", "text", "test or json")
-	RootCmd.PersistentFlags().StringP("separator", "", ";", "Separator for existing value and new value")
-	RootCmd.PersistentFlags().IntP("cache-max-age", "", 360, "Maximum age of cache in minutes")
-	RootCmd.PersistentFlags().StringP("cache-path", "", path.Join(home, ".config/timenote"), "Where to store cache")
-
-	RootCmd.PersistentFlags().StringArrayP("excluded-projects", "x", []string{}, "exclude projects from the list by name")
-
-	_ = viper.BindPFlag("separator", RootCmd.PersistentFlags().Lookup("separator"))
-	_ = viper.BindPFlag("output-format", RootCmd.PersistentFlags().Lookup("output-format"))
-
-	_ = viper.BindPFlag("excluded-projects", RootCmd.PersistentFlags().Lookup("excluded-projects"))
-
-	_ = viper.BindPFlag("cache.max-age", RootCmd.PersistentFlags().Lookup("cache-max-age"))
-	_ = viper.BindPFlag("cache.path", RootCmd.PersistentFlags().Lookup("cache-path"))
-}
-
-// initConfig reads in config file and ENV variables if set.
-func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		if err != nil {
-			fmt.Println(home)
-			os.Exit(1)
+	switch verbs[0] {
+	case "timestamp":
+		dispatchTimestamp(verbs[1:])
+	case "projects":
+		dispatchProjects(verbs[1:])
+	case "clients":
+		dispatchClients(verbs[1:])
+	case "cache":
+		dispatchCache(verbs[1:])
+	case "token":
+		dispatchToken(verbs[1:])
+	case "today":
+		timestampToday()
+	case "browser":
+		openBrowser()
+	case "i":
+		if err := run(); err != nil {
+			fatal(err)
 		}
-
-		// Search config in home directory with name ".cobra" (without extension).
-		viper.AddConfigPath(path.Join(home, ".config/timenote"))
-		viper.AddConfigPath(home)
-		viper.AddConfigPath(".")
-		viper.SetConfigName(".timenote")
+	default:
+		newFromDescription(verbs)
 	}
+}
 
-	viper.AutomaticEnv() // read in environment variables that match
-	_ = viper.ReadInConfig()
+// newFromDescription starts a new timestamp using the given words joined as
+// its description; this is the default action for the root command.
+func newFromDescription(words []string) {
+	p := newPersistor()
+	if err := p.New(); err != nil {
+		fatal(err)
+	}
+	_ = p.Append(strings.Join(words, " "), *separator)
 }

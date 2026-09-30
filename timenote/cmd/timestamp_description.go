@@ -14,33 +14,14 @@
 
 package cmd
 
-import (
-	"fmt"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"go.livingit.de/timenote/internal/persistence"
-)
+import "fmt"
 
-// timestampCurrentCmd represents the current command
-var timestampDescriptionCmd = &cobra.Command{
-	Use:   "description",
-	Short: "Print current timestamp description",
-	Long:  `Prints the current timestamp's description`,
-	Run: func(cmd *cobra.Command, args []string) {
-		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
-		if err != nil {
-			fatal(err)
-		}
-
-		ts, err := p.Current()
-		if err != nil {
-			fatal(err)
-			return
-		}
-		fmt.Println(ts.Note)
-	},
-}
-
-func init() {
-	timestampCmd.AddCommand(timestampDescriptionCmd)
+// timestampDescription prints the current timestamp's description.
+func timestampDescription() {
+	p := newPersistor()
+	ts, err := p.Current()
+	if err != nil {
+		fatal(err)
+	}
+	fmt.Println(ts.Note)
 }

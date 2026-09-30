@@ -14,17 +14,19 @@
 
 package cmd
 
-import (
-	"github.com/spf13/cobra"
-)
+import "fmt"
 
-// timestampCmd represents the timestamp command
-var cacheCmd = &cobra.Command{
-	Use:   "cache",
-	Short: "cache management",
-	Long:  `Interact with the builtin cache`,
-}
-
-func init() {
-	RootCmd.AddCommand(cacheCmd)
+// dispatchCache routes "cache" sub-verbs: info, update.
+func dispatchCache(verbs []string) {
+	if len(verbs) == 0 {
+		fatal(fmt.Errorf("cache requires a command: info, update"))
+	}
+	switch verbs[0] {
+	case "info":
+		cacheInfo()
+	case "update":
+		cacheUpdate()
+	default:
+		fatal(fmt.Errorf("unknown cache command %q", verbs[0]))
+	}
 }

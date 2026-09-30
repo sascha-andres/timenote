@@ -16,53 +16,31 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"go.livingit.de/timenote"
-	"go.livingit.de/timenote/internal/persistence"
 	"time"
+
+	"go.livingit.de/timenote"
 )
 
-// timestampCurrentCmd represents the current command
-var timestampDurationCmd = &cobra.Command{
-	Use:   "duration",
-	Short: "Print current timestamp duration",
-	Long: `Prints the current timestamp's duration in
-hh:mm:ss'`,
-	Run: func(cmd *cobra.Command, args []string) {
-		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
-		if err != nil {
-			fatal(err)
-		}
+// timestampDuration prints the current timestamp's duration as hh:mm:ss.
+func timestampDuration() {
+	p := newPersistor()
+	ts, err := p.Current()
+	if err != nil {
+		fatal(err)
+	}
 
-		ts, err := p.Current()
-		if err != nil {
-			fatal(err)
-			return
-		}
-		var td *timenote.TogglDuration
-		if ts.Duration < 0 {
-			t := time.Now().UTC().Add(time.Duration(ts.Duration) * time.Second)
-			td, err = timenote.TogglDurationFromTime(t)
-			if err != nil {
-				panic(err)
-			}
-		} else {
-			td, err = timenote.NewTogglDuration(ts.Duration)
-			if err != nil {
-				panic(err)
-			}
-		}
-		if !viper.GetBool("timestamp.duration.include-seconds") {
-			td.OmitSeconds()
-		}
-		fmt.Println(td.String())
-	},
-}
-
-func init() {
-	timestampCmd.AddCommand(timestampDurationCmd)
-
-	timestampDurationCmd.Flags().BoolP("include-seconds", "", true, "Include seconds when writing out time entry")
-	_ = viper.BindPFlag("timestamp.duration.include-seconds", timestampDurationCmd.Flags().Lookup("include-seconds"))
+	var td *timenote.TogglDuration
+	if ts.Duration < 0 {
+		t := time.Now().UTC().Add(time.Duration(ts.Duration) * time.Second)
+		td, err = timenote.TogglDurationFromTime(t)
+	} else {
+		td, err = timenote.NewTogglDuration(ts.Duration)
+	}
+	if err != nil {
+		panic(err)
+	}
+	if !*includeSeconds {
+		td.OmitSeconds()
+	}
+	fmt.Println(td.String())
 }

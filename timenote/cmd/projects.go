@@ -17,36 +17,41 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/jason0x43/go-toggl"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"go.livingit.de/timenote/internal/persistence"
 	"os"
 	"text/tabwriter"
+
+	"github.com/jason0x43/go-toggl"
 )
 
-// projectsCmd represents the project command
-var projectsCmd = &cobra.Command{
-	Use:   "projects",
-	Short: "projects management",
-	Long:  `List projects and manage projects using sub commands`,
-	Run: func(cmd *cobra.Command, args []string) {
-		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
-		if err != nil {
-			fatal(err)
-		}
+// dispatchProjects routes "projects" sub-verbs; with none given it lists
+// projects.
+func dispatchProjects(verbs []string) {
+	if len(verbs) == 0 {
+		projectsList()
+		return
+	}
+	switch verbs[0] {
+	case "create":
+		projectsCreate()
+	case "delete":
+		projectsDelete()
+	default:
+		fatal(fmt.Errorf("unknown projects command %q", verbs[0]))
+	}
+}
 
-		projects, err := p.Projects()
-		if err != nil {
-			fatal(err)
-		}
+func projectsList() {
+	p := newPersistor()
+	projects, err := p.Projects()
+	if err != nil {
+		fatal(err)
+	}
 
-		if viper.GetString("output-format") != "json" {
-			writeProjectsTable(filterProjects(projects))
-		} else {
-			writeProjectsJson(filterProjects(projects))
-		}
-	},
+	if *outputFormat != "json" {
+		writeProjectsTable(filterProjects(projects))
+	} else {
+		writeProjectsJson(filterProjects(projects))
+	}
 }
 
 func writeProjectsJson(projects []toggl.Project) {
@@ -54,40 +59,35 @@ func writeProjectsJson(projects []toggl.Project) {
 	if err != nil {
 		fatal(err)
 	}
-	_, _ = fmt.Println(string(data))
+	fmt.Println(string(data))
 }
 
 func writeProjectsTable(projects []toggl.Project) {
 	w := new(tabwriter.Writer)
 	// Format in tab-separated columns with a tab stop of 8.
 	w.Init(os.Stdout, 0, 8, 2, '\t', 0)
-	_, _ = fmt.Fprintln(w, "ID\tName\t")
+	fmt.Fprintln(w, "ID\tName\t")
 	for _, prj := range projects {
-		_, _ = fmt.Fprintln(w, fmt.Sprintf("%d\t%s\t", prj.ID, prj.Name))
+		fmt.Fprintf(w, "%d\t%s\t\n", prj.ID, prj.Name)
 	}
 	_ = w.Flush()
 }
 
-// isProjectInExcludeList returns true if project is filtered by exclude
+// filterProjects removes projects named in the excluded-projects flag.
 func filterProjects(projects []toggl.Project) []toggl.Project {
-	excludeList := viper.GetStringSlice("excluded-projects")
-	filteredProjectList := make([]toggl.Project, 0)
+	excludeList := excludedProjects()
+	filtered := make([]toggl.Project, 0)
 	for _, prj := range projects {
-		c := false
+		excluded := false
 		for _, v := range excludeList {
 			if v == prj.Name {
-				c = true
+				excluded = true
 				break
 			}
 		}
-		if c {
-			continue
+		if !excluded {
+			filtered = append(filtered, prj)
 		}
-		filteredProjectList = append(filteredProjectList, prj)
 	}
-	return filteredProjectList
-}
-
-func init() {
-	RootCmd.AddCommand(projectsCmd)
+	return filtered
 }

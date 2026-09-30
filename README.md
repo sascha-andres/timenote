@@ -6,18 +6,19 @@ Essentially this is a commandline client to track your time
 
 ## Configuration
 
-There is one main option:
+Configuration is via command-line flags and environment variables only (no
+config file). Every flag falls back to an upper-cased, dash-to-underscore
+environment variable, e.g. `-workspace` / `WORKSPACE`, `-cache-path` /
+`CACHE_PATH`.
 
-1. dsn
+Flags must come before the command, not after, e.g.:
 
-For toggl use your toggl token.
+    timenote -description "did a thing" timestamp new
+    timenote -name "Client X" projects create
 
-You can Use a configuration file in your home directory, .timenote.yaml.
+## Store your toggl token
 
-A sample looks like this:
-
-    ---
-    dsn: /
+    timenote -token xxx token save
 
 ## State
 

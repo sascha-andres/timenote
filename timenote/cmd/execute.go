@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spf13/viper"
-
 	"github.com/mgutz/str"
 	"github.com/pkg/browser"
 	"go.livingit.de/timenote/internal/persistence"
@@ -32,7 +30,7 @@ func executeLine(p *persistence.TogglPersistor, commandline string) error {
 		fmt.Println(humanizeDuration(diff))
 		break
 	case "append":
-		return p.Append(strings.Join(tokenize[1:], " "), viper.GetString("separator"))
+		return p.Append(strings.Join(tokenize[1:], " "), *separator)
 	case "project":
 		return p.SetProjectForCurrentTimestamp(strings.Join(tokenize[1:], " "), false)
 	case "tag":

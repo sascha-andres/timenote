@@ -1,5 +1,4 @@
-// Copyright © 2018 Sascha Andres <sascha.andres@outlook.com>
-//
+// Copyright © 2021 Sascha Andres <sascha.andres@outlook.com>
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -14,34 +13,35 @@
 
 package cmd
 
-import (
-	"fmt"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"go.livingit.de/timenote/internal/persistence"
-	"log/slog"
-)
+import "fmt"
 
-// timestampCmd represents the timestamp command
-var timestampCmd = &cobra.Command{
-	Use:   "timestamp",
-	Short: "timestamp management",
-	Long:  `Manage timestamps by adding`,
-	Run: func(cmd *cobra.Command, args []string) {
-		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
-		if err != nil {
-			fatal(err)
-		}
-
-		ts, err := p.Current()
-		if err != nil {
-			slog.Error("error reading timestamp", "error", err)
-			return
-		}
-		fmt.Println(ts)
-	},
-}
-
-func init() {
-	RootCmd.AddCommand(timestampCmd)
+// dispatchTimestamp routes "timestamp" sub-verbs; with none given it prints
+// the current timestamp, mirroring "timestamp current".
+func dispatchTimestamp(verbs []string) {
+	if len(verbs) == 0 {
+		timestampCurrent()
+		return
+	}
+	switch verbs[0] {
+	case "new":
+		timestampNew()
+	case "append":
+		timestampAppend()
+	case "tag":
+		timestampTag()
+	case "done":
+		timestampDone()
+	case "current":
+		timestampCurrent()
+	case "description":
+		timestampDescription()
+	case "duration":
+		timestampDuration()
+	case "project":
+		timestampProject()
+	case "like-previous":
+		timestampLikePrevious()
+	default:
+		fatal(fmt.Errorf("unknown timestamp command %q", verbs[0]))
+	}
 }

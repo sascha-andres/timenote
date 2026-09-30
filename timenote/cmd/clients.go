@@ -3,62 +3,56 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/jason0x43/go-toggl"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"go.livingit.de/timenote/internal/persistence"
 	"os"
 	"text/tabwriter"
+
+	"github.com/jason0x43/go-toggl"
 )
 
-var clientsCmd = &cobra.Command{
-	Use:   "clients",
-	Short: "clients management",
-	Long:  `List clients and manage clients using sub commands`,
-	Run: func(cmd *cobra.Command, args []string) {
-		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
-		if err != nil {
-			fatal(err)
-		}
+// dispatchClients routes "clients" sub-verbs; with none given it lists
+// clients.
+func dispatchClients(verbs []string) {
+	if len(verbs) == 0 {
+		clientsList()
+		return
+	}
+	switch verbs[0] {
+	case "create":
+		clientsCreate()
+	default:
+		fatal(fmt.Errorf("unknown clients command %q", verbs[0]))
+	}
+}
 
-		clients, err := p.Clients()
-		if err != nil {
-			fatal(err)
-			os.Exit(1)
-		}
+func clientsList() {
+	p := newPersistor()
+	clients, err := p.Clients()
+	if err != nil {
+		fatal(err)
+	}
 
-		if viper.GetString("output-format") != "json" {
-			writeClientsTable(filterClients(clients))
-		} else {
-			writeClientsJson(filterClients(clients))
-		}
-	},
+	if *outputFormat != "json" {
+		writeClientsTable(clients)
+	} else {
+		writeClientsJson(clients)
+	}
 }
 
 func writeClientsJson(clients []toggl.Client) {
 	data, err := json.Marshal(clients)
 	if err != nil {
 		fatal(err)
-		os.Exit(1)
 	}
-	_, _ = fmt.Println(string(data))
+	fmt.Println(string(data))
 }
 
 func writeClientsTable(clients []toggl.Client) {
 	w := new(tabwriter.Writer)
 	// Format in tab-separated columns with a tab stop of 8.
 	w.Init(os.Stdout, 0, 8, 2, '\t', 0)
-	_, _ = fmt.Fprintln(w, "ID\tName\t")
-	for _, prj := range clients {
-		_, _ = fmt.Fprintln(w, fmt.Sprintf("%d\t%s\t", prj.ID, prj.Name))
+	fmt.Fprintln(w, "ID\tName\t")
+	for _, c := range clients {
+		fmt.Fprintf(w, "%d\t%s\t\n", c.ID, c.Name)
 	}
 	_ = w.Flush()
-}
-
-func filterClients(clients []toggl.Client) []toggl.Client {
-	return clients
-}
-
-func init() {
-	RootCmd.AddCommand(clientsCmd)
 }

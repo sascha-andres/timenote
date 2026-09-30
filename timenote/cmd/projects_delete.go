@@ -14,38 +14,11 @@
 
 package cmd
 
-import (
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"go.livingit.de/timenote/internal/persistence"
-)
-
-// timestampAppendCmd represents the append command
-var projectsDeleteCmd = &cobra.Command{
-	Use:   "delete",
-	Short: "Add a new project to the project list",
-	Long: `This will add a new project to the time backend
-
-If project already exists it will not do anything`,
-	Run: func(cmd *cobra.Command, args []string) {
-		name := viper.GetString("projects.delete.name")
-		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
-		if err != nil {
-			fatal(err)
-		}
-
-		err = p.DeleteProject(name)
-		if err != nil {
-			fatal(err)
-		}
-	},
-}
-
-func init() {
-	projectsCmd.AddCommand(projectsDeleteCmd)
-
-	projectsDeleteCmd.Flags().StringP("name", "", "", "name for project. id can also be used")
-	_ = projectsDeleteCmd.MarkFlagRequired("name")
-
-	_ = viper.BindPFlag("projects.delete.name", projectsDeleteCmd.Flags().Lookup("name"))
+// projectsDelete removes a project from the time backend, by name or id.
+func projectsDelete() {
+	n := requireString("name", *name)
+	p := newPersistor()
+	if err := p.DeleteProject(n); err != nil {
+		fatal(err)
+	}
 }

@@ -14,36 +14,12 @@
 
 package cmd
 
-import (
-	"go.livingit.de/timenote/internal/persistence"
-
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-)
-
-// timestampNewCmd represents the new command
-var timestampNewCmd = &cobra.Command{
-	Use:   "new",
-	Short: "add a new timestamp",
-	Long:  `Starts a new timestamp`,
-	Run: func(cmd *cobra.Command, args []string) {
-		description := viper.GetString("timestamp.new.description")
-		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
-		if err != nil {
-			fatal(err)
-		}
-
-		if err := p.New(); err != nil {
-			fatal(err)
-		}
-		_ = p.Append(description, viper.GetString("separator"))
-
-	},
-}
-
-func init() {
-	timestampCmd.AddCommand(timestampNewCmd)
-	timestampNewCmd.Flags().StringP("description", "", "", "Description for timestamp")
-	_ = timestampNewCmd.MarkFlagRequired("description")
-	_ = viper.BindPFlag("timestamp.new.description", timestampNewCmd.Flags().Lookup("description"))
+// timestampNew starts a new timestamp with the given description.
+func timestampNew() {
+	desc := requireString("description", *description)
+	p := newPersistor()
+	if err := p.New(); err != nil {
+		fatal(err)
+	}
+	_ = p.Append(desc, *separator)
 }

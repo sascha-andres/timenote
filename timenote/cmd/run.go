@@ -8,7 +8,6 @@ import (
 
 	"github.com/chzyer/readline"
 	"github.com/pkg/errors"
-	"github.com/spf13/viper"
 	"go.livingit.de/timenote/internal/persistence"
 )
 
@@ -23,7 +22,7 @@ var (
 )
 
 func run() error {
-	p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
+	p, err := persistence.NewToggl(token, *workspace, caching)
 	if err != nil {
 		return errors.Wrap(err, "Could not create p layer")
 	}

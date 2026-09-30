@@ -1,15 +1,18 @@
 package cmd
 
-import (
-	"github.com/spf13/cobra"
-)
+import "fmt"
 
-// browserCmd represents the browser command
-var tokenCmd = &cobra.Command{
-	Use:   "token",
-	Short: "manage token (set token or delete token)",
-}
-
-func init() {
-	RootCmd.AddCommand(tokenCmd)
+// dispatchToken routes "token" sub-verbs: save, delete.
+func dispatchToken(verbs []string) {
+	if len(verbs) == 0 {
+		fatal(fmt.Errorf("token requires a command: save, delete"))
+	}
+	switch verbs[0] {
+	case "save":
+		tokenSave()
+	case "delete":
+		tokenDelete()
+	default:
+		fatal(fmt.Errorf("unknown token command %q", verbs[0]))
+	}
 }

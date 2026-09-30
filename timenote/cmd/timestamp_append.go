@@ -14,38 +14,12 @@
 
 package cmd
 
-import (
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"go.livingit.de/timenote/internal/persistence"
-)
-
-// timestampAppendCmd represents the append command
-var timestampAppendCmd = &cobra.Command{
-	Use:   "append",
-	Short: "append/overwrite description for running timeentry",
-	Long: `Depending on the persistor, this command appends
-to the description or sets the description`,
-	Run: func(cmd *cobra.Command, args []string) {
-		description := viper.GetString("append.description")
-		separator := viper.GetString("separator")
-		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
-		if err != nil {
-			fatal(err)
-		}
-
-		err = p.Append(description, separator)
-		if err != nil {
-			fatal(err)
-		}
-	},
-}
-
-func init() {
-	timestampCmd.AddCommand(timestampAppendCmd)
-
-	timestampAppendCmd.Flags().StringP("description", "", "", "Description for timestamp")
-	_ = timestampAppendCmd.MarkFlagRequired("description")
-
-	_ = viper.BindPFlag("append.description", timestampAppendCmd.Flags().Lookup("description"))
+// timestampAppend appends to (or, depending on the persistor, overwrites)
+// the description of the running time entry.
+func timestampAppend() {
+	desc := requireString("description", *description)
+	p := newPersistor()
+	if err := p.Append(desc, *separator); err != nil {
+		fatal(err)
+	}
 }

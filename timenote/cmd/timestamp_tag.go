@@ -14,36 +14,11 @@
 
 package cmd
 
-import (
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"go.livingit.de/timenote/internal/persistence"
-)
-
-// timestampAppendCmd represents the append command
-var timestampTagCmd = &cobra.Command{
-	Use:   "tag",
-	Short: "tag current entry",
-	Long:  `Depending on the persistor, this command adds or overwrites a tag`,
-	Run: func(cmd *cobra.Command, args []string) {
-		name := viper.GetString("tag.name")
-		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
-		if err != nil {
-			fatal(err)
-		}
-
-		err = p.Tag(name)
-		if err != nil {
-			fatal(err)
-		}
-	},
-}
-
-func init() {
-	timestampCmd.AddCommand(timestampTagCmd)
-
-	timestampTagCmd.Flags().StringP("name", "", "", "Name for tag")
-	_ = timestampTagCmd.MarkFlagRequired("name")
-
-	_ = viper.BindPFlag("tag.name", timestampTagCmd.Flags().Lookup("name"))
+// timestampTag adds or overwrites a tag on the current entry.
+func timestampTag() {
+	n := requireString("name", *name)
+	p := newPersistor()
+	if err := p.Tag(n); err != nil {
+		fatal(err)
+	}
 }

@@ -14,38 +14,12 @@
 
 package cmd
 
-import (
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"go.livingit.de/timenote/internal/persistence"
-)
-
-// timestampAppendCmd represents the append command
-var projectsCreateCmd = &cobra.Command{
-	Use:   "create",
-	Short: "Add a new project to the project list",
-	Long: `This will add a new project to the time backend
-
-If project already exists it will not do anything`,
-	Run: func(cmd *cobra.Command, args []string) {
-		name := viper.GetString("projects.create.name")
-		p, err := persistence.NewToggl(token, viper.GetInt("workspace"), caching)
-		if err != nil {
-			fatal(err)
-		}
-
-		err = p.CreateProject(name)
-		if err != nil {
-			fatal(err)
-		}
-	},
-}
-
-func init() {
-	projectsCmd.AddCommand(projectsCreateCmd)
-
-	projectsCreateCmd.Flags().StringP("name", "", "", "name for project")
-	_ = projectsCreateCmd.MarkFlagRequired("name")
-
-	_ = viper.BindPFlag("projects.create.name", projectsCreateCmd.Flags().Lookup("name"))
+// projectsCreate adds a new project to the time backend, if it does not
+// already exist.
+func projectsCreate() {
+	n := requireString("name", *name)
+	p := newPersistor()
+	if err := p.CreateProject(n); err != nil {
+		fatal(err)
+	}
 }
