@@ -10,7 +10,10 @@ import (
 func (c *Cache) ClientMetaData(workspace int) (m *MetaData, err error) {
 	_ = c.db.Update(func(tx *bbolt.Tx) error {
 		b := tx.Bucket([]byte(fmt.Sprintf(clientBucketNameTemplate, workspace)))
-		v := b.Get([]byte(metaKeyName))
+		var v []byte
+		if b != nil {
+			v = b.Get([]byte(metaKeyName))
+		}
 		var md MetaData
 		err = yaml.Unmarshal(v, &md)
 		m = &md

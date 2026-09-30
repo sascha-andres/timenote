@@ -10,6 +10,9 @@ import (
 func (c *Cache) GetAccount() (acc toggl.Account, err error) {
 	_ = c.db.View(func(tx *bbolt.Tx) error {
 		b := tx.Bucket([]byte(accountBucketName))
+		if b == nil {
+			return nil
+		}
 		v := b.Get([]byte(accountValueKeyName))
 		err = yaml.Unmarshal(v, &acc)
 		return nil

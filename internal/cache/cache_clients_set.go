@@ -14,7 +14,10 @@ func (c *Cache) SetClients(workspace int, clients []toggl.Client) error {
 		if err != nil {
 			return err
 		}
-		b := tx.Bucket([]byte(fmt.Sprintf(clientBucketNameTemplate, workspace)))
+		b, err := tx.CreateBucketIfNotExists([]byte(fmt.Sprintf(clientBucketNameTemplate, workspace)))
+		if err != nil {
+			return err
+		}
 		err = b.Put([]byte(allKeyName), allData)
 		if err != nil {
 			return err

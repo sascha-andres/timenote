@@ -10,7 +10,10 @@ import (
 // AccountSet can be used to update the value of the account in the cache
 func (c *Cache) AccountSet(account *toggl.Account) error {
 	return c.db.Update(func(tx *bbolt.Tx) error {
-		b := tx.Bucket([]byte(accountBucketName))
+		b, err := tx.CreateBucketIfNotExists([]byte(accountBucketName))
+		if err != nil {
+			return err
+		}
 		v, err := yaml.Marshal(account)
 		if err != nil {
 			return err

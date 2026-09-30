@@ -10,6 +10,9 @@ import (
 func (c *Cache) Projects(workspace int) (projects []toggl.Project, err error) {
 	err = c.db.View(func(tx *bbolt.Tx) error {
 		b := tx.Bucket([]byte(fmt.Sprintf(projectBucketNameTemplate, workspace)))
+		if b == nil {
+			return nil
+		}
 		v := b.Get([]byte(allKeyName))
 		err = yaml.Unmarshal(v, &projects)
 		return nil

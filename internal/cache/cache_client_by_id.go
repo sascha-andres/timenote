@@ -10,7 +10,10 @@ import (
 func (c *Cache) ClientByID(clientID, workspace int) (client *toggl.Client, err error) {
 	err = c.db.View(func(tx *bbolt.Tx) error {
 		b := tx.Bucket([]byte(fmt.Sprintf(clientBucketNameTemplate, workspace)))
-		v := b.Get([]byte(fmt.Sprintf("%10d", clientID)))
+		var v []byte
+		if b != nil {
+			v = b.Get([]byte(fmt.Sprintf("%10d", clientID)))
+		}
 		var cl toggl.Client
 		err = yaml.Unmarshal(v, &cl)
 		client = &cl

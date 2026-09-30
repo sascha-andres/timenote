@@ -15,7 +15,10 @@ func (c *Cache) SetProjects(workspace int, projects []toggl.Project) error {
 		if err != nil {
 			return err
 		}
-		b := tx.Bucket([]byte(fmt.Sprintf(projectBucketNameTemplate, workspace)))
+		b, err := tx.CreateBucketIfNotExists([]byte(fmt.Sprintf(projectBucketNameTemplate, workspace)))
+		if err != nil {
+			return err
+		}
 		err = b.Put([]byte(allKeyName), allData)
 		if err != nil {
 			return err

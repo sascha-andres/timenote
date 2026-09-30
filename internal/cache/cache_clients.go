@@ -10,6 +10,9 @@ import (
 func (c *Cache) Clients(workspace int) (clients []toggl.Client, err error) {
 	err = c.db.View(func(tx *bbolt.Tx) error {
 		b := tx.Bucket([]byte(fmt.Sprintf(clientBucketNameTemplate, workspace)))
+		if b == nil {
+			return nil
+		}
 		v := b.Get([]byte(allKeyName))
 		err = yaml.Unmarshal(v, &clients)
 		return nil
