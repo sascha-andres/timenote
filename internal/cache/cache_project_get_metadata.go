@@ -1,23 +1,10 @@
 package cache
 
-import (
-	"fmt"
-	"go.etcd.io/bbolt"
-	"gopkg.in/yaml.v2"
-)
-
-// ProjectMetaData returns meta data about the projects cache
-func (c *Cache) ProjectMetaData(workspace int) (m *MetaData, err error) {
-	_ = c.db.Update(func(tx *bbolt.Tx) error {
-		b := tx.Bucket([]byte(fmt.Sprintf(projectBucketNameTemplate, workspace)))
-		var v []byte
-		if b != nil {
-			v = b.Get([]byte(metaKeyName))
-		}
-		var md MetaData
-		err = yaml.Unmarshal(v, &md)
-		m = &md
-		return nil
-	})
-	return
+// ProjectMetaData returns metadata about the projects cache.
+func (c *Cache) ProjectMetaData(workspace int) (*MetaData, error) {
+	var rec projectsRecord
+	if err := readJSON(projectsPath(c.dir, workspace), &rec); err != nil {
+		return nil, err
+	}
+	return &rec.Meta, nil
 }

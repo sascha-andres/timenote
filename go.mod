@@ -11,9 +11,7 @@ require (
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/pkg/errors v0.9.1
 	github.com/zalando/go-keyring v0.2.8
-	go.etcd.io/bbolt v1.5.0
 	go.livingit.de/reuse v0.17.0
-	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
@@ -29,6 +27,7 @@ require (
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
-go 1.26.0
+go 1.27.0

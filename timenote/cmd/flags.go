@@ -13,6 +13,7 @@ var (
 	separator        *string
 	cacheMaxAge      *int
 	cachePath        *string
+	defaultCachePath string
 	excludedProjects func() []string
 
 	description       *string
@@ -30,11 +31,13 @@ func init() {
 		fatal(err)
 	}
 
+	defaultCachePath = path.Join(home, ".config/timenote")
+
 	workspace = flag.Int("workspace", 0, "Set to work within this workspace, leave to zero to have it guessed (first workspace)")
 	outputFormat = flag.String("output-format", "text", "text or json")
 	separator = flag.String("separator", ";", "Separator for existing value and new value")
 	cacheMaxAge = flag.Int("cache-max-age", 360, "Maximum age of cache in minutes")
-	cachePath = flag.String("cache-path", path.Join(home, ".config/timenote"), "Where to store cache")
+	cachePath = flag.String("cache-path", defaultCachePath, "Where to store cache")
 	excludedProjects = flag.StringSlice("excluded-projects", []string{}, "exclude projects from the list by name (comma separated)")
 
 	description = flag.String("description", "", "Description for timestamp")

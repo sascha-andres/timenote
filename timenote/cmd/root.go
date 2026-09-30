@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/zalando/go-keyring"
@@ -68,20 +69,25 @@ func newPersistor() *persistence.TogglPersistor {
 func Execute() {
 	flag.Parse()
 
-	c, err := cache.NewCache(*cacheMaxAge, *cachePath)
+	c, err := cache.NewCache(*cacheMaxAge, resolveCacheDir())
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 	caching = c
-	defer func() {
-		if err := caching.Close(); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-	}()
 
 	dispatch(flag.GetVerbs())
+}
+
+// resolveCacheDir returns the directory cache files are stored in. When
+// --cache-path is left at its default ($HOME/.config/timenote), a "cache"
+// subdirectory is used so cache files don't clutter the config directory; an
+// explicitly provided --cache-path is used as-is.
+func resolveCacheDir() string {
+	if *cachePath == defaultCachePath {
+		return filepath.Join(*cachePath, "cache")
+	}
+	return *cachePath
 }
 
 // dispatch routes the leading verb to its command group, falling back to

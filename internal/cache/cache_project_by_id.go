@@ -1,23 +1,17 @@
 package cache
 
-import (
-	"fmt"
-	"github.com/jason0x43/go-toggl"
-	"go.etcd.io/bbolt"
-	"gopkg.in/yaml.v2"
-)
+import "github.com/jason0x43/go-toggl"
 
-func (c *Cache) ProjectByID(projectID, workspace int) (project *toggl.Project, err error) {
-	err = c.db.View(func(tx *bbolt.Tx) error {
-		b := tx.Bucket([]byte(fmt.Sprintf(projectBucketNameTemplate, workspace)))
-		var v []byte
-		if b != nil {
-			v = b.Get([]byte(fmt.Sprintf("%10d", projectID)))
+// ProjectByID returns the cached project with the given id.
+func (c *Cache) ProjectByID(projectID, workspace int) (*toggl.Project, error) {
+	projects, err := c.Projects(workspace)
+	if err != nil {
+		return nil, err
+	}
+	for _, p := range projects {
+		if p.ID == projectID {
+			return &p, nil
 		}
-		var proj toggl.Project
-		err = yaml.Unmarshal(v, &proj)
-		project = &proj
-		return nil
-	})
-	return
+	}
+	return &toggl.Project{}, nil
 }

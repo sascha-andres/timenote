@@ -1,21 +1,12 @@
 package cache
 
-import (
-	"fmt"
-	"github.com/jason0x43/go-toggl"
-	"go.etcd.io/bbolt"
-	"gopkg.in/yaml.v2"
-)
+import "github.com/jason0x43/go-toggl"
 
-func (c *Cache) Clients(workspace int) (clients []toggl.Client, err error) {
-	err = c.db.View(func(tx *bbolt.Tx) error {
-		b := tx.Bucket([]byte(fmt.Sprintf(clientBucketNameTemplate, workspace)))
-		if b == nil {
-			return nil
-		}
-		v := b.Get([]byte(allKeyName))
-		err = yaml.Unmarshal(v, &clients)
-		return nil
-	})
-	return
+// Clients returns the cached clients for workspace.
+func (c *Cache) Clients(workspace int) ([]toggl.Client, error) {
+	var rec clientsRecord
+	if err := readJSON(clientsPath(c.dir, workspace), &rec); err != nil {
+		return nil, err
+	}
+	return rec.Clients, nil
 }

@@ -1,23 +1,17 @@
 package cache
 
-import (
-	"fmt"
-	"github.com/jason0x43/go-toggl"
-	"go.etcd.io/bbolt"
-	"gopkg.in/yaml.v2"
-)
+import "github.com/jason0x43/go-toggl"
 
-func (c *Cache) ClientByID(clientID, workspace int) (client *toggl.Client, err error) {
-	err = c.db.View(func(tx *bbolt.Tx) error {
-		b := tx.Bucket([]byte(fmt.Sprintf(clientBucketNameTemplate, workspace)))
-		var v []byte
-		if b != nil {
-			v = b.Get([]byte(fmt.Sprintf("%10d", clientID)))
+// ClientByID returns the cached client with the given id.
+func (c *Cache) ClientByID(clientID, workspace int) (*toggl.Client, error) {
+	clients, err := c.Clients(workspace)
+	if err != nil {
+		return nil, err
+	}
+	for _, cl := range clients {
+		if cl.ID == clientID {
+			return &cl, nil
 		}
-		var cl toggl.Client
-		err = yaml.Unmarshal(v, &cl)
-		client = &cl
-		return nil
-	})
-	return
+	}
+	return &toggl.Client{}, nil
 }
