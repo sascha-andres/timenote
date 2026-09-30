@@ -27,7 +27,7 @@ Flags must come before the command, not after, e.g.:
 
 ## State
 
-This is in an early phase but used regularly with the toggl backend and from time to time with MySQL.
+Used regularly with the toggl backend.
 
 ## Development
 
@@ -37,6 +37,18 @@ This is in an early phase but used regularly with the toggl backend and from tim
 
 |Version|Description|
 |---|---|
+|0.10.0|Module renamed to go.livingit.de/timenote|
+||Replace cobra/viper with go.livingit.de/reuse/flag (flags must precede the command)|
+||Replace bbolt cache with plain JSON files|
+||Switch from log to log/slog, add -log-level and -log-json|
+||Log the toggl API method and duration for every call|
+||Drop interactive mode|
+||Replace ginkgo/gomega tests with standard library tests|
+||Update dependencies|
+|0.9.1|Print total for today|
+|0.9.0|Swap out logrus for the standard library logger|
+||Make timestamp current the default behavior|
+||Add keyring-backed token storage|
 |0.8.1|update Dependencies|
 |0.8.0|Add caching layer|
 |0.7.0|Better formating of time values|
