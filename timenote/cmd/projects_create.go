@@ -17,7 +17,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"livingit.de/code/timenote/internal/persistence"
+	"go.livingit.de/timenote/internal/persistence"
 	"log"
 )
 

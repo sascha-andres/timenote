@@ -9,8 +9,8 @@ import (
 
 	"github.com/jason0x43/go-toggl"
 
-	"livingit.de/code/timenote"
-	"livingit.de/code/timenote/internal/cache"
+	"go.livingit.de/timenote"
+	"go.livingit.de/timenote/internal/cache"
 )
 
 type (

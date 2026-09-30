@@ -15,7 +15,7 @@ package main
 
 import (
 	"github.com/google/gops/agent"
-	"livingit.de/code/timenote/timenote/cmd"
+	"go.livingit.de/timenote/timenote/cmd"
 	"log"
 )
 

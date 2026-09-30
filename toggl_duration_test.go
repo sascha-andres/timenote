@@ -3,7 +3,7 @@ package timenote_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"livingit.de/code/timenote"
+	"go.livingit.de/timenote"
 	"testing"
 )
 

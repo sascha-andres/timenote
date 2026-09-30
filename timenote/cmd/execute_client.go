@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/mgutz/str"
-	"livingit.de/code/timenote/internal/persistence"
+	"go.livingit.de/timenote/internal/persistence"
 	"strings"
 )
 

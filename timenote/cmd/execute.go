@@ -10,7 +10,7 @@ import (
 
 	"github.com/mgutz/str"
 	"github.com/pkg/browser"
-	"livingit.de/code/timenote/internal/persistence"
+	"go.livingit.de/timenote/internal/persistence"
 )
 
 func executeLine(p *persistence.TogglPersistor, commandline string) error {

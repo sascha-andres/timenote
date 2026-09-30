@@ -17,8 +17,8 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"livingit.de/code/timenote"
-	"livingit.de/code/timenote/internal/persistence"
+	"go.livingit.de/timenote"
+	"go.livingit.de/timenote/internal/persistence"
 	"os"
 	"text/tabwriter"
 	"time"

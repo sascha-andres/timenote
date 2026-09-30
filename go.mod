@@ -1,4 +1,4 @@
-module livingit.de/code/timenote
+module go.livingit.de/timenote
 
 require (
 	github.com/chzyer/readline v1.5.1

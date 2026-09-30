@@ -16,8 +16,8 @@ package cmd
 import (
 	"fmt"
 	"github.com/zalando/go-keyring"
-	"livingit.de/code/timenote/internal/cache"
-	"livingit.de/code/timenote/internal/persistence"
+	"go.livingit.de/timenote/internal/cache"
+	"go.livingit.de/timenote/internal/persistence"
 	"log"
 	"os"
 	"path"

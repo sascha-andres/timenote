@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"livingit.de/code/timenote"
-	"livingit.de/code/timenote/internal/persistence"
+	"go.livingit.de/timenote"
+	"go.livingit.de/timenote/internal/persistence"
 	"log"
 	"time"
 )
