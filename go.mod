@@ -4,8 +4,6 @@ require (
 	github.com/google/gops v0.3.29
 	github.com/jason0x43/go-toggl v0.0.0-20240528025633-4e5873a36db2
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/onsi/ginkgo v1.10.1
-	github.com/onsi/gomega v1.7.0
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/pkg/errors v0.9.1
 	github.com/zalando/go-keyring v0.2.8
@@ -14,18 +12,8 @@ require (
 
 require (
 	github.com/danieljoos/wincred v1.2.3 // indirect
-	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/godbus/dbus/v5 v5.2.2 // indirect
-	github.com/hpcloud/tail v1.0.0 // indirect
-	github.com/kr/pretty v0.3.1 // indirect
-	github.com/rogpeppe/go-internal v1.10.0 // indirect
-	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/sys v0.48.0 // indirect
-	golang.org/x/text v0.42.0 // indirect
-	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
-	gopkg.in/fsnotify.v1 v1.4.7 // indirect
-	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
 go 1.27.0

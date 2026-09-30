@@ -1,57 +1,64 @@
 package timenote_test
 
 import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"go.livingit.de/timenote"
 	"testing"
+
+	"go.livingit.de/timenote"
 )
 
-func dotest(n int64, exp string) {
-	td, _ := timenote.NewTogglDuration(n)
-	Expect(td.String()).To(Equal(exp))
-}
-
-func dotestnoseconds(n int64, exp string) {
-	td, _ := timenote.NewTogglDuration(n)
-	td.OmitSeconds()
-	Expect(td.String()).To(Equal(exp))
-}
-
-func dotesterror(n int64, exp string) {
-	_, err := timenote.NewTogglDuration(n)
-	errText := "no error"
-	if err != nil {
-		errText = err.Error()
+func TestTogglDurationString(t *testing.T) {
+	cases := []struct {
+		seconds int64
+		want    string
+	}{
+		{10, "10s"},
+		{60, "1m 00s"},
+		{3600, "1h 00m 00s"},
+		{3666, "1h 01m 06s"},
+		{3600 * 24, "1d 0h 00m 00s"},
 	}
-	Expect(errText).To(Equal(exp))
+	for _, c := range cases {
+		td, err := timenote.NewTogglDuration(c.seconds)
+		if err != nil {
+			t.Fatalf("NewTogglDuration(%d): %v", c.seconds, err)
+		}
+		if got := td.String(); got != c.want {
+			t.Errorf("NewTogglDuration(%d).String() = %q, want %q", c.seconds, got, c.want)
+		}
+	}
 }
 
-var _ = Describe("Human readable duration in seconds", func() {
-	It("should handle finished tasks", func() {
-		dotest(10, "10s")
-		dotest(60, "1m 00s")
-		dotest(3600, "1h 00m 00s")
-		dotest(3666, "1h 01m 06s")
-		dotest(3600*24, "1d 0h 00m 00s")
-	})
-	It("should omit seconds when asked", func() {
-		dotestnoseconds(10, "<1m")
-		dotestnoseconds(60, "1m")
-		dotestnoseconds(3600, "1h 00m")
-		dotestnoseconds(3666, "1h 01m")
-		dotestnoseconds(3600*24, "1d 0h 00m")
-	})
-	It("should handle open tasks", func() {
-		dotesterror(-10, "negative values not allowed")
-		dotesterror(-60, "negative values not allowed")
-		dotesterror(-3600, "negative values not allowed")
-		dotesterror(-3666, "negative values not allowed")
-		dotesterror(-3600*24, "negative values not allowed")
-	})
-})
+func TestTogglDurationStringOmitSeconds(t *testing.T) {
+	cases := []struct {
+		seconds int64
+		want    string
+	}{
+		{10, "<1m"},
+		{60, "1m"},
+		{3600, "1h 00m"},
+		{3666, "1h 01m"},
+		{3600 * 24, "1d 0h 00m"},
+	}
+	for _, c := range cases {
+		td, err := timenote.NewTogglDuration(c.seconds)
+		if err != nil {
+			t.Fatalf("NewTogglDuration(%d): %v", c.seconds, err)
+		}
+		td.OmitSeconds()
+		if got := td.String(); got != c.want {
+			t.Errorf("NewTogglDuration(%d) omit-seconds String() = %q, want %q", c.seconds, got, c.want)
+		}
+	}
+}
 
-func TestFormat(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Human readable duration in seconds")
+func TestNewTogglDurationNegative(t *testing.T) {
+	for _, seconds := range []int64{-10, -60, -3600, -3666, -3600 * 24} {
+		_, err := timenote.NewTogglDuration(seconds)
+		if err == nil {
+			t.Fatalf("NewTogglDuration(%d): expected error, got nil", seconds)
+		}
+		if got, want := err.Error(), "negative values not allowed"; got != want {
+			t.Errorf("NewTogglDuration(%d) error = %q, want %q", seconds, got, want)
+		}
+	}
 }
