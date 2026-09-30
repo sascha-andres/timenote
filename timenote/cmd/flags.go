@@ -15,6 +15,8 @@ var (
 	cachePath        *string
 	defaultCachePath string
 	excludedProjects func() []string
+	logLevel         *string
+	logJSON          *bool
 
 	description       *string
 	name              *string
@@ -39,6 +41,8 @@ func init() {
 	cacheMaxAge = flag.Int("cache-max-age", 360, "Maximum age of cache in minutes")
 	cachePath = flag.String("cache-path", defaultCachePath, "Where to store cache")
 	excludedProjects = flag.StringSlice("excluded-projects", []string{}, "exclude projects from the list by name (comma separated)")
+	logLevel = flag.String("log-level", "warn", "minimum log level to print (debug, info, warn, error)")
+	logJSON = flag.Bool("log-json", false, "log in JSON format")
 
 	description = flag.String("description", "", "Description for timestamp")
 	name = flag.String("name", "", "Name value (tag, project or client)")

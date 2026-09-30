@@ -20,6 +20,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/google/gops/agent"
 	"github.com/zalando/go-keyring"
 	"go.livingit.de/reuse/flag"
 	"go.livingit.de/timenote/internal/cache"
@@ -68,6 +69,11 @@ func newPersistor() *persistence.TogglPersistor {
 // Execute parses flags and dispatches to the requested command.
 func Execute() {
 	flag.Parse()
+	configureLogging()
+
+	if err := agent.Listen(agent.Options{}); err != nil {
+		fatal(err)
+	}
 
 	c, err := cache.NewCache(*cacheMaxAge, resolveCacheDir())
 	if err != nil {

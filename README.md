@@ -20,6 +20,11 @@ Flags must come before the command, not after, e.g.:
 
     timenote -token xxx token save
 
+## Logging
+
+`-log-level` sets the minimum level printed (`debug`, `info`, `warn`,
+`error`; default `warn`). `-log-json` switches the log output to JSON.
+
 ## State
 
 This is in an early phase but used regularly with the toggl backend and from time to time with MySQL.

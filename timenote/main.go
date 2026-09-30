@@ -13,30 +13,10 @@
 
 package main
 
-import (
-	"github.com/google/gops/agent"
-	"go.livingit.de/timenote/timenote/cmd"
-	"log/slog"
-	"os"
-)
+import "go.livingit.de/timenote/timenote/cmd"
 
 var version string = "develop"
 
 func main() {
-	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
-		AddSource: true,
-		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
-			if a.Key == slog.TimeKey {
-				a.Value = slog.TimeValue(a.Value.Time().UTC())
-			}
-			return a
-		},
-	})))
-
-	if err := agent.Listen(agent.Options{}); err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
-	}
-
 	cmd.Execute()
 }
