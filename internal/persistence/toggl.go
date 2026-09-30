@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"fmt"
+	"log/slog"
 	"strconv"
 	"time"
 
@@ -21,6 +22,15 @@ type (
 		caching   *cache.Cache
 	}
 )
+
+// callToggl invokes fn against the toggl API, logging the method name and
+// call duration at debug level.
+func callToggl[T any](method string, fn func() (T, error)) (T, error) {
+	start := time.Now()
+	result, err := fn()
+	slog.Debug("toggl api call", "method", method, "duration", time.Since(start))
+	return result, err
+}
 
 // NewToggl establishes a session to toggl api
 // token constains the api token to access the toggl pai
@@ -55,7 +65,9 @@ func NewToggl(token string, workspace int, caching *cache.Cache) (*TogglPersisto
 
 // UpdateCache sets new data in the cache
 func (t *TogglPersistor) UpdateCache() error {
-	projects, err := t.session.GetProjects(t.workspace)
+	projects, err := callToggl("GetProjects", func() ([]toggl.Project, error) {
+		return t.session.GetProjects(t.workspace)
+	})
 	if err != nil {
 		return err
 	}
@@ -63,7 +75,9 @@ func (t *TogglPersistor) UpdateCache() error {
 	if err != nil {
 		return err
 	}
-	clients, err := t.session.GetClients(t.Workspace())
+	clients, err := callToggl("GetClients", func() ([]toggl.Client, error) {
+		return t.session.GetClients(t.Workspace())
+	})
 	if err != nil {
 		return err
 	}
@@ -75,7 +89,9 @@ func (t *TogglPersistor) UpdateCache() error {
 }
 
 func (t *TogglPersistor) cacheAccount() error {
-	account, err := t.session.GetAccount()
+	account, err := callToggl("GetAccount", func() (toggl.Account, error) {
+		return t.session.GetAccount()
+	})
 	if err != nil {
 		return err
 	}
@@ -101,7 +117,9 @@ func (t *TogglPersistor) Workspace() int {
 
 // New starts a new time entry with no description
 func (t *TogglPersistor) New() error {
-	_, err := t.session.StartTimeEntry("", t.Workspace())
+	_, err := callToggl("StartTimeEntry", func() (toggl.TimeEntry, error) {
+		return t.session.StartTimeEntry("", t.Workspace())
+	})
 	if err != nil {
 		return errors.Wrap(err, "Unable to start a new entry")
 	}
@@ -123,7 +141,9 @@ func (t *TogglPersistor) Append(line, separator string) error {
 	} else {
 		te.Description = fmt.Sprintf("%s%s%s", te.Description, separator, line)
 	}
-	_, err = t.session.UpdateTimeEntry(*te)
+	_, err = callToggl("UpdateTimeEntry", func() (toggl.TimeEntry, error) {
+		return t.session.UpdateTimeEntry(*te)
+	})
 	if err != nil {
 		return errors.Wrap(err, "unable to update time entry in toggl")
 	}
@@ -146,7 +166,9 @@ func (t *TogglPersistor) Tag(name string) error {
 	} else {
 		te.AddTag(name)
 	}
-	_, err = t.session.UpdateTimeEntry(*te)
+	_, err = callToggl("UpdateTimeEntry", func() (toggl.TimeEntry, error) {
+		return t.session.UpdateTimeEntry(*te)
+	})
 	if err != nil {
 		return errors.Wrap(err, "unable to update time entry in toggl")
 	}
@@ -163,7 +185,9 @@ func (t *TogglPersistor) Done() error {
 	if err != nil {
 		return errors.Wrap(err, "unable to get running time entry from toggl")
 	}
-	_, err = t.session.StopTimeEntry(*te)
+	_, err = callToggl("StopTimeEntry", func() (toggl.TimeEntry, error) {
+		return t.session.StopTimeEntry(*te)
+	})
 	if err != nil {
 		return errors.Wrap(err, "unable to stop running time entry in toggl")
 	}
@@ -260,12 +284,16 @@ func (t *TogglPersistor) SetProjectForCurrentTimestamp(name string, autoCreatePr
 		return errors.Wrap(err, "unable to get running time entry from toggl")
 	}
 	te.Pid = &projectID
-	_, err = t.session.UpdateTimeEntry(*te)
+	_, err = callToggl("UpdateTimeEntry", func() (toggl.TimeEntry, error) {
+		return t.session.UpdateTimeEntry(*te)
+	})
 	return err
 }
 
 func (t *TogglPersistor) createProject(name string) (int, error) {
-	res, err := t.session.CreateProject(name, t.workspace)
+	res, err := callToggl("CreateProject", func() (toggl.Project, error) {
+		return t.session.CreateProject(name, t.workspace)
+	})
 	if err != nil {
 		return 0, err
 	}
@@ -273,7 +301,9 @@ func (t *TogglPersistor) createProject(name string) (int, error) {
 }
 
 func (t *TogglPersistor) createClient(name string) (int, error) {
-	res, err := t.session.CreateClient(name, t.workspace)
+	res, err := callToggl("CreateClient", func() (toggl.Client, error) {
+		return t.session.CreateClient(name, t.workspace)
+	})
 	if err != nil {
 		return 0, err
 	}
@@ -330,15 +360,19 @@ func (t *TogglPersistor) DeleteProject(name string) error {
 		return err
 	}
 
-	project, err = t.session.GetProject(id, t.Workspace())
+	project, err = callToggl("GetProject", func() (toggl.Project, error) {
+		return t.session.GetProject(id, t.Workspace())
+	})
 	if err != nil {
 		return err
 	}
 
-	_, err = t.session.DeleteProject(toggl.Project{
-		Wid: project.Wid,
-		ID:  project.ID,
-		Cid: project.Cid,
+	_, err = callToggl("DeleteProject", func() ([]byte, error) {
+		return t.session.DeleteProject(toggl.Project{
+			Wid: project.Wid,
+			ID:  project.ID,
+			Cid: project.Cid,
+		})
 	})
 	return err
 }
@@ -364,7 +398,9 @@ func (t *TogglPersistor) Clients() ([]toggl.Client, error) {
 
 // NewClient creates a new client
 func (t *TogglPersistor) NewClient(name string) error {
-	_, err := t.session.CreateClient(name, t.workspace)
+	_, err := callToggl("CreateClient", func() (toggl.Client, error) {
+		return t.session.CreateClient(name, t.workspace)
+	})
 	if err != nil {
 		return err
 	}
@@ -377,7 +413,9 @@ func (t *TogglPersistor) ListForDay() ([]timenote.TimeEntry, error) {
 	loc, _ := time.LoadLocation("")
 	startDate := time.Date(year, month, day, 0, 0, 0, 0, loc)
 	endDate := time.Date(year, month, day, 23, 59, 59, 0, loc)
-	entries, err := t.session.GetTimeEntries(startDate, endDate)
+	entries, err := callToggl("GetTimeEntries", func() ([]toggl.TimeEntry, error) {
+		return t.session.GetTimeEntries(startDate, endDate)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -447,7 +485,9 @@ func (t *TogglPersistor) StartPrevious() error {
 		loc, _ := time.LoadLocation("")
 		startDate := time.Date(year, month, day, 0, 0, 0, 0, loc)
 		endDate := time.Date(year, month, day, 23, 59, 59, 0, loc)
-		entries, err = t.session.GetTimeEntries(startDate, endDate)
+		entries, err = callToggl("GetTimeEntries", func() ([]toggl.TimeEntry, error) {
+			return t.session.GetTimeEntries(startDate, endDate)
+		})
 		if err != nil {
 			return err
 		}
@@ -462,6 +502,8 @@ func (t *TogglPersistor) StartPrevious() error {
 		}
 		sub--
 	}
-	_, err = t.session.StartTimeEntryForProject(entries[len(entries)-1].Description, t.Workspace(), *entries[len(entries)-1].Pid, nil)
+	_, err = callToggl("StartTimeEntryForProject", func() (toggl.TimeEntry, error) {
+		return t.session.StartTimeEntryForProject(entries[len(entries)-1].Description, t.Workspace(), *entries[len(entries)-1].Pid, nil)
+	})
 	return err
 }
