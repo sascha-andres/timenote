@@ -38,7 +38,7 @@ func runInputLoop(p *persistence.TogglPersistor) error {
 	}
 	defer func() {
 		if err := l.Close(); err != nil {
-			log.Fatalf("Error closing readline: " + err.Error())
+			log.Fatalf("Error closing readline: %s", err.Error())
 		}
 	}()
 
