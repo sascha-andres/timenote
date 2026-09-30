@@ -117,10 +117,6 @@ func dispatch(verbs []string) {
 		timestampToday()
 	case "browser":
 		openBrowser()
-	case "i":
-		if err := run(); err != nil {
-			fatal(err)
-		}
 	default:
 		newFromDescription(verbs)
 	}

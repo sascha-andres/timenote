@@ -1,10 +1,8 @@
 module go.livingit.de/timenote
 
 require (
-	github.com/chzyer/readline v1.5.1
 	github.com/google/gops v0.3.29
 	github.com/jason0x43/go-toggl v0.0.0-20240528025633-4e5873a36db2
-	github.com/mgutz/str v1.2.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/onsi/ginkgo v1.10.1
 	github.com/onsi/gomega v1.7.0
