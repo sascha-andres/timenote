@@ -7,7 +7,7 @@ require (
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/pkg/errors v0.9.1
 	github.com/zalando/go-keyring v0.2.8
-	go.livingit.de/reuse v0.17.0
+	go.livingit.de/reuse v0.17.1
 )
 
 require (
