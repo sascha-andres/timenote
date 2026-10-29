@@ -4,8 +4,7 @@ import (
 	"charm.land/bubbles/v2/list"
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
-	"github.com/jason0x43/go-toggl"
-	"go.livingit.de/timenote/internal/persistence"
+	"go.livingit.de/timenote"
 )
 
 type wizardStep int
@@ -30,7 +29,7 @@ const (
 )
 
 type (
-	// choice is a list entry; id holds the toggl id for clients.
+	// choice is a list entry; id holds the backend id for clients.
 	choice struct {
 		title string
 		id    int
@@ -40,9 +39,9 @@ type (
 	runningMsg struct{ err error }
 
 	wizardModel struct {
-		p           *persistence.TogglPersistor
-		clients     []toggl.Client
-		projects    []toggl.Project
+		p           timenote.Backend
+		clients     []timenote.Client
+		projects    []timenote.Project
 		list        list.Model
 		input       textinput.Model
 		step        wizardStep
@@ -86,7 +85,7 @@ func runWizard() {
 	}
 }
 
-func newWizardModel(p *persistence.TogglPersistor, clients []toggl.Client, projects []toggl.Project) wizardModel {
+func newWizardModel(p timenote.Backend, clients []timenote.Client, projects []timenote.Project) wizardModel {
 	d := list.NewDefaultDelegate()
 	d.ShowDescription = false
 	d.SetSpacing(0)
@@ -216,7 +215,7 @@ func (m wizardModel) finish() (tea.Model, tea.Cmd) {
 	return m, tea.Quit
 }
 
-// checkRunning reads the running time entry from toggl, not from the cache.
+// checkRunning reads the running time entry from the backend, not from the cache.
 func (m wizardModel) checkRunning() tea.Msg {
 	_, err := m.p.Current()
 	return runningMsg{err: err}
@@ -265,14 +264,10 @@ func (m *wizardModel) showInput() tea.Cmd {
 }
 
 // clientProjects returns the projects of clientID; 0 selects projects without a client.
-func clientProjects(projects []toggl.Project, clientID int) []toggl.Project {
-	var res []toggl.Project
+func clientProjects(projects []timenote.Project, clientID int) []timenote.Project {
+	var res []timenote.Project
 	for _, prj := range projects {
-		cid := 0
-		if prj.Cid != nil {
-			cid = *prj.Cid
-		}
-		if cid == clientID {
+		if prj.ClientID == clientID {
 			res = append(res, prj)
 		}
 	}

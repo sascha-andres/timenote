@@ -16,7 +16,7 @@ package cmd
 
 // cacheUpdate reaches out to toggl and refreshes local data.
 func cacheUpdate() {
-	p := newPersistor()
+	p := newCachingBackend()
 	if err := p.UpdateCache(); err != nil {
 		fatal(err)
 	}

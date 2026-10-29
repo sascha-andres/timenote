@@ -3,6 +3,7 @@ package persistence
 import (
 	"fmt"
 	"log/slog"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -23,6 +24,18 @@ type (
 	}
 )
 
+var _ timenote.CachingBackend = (*TogglPersistor)(nil)
+
+const accountKey = "account"
+
+func projectsKey(workspace int) string {
+	return fmt.Sprintf("%d-projects", workspace)
+}
+
+func clientsKey(workspace int) string {
+	return fmt.Sprintf("%d-clients", workspace)
+}
+
 // callToggl invokes fn against the toggl API, logging the method name and
 // call duration at debug level.
 func callToggl[T any](method string, fn func() (T, error)) (T, error) {
@@ -35,9 +48,15 @@ func callToggl[T any](method string, fn func() (T, error)) (T, error) {
 // NewToggl establishes a session to toggl api
 // token constains the api token to access the toggl pai
 // workspace defines the workspace to work within
-func NewToggl(token string, workspace int, caching *cache.Cache) (*TogglPersistor, error) {
+// cacheDir and cacheMaxAge (minutes) configure the local cache; toggl uses a
+// subdirectory of cacheDir
+func NewToggl(token string, workspace int, cacheDir string, cacheMaxAge int) (*TogglPersistor, error) {
 	if token == "" {
 		return nil, errors.New("no token provided")
+	}
+	caching, err := cache.NewCache(cacheMaxAge, filepath.Join(cacheDir, "toggl"))
+	if err != nil {
+		return nil, err
 	}
 	res := TogglPersistor{
 		dsn:       token,
@@ -46,15 +65,16 @@ func NewToggl(token string, workspace int, caching *cache.Cache) (*TogglPersisto
 		caching:   caching,
 	}
 	toggl.DisableLog()
-	if res.caching.AccountNeedUpdate() {
+	if res.caching.NeedUpdate(accountKey) {
 		err := res.cacheAccount()
 		if err != nil {
 			return &res, err
 		}
 
 	}
-	err := res.guessWorkspace()
-	if res.caching.NeedUpdate(res.workspace) {
+	err = res.guessWorkspace()
+	ws := res.workspace
+	if res.caching.NeedUpdate(projectsKey(ws)) || res.caching.NeedUpdate(clientsKey(ws)) || res.caching.NeedUpdate(accountKey) {
 		err := res.UpdateCache()
 		if err != nil {
 			return &res, err
@@ -71,7 +91,7 @@ func (t *TogglPersistor) UpdateCache() error {
 	if err != nil {
 		return err
 	}
-	err = t.caching.SetProjects(t.workspace, projects)
+	err = cache.Set(t.caching, projectsKey(t.workspace), projects)
 	if err != nil {
 		return err
 	}
@@ -81,11 +101,27 @@ func (t *TogglPersistor) UpdateCache() error {
 	if err != nil {
 		return err
 	}
-	err = t.caching.SetClients(t.workspace, clients)
+	err = cache.Set(t.caching, clientsKey(t.workspace), clients)
 	if err != nil {
 		return err
 	}
 	return t.cacheAccount()
+}
+
+// CacheStatus returns the state of the project and client cache
+func (t *TogglPersistor) CacheStatus() ([]timenote.CacheStatus, error) {
+	mdProjects, err := t.caching.MetaData(projectsKey(t.workspace))
+	if err != nil {
+		return nil, err
+	}
+	mdClients, err := t.caching.MetaData(clientsKey(t.workspace))
+	if err != nil {
+		return nil, err
+	}
+	return []timenote.CacheStatus{
+		{Name: "Project", Updated: mdProjects.Updated, NextUpdate: mdProjects.NextUpdate},
+		{Name: "Client", Updated: mdClients.Updated, NextUpdate: mdClients.NextUpdate},
+	}, nil
 }
 
 func (t *TogglPersistor) cacheAccount() error {
@@ -95,12 +131,12 @@ func (t *TogglPersistor) cacheAccount() error {
 	if err != nil {
 		return err
 	}
-	return t.caching.AccountSet(&account)
+	return cache.Set(t.caching, accountKey, account)
 }
 
 func (t *TogglPersistor) guessWorkspace() error {
 	if t.workspace == 0 {
-		account, err := t.caching.GetAccount()
+		account, err := cache.Get[toggl.Account](t.caching, accountKey)
 		if err != nil {
 			return fmt.Errorf("unable to get account: %w", err)
 		}
@@ -128,7 +164,7 @@ func (t *TogglPersistor) New() error {
 
 // Append adds text to the description separated by ;
 func (t *TogglPersistor) Append(line, separator string) error {
-	account, err := t.caching.GetAccount()
+	account, err := cache.Get[toggl.Account](t.caching, accountKey)
 	if err != nil {
 		return fmt.Errorf("unable to get account: %w", err)
 	}
@@ -152,7 +188,7 @@ func (t *TogglPersistor) Append(line, separator string) error {
 
 // SetDescription replaces the description of the running time entry
 func (t *TogglPersistor) SetDescription(line string) error {
-	account, err := t.caching.GetAccount()
+	account, err := cache.Get[toggl.Account](t.caching, accountKey)
 	if err != nil {
 		return fmt.Errorf("unable to get account: %w", err)
 	}
@@ -173,7 +209,7 @@ func (t *TogglPersistor) SetDescription(line string) error {
 // Tag toggle the tags associated with the running time entry
 // name is the name of the tag
 func (t *TogglPersistor) Tag(name string) error {
-	account, err := t.caching.GetAccount()
+	account, err := cache.Get[toggl.Account](t.caching, accountKey)
 	if err != nil {
 		return fmt.Errorf("unable to get account: %w", err)
 	}
@@ -197,7 +233,7 @@ func (t *TogglPersistor) Tag(name string) error {
 
 // Done ends the currently running time entry
 func (t *TogglPersistor) Done() error {
-	account, err := t.caching.GetAccount()
+	account, err := cache.Get[toggl.Account](t.caching, accountKey)
 	if err != nil {
 		return fmt.Errorf("unable to get account: %w", err)
 	}
@@ -220,7 +256,7 @@ func (t *TogglPersistor) Current() (*timenote.TimeEntry, error) {
 	if err != nil {
 		return nil, err
 	}
-	account, err := t.caching.GetAccount()
+	account, err := cache.Get[toggl.Account](t.caching, accountKey)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get account: %w", err)
 	}
@@ -255,12 +291,30 @@ func (t *TogglPersistor) Current() (*timenote.TimeEntry, error) {
 
 // GetClientByID gets all clients and returns the one with the given ID
 func (t *TogglPersistor) GetClientByID(clientID int) (*toggl.Client, error) {
-	return t.caching.ClientByID(clientID, t.workspace)
+	clients, err := cache.Get[[]toggl.Client](t.caching, clientsKey(t.workspace))
+	if err != nil {
+		return nil, err
+	}
+	for _, cl := range clients {
+		if cl.ID == clientID {
+			return &cl, nil
+		}
+	}
+	return &toggl.Client{}, nil
 }
 
 // GetProject returns the given project
 func (t *TogglPersistor) GetProject(projectID int) (*toggl.Project, error) {
-	return t.caching.ProjectByID(projectID, t.workspace)
+	projects, err := cache.Get[[]toggl.Project](t.caching, projectsKey(t.workspace))
+	if err != nil {
+		return nil, err
+	}
+	for _, p := range projects {
+		if p.ID == projectID {
+			return &p, nil
+		}
+	}
+	return &toggl.Project{}, nil
 }
 
 func getCurrentTimeEntry(account toggl.Account) (*toggl.TimeEntry, error) {
@@ -280,7 +334,7 @@ func (t *TogglPersistor) SetProjectForCurrentTimestamp(name string, autoCreatePr
 		err       error
 	)
 
-	account, err = t.caching.GetAccount()
+	account, err = cache.Get[toggl.Account](t.caching, accountKey)
 	if err != nil {
 		return fmt.Errorf("unable to get account: %w", err)
 	}
@@ -401,7 +455,7 @@ func (t *TogglPersistor) DeleteProject(name string) error {
 }
 
 func (t *TogglPersistor) getProjectID(name string) (int, error) {
-	projects, err := t.caching.Projects(t.workspace)
+	projects, err := cache.Get[[]toggl.Project](t.caching, projectsKey(t.workspace))
 	if err != nil {
 		return 0, err
 	}
@@ -415,8 +469,16 @@ func (t *TogglPersistor) getProjectID(name string) (int, error) {
 }
 
 // Clients return all clients
-func (t *TogglPersistor) Clients() ([]toggl.Client, error) {
-	return t.caching.Clients(t.workspace)
+func (t *TogglPersistor) Clients() ([]timenote.Client, error) {
+	clients, err := cache.Get[[]toggl.Client](t.caching, clientsKey(t.workspace))
+	if err != nil {
+		return nil, err
+	}
+	result := make([]timenote.Client, len(clients))
+	for i, c := range clients {
+		result[i] = timenote.Client{ID: c.ID, Name: c.Name, Description: c.Notes}
+	}
+	return result, nil
 }
 
 // NewClient creates a new client
@@ -474,13 +536,27 @@ func (t *TogglPersistor) ListForDay() ([]timenote.TimeEntry, error) {
 }
 
 // Projects returns a list of all projects
-func (t *TogglPersistor) Projects() ([]toggl.Project, error) {
-	return t.caching.Projects(t.workspace)
+func (t *TogglPersistor) Projects() ([]timenote.Project, error) {
+	projects, err := cache.Get[[]toggl.Project](t.caching, projectsKey(t.workspace))
+	if err != nil {
+		return nil, err
+	}
+	result := make([]timenote.Project, len(projects))
+	for i, p := range projects {
+		result[i] = timenote.Project{ID: p.ID, WorkspaceID: p.Wid, Name: p.Name}
+		if p.Cid != nil {
+			result[i].ClientID = *p.Cid
+		}
+		if p.Billable != nil {
+			result[i].Billable = *p.Billable
+		}
+	}
+	return result, nil
 }
 
 // getClientId returns an id for the client name (exact match)
 func (t *TogglPersistor) getClientId(name string) (int, error) {
-	clients, err := t.caching.Clients(t.workspace)
+	clients, err := cache.Get[[]toggl.Client](t.caching, clientsKey(t.workspace))
 	if err != nil {
 		return 0, err
 	}

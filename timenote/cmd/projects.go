@@ -20,7 +20,7 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/jason0x43/go-toggl"
+	"go.livingit.de/timenote"
 )
 
 // dispatchProjects routes "projects" sub-verbs; with none given it lists
@@ -54,7 +54,7 @@ func projectsList() {
 	}
 }
 
-func writeProjectsJson(projects []toggl.Project) {
+func writeProjectsJson(projects []timenote.Project) {
 	data, err := json.Marshal(projects)
 	if err != nil {
 		fatal(err)
@@ -62,7 +62,7 @@ func writeProjectsJson(projects []toggl.Project) {
 	fmt.Println(string(data))
 }
 
-func writeProjectsTable(projects []toggl.Project) {
+func writeProjectsTable(projects []timenote.Project) {
 	w := new(tabwriter.Writer)
 	// Format in tab-separated columns with a tab stop of 8.
 	w.Init(os.Stdout, 0, 8, 2, '\t', 0)
@@ -74,9 +74,9 @@ func writeProjectsTable(projects []toggl.Project) {
 }
 
 // filterProjects removes projects named in the excluded-projects flag.
-func filterProjects(projects []toggl.Project) []toggl.Project {
+func filterProjects(projects []timenote.Project) []timenote.Project {
 	excludeList := excludedProjects()
-	filtered := make([]toggl.Project, 0)
+	filtered := make([]timenote.Project, 0)
 	for _, prj := range projects {
 		excluded := false
 		for _, v := range excludeList {

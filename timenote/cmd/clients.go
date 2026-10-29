@@ -6,7 +6,7 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/jason0x43/go-toggl"
+	"go.livingit.de/timenote"
 )
 
 // dispatchClients routes "clients" sub-verbs; with none given it lists
@@ -38,7 +38,7 @@ func clientsList() {
 	}
 }
 
-func writeClientsJson(clients []toggl.Client) {
+func writeClientsJson(clients []timenote.Client) {
 	data, err := json.Marshal(clients)
 	if err != nil {
 		fatal(err)
@@ -46,7 +46,7 @@ func writeClientsJson(clients []toggl.Client) {
 	fmt.Println(string(data))
 }
 
-func writeClientsTable(clients []toggl.Client) {
+func writeClientsTable(clients []timenote.Client) {
 	w := new(tabwriter.Writer)
 	// Format in tab-separated columns with a tab stop of 8.
 	w.Init(os.Stdout, 0, 8, 2, '\t', 0)

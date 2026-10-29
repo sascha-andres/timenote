@@ -23,14 +23,11 @@ import (
 	"github.com/google/gops/agent"
 	"github.com/zalando/go-keyring"
 	"go.livingit.de/reuse/flag"
-	"go.livingit.de/timenote/internal/cache"
+	"go.livingit.de/timenote"
 	"go.livingit.de/timenote/internal/persistence"
 )
 
-var (
-	token   string
-	caching *cache.Cache
-)
+var token string
 
 func init() {
 	token, _ = keyring.Get("timenote", "token")
@@ -56,10 +53,10 @@ func requireString(flagName, value string) string {
 	return value
 }
 
-// newPersistor builds the persistence layer for the configured workspace, or
+// newPersistor builds the backend for the configured workspace, or
 // terminates the process if that fails.
-func newPersistor() *persistence.TogglPersistor {
-	p, err := persistence.NewToggl(token, *workspace, caching)
+func newPersistor() timenote.Backend {
+	p, err := persistence.NewToggl(token, *workspace, resolveCacheDir(), *cacheMaxAge)
 	if err != nil {
 		fatal(err)
 	}
@@ -74,13 +71,6 @@ func Execute() {
 	if err := agent.Listen(agent.Options{}); err != nil {
 		fatal(err)
 	}
-
-	c, err := cache.NewCache(*cacheMaxAge, resolveCacheDir())
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	caching = c
 
 	dispatch(flag.GetVerbs())
 }
