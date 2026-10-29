@@ -54,7 +54,7 @@ func newHandler(backend timenote.CachingBackend, token string, readTTL time.Dura
 	mux.HandleFunc("POST /v1/clients", s.createClient)
 	mux.HandleFunc("GET /v1/cache", s.cacheStatus)
 	mux.HandleFunc("POST /v1/cache", s.updateCache)
-	return s.authenticate(mux)
+	return logRequests(s.authenticate(mux))
 }
 
 func (s *server) authenticate(next http.Handler) http.Handler {

@@ -25,6 +25,7 @@ Configuration is with command-line flags and environment variables
 | `-cache-path`     | `BACKEND_TOGGL_CACHE_PATH`     | `$HOME/.config/timenote/cache` | Cache directory (same as the timenote CLI)            |
 | `-cache-max-age`  | `BACKEND_TOGGL_CACHE_MAX_AGE`  | `360`                          | Maximum age of the cache in minutes                   |
 | `-read-cache-ttl` | `BACKEND_TOGGL_READ_CACHE_TTL` | `30s`                          | How long the server keeps `GET` results. `0` disables |
+| `-log-level`      | `BACKEND_TOGGL_LOG_LEVEL`      | `info`                         | `debug`, `info`, `warn` or `error`. `debug` logs each request with status and duration |
 
 `-h` shows the values of the environment variables as defaults, including the
 tokens. Do not share `-h` output when the token variables are set.

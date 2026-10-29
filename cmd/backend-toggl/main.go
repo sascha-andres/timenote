@@ -27,7 +27,15 @@ func main() {
 	cacheDir := flag.String("cache-path", "", "cache directory (default $HOME/.config/timenote/cache)")
 	cacheMaxAge := flag.Int("cache-max-age", 360, "maximum age of cache in minutes")
 	readCacheTTL := flag.Duration("read-cache-ttl", 30*time.Second, "how long GET results are kept, 0 disables")
+	logLevel := flag.String("log-level", "info", "log level: debug, info, warn or error")
 	flag.Parse()
+
+	var level slog.Level
+	if err := level.UnmarshalText([]byte(*logLevel)); err != nil {
+		slog.Error(err.Error())
+		os.Exit(1)
+	}
+	slog.SetLogLoggerLevel(level)
 
 	if err := run(*listen, *token, *togglToken, *workspace, *cacheDir, *cacheMaxAge, *readCacheTTL); err != nil {
 		slog.Error(err.Error())

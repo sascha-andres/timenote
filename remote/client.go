@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"time"
@@ -49,11 +50,14 @@ func (c *Client) do(method, path string, body, out any) error {
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
+	start := time.Now()
 	resp, err := c.http.Do(req)
 	if err != nil {
+		slog.Debug("backend call", "method", method, "path", path, "duration", time.Since(start), "error", err)
 		return err
 	}
 	defer resp.Body.Close()
+	slog.Debug("backend call", "method", method, "path", path, "status", resp.StatusCode, "duration", time.Since(start))
 
 	if resp.StatusCode >= 300 {
 		problem := &Problem{Status: resp.StatusCode}
