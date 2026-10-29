@@ -2,6 +2,7 @@ package remote
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -33,7 +34,7 @@ func New(baseURL, token string) *Client {
 }
 
 // do sends body as JSON (if not nil) and decodes the response into out (if not nil).
-func (c *Client) do(method, path string, body, out any) error {
+func (c *Client) do(ctx context.Context, method, path string, body, out any) error {
 	var reader io.Reader
 	if body != nil {
 		data, err := json.Marshal(body)
@@ -42,7 +43,7 @@ func (c *Client) do(method, path string, body, out any) error {
 		}
 		reader = bytes.NewReader(data)
 	}
-	req, err := http.NewRequest(method, c.baseURL+path, reader)
+	req, err := http.NewRequestWithContext(ctx, method, c.baseURL+path, reader)
 	if err != nil {
 		return err
 	}
@@ -72,85 +73,85 @@ func (c *Client) do(method, path string, body, out any) error {
 	return json.NewDecoder(resp.Body).Decode(out)
 }
 
-func (c *Client) New() error {
-	return c.do(http.MethodPost, "/v1/timeentries", NewTimeEntryRequest{}, nil)
+func (c *Client) New(ctx context.Context) error {
+	return c.do(ctx, http.MethodPost, "/v1/timeentries", NewTimeEntryRequest{}, nil)
 }
 
-func (c *Client) StartPrevious() error {
-	return c.do(http.MethodPost, "/v1/timeentries", NewTimeEntryRequest{FromPrevious: true}, nil)
+func (c *Client) StartPrevious(ctx context.Context) error {
+	return c.do(ctx, http.MethodPost, "/v1/timeentries", NewTimeEntryRequest{FromPrevious: true}, nil)
 }
 
-func (c *Client) Append(line, separator string) error {
-	return c.do(http.MethodPatch, "/v1/timeentries/current/description", AppendDescriptionRequest{Line: line, Separator: separator}, nil)
+func (c *Client) Append(ctx context.Context, line, separator string) error {
+	return c.do(ctx, http.MethodPatch, "/v1/timeentries/current/description", AppendDescriptionRequest{Line: line, Separator: separator}, nil)
 }
 
-func (c *Client) SetDescription(line string) error {
-	return c.do(http.MethodPut, "/v1/timeentries/current/description", SetDescriptionRequest{Description: line}, nil)
+func (c *Client) SetDescription(ctx context.Context, line string) error {
+	return c.do(ctx, http.MethodPut, "/v1/timeentries/current/description", SetDescriptionRequest{Description: line}, nil)
 }
 
-func (c *Client) Tag(name string) error {
-	return c.do(http.MethodPatch, "/v1/timeentries/current/tags", ToggleTagRequest{Toggle: name}, nil)
+func (c *Client) Tag(ctx context.Context, name string) error {
+	return c.do(ctx, http.MethodPatch, "/v1/timeentries/current/tags", ToggleTagRequest{Toggle: name}, nil)
 }
 
-func (c *Client) SetProjectForCurrentTimestamp(name string, autoCreateProject bool) error {
-	return c.do(http.MethodPut, "/v1/timeentries/current/project", SetProjectRequest{Name: name, AutoCreateProject: autoCreateProject}, nil)
+func (c *Client) SetProjectForCurrentTimestamp(ctx context.Context, name string, autoCreateProject bool) error {
+	return c.do(ctx, http.MethodPut, "/v1/timeentries/current/project", SetProjectRequest{Name: name, AutoCreateProject: autoCreateProject}, nil)
 }
 
-func (c *Client) Done() error {
-	return c.do(http.MethodPatch, "/v1/timeentries/current", UpdateCurrentRequest{Stop: true}, nil)
+func (c *Client) Done(ctx context.Context) error {
+	return c.do(ctx, http.MethodPatch, "/v1/timeentries/current", UpdateCurrentRequest{Stop: true}, nil)
 }
 
-func (c *Client) Current() (*timenote.TimeEntry, error) {
+func (c *Client) Current(ctx context.Context) (*timenote.TimeEntry, error) {
 	var te timenote.TimeEntry
-	if err := c.do(http.MethodGet, "/v1/timeentries/current", nil, &te); err != nil {
+	if err := c.do(ctx, http.MethodGet, "/v1/timeentries/current", nil, &te); err != nil {
 		return nil, err
 	}
 	return &te, nil
 }
 
-func (c *Client) ListForDay() ([]timenote.TimeEntry, error) {
+func (c *Client) ListForDay(ctx context.Context) ([]timenote.TimeEntry, error) {
 	var entries []timenote.TimeEntry
-	if err := c.do(http.MethodGet, "/v1/timeentries", nil, &entries); err != nil {
+	if err := c.do(ctx, http.MethodGet, "/v1/timeentries", nil, &entries); err != nil {
 		return nil, err
 	}
 	return entries, nil
 }
 
-func (c *Client) Projects() ([]timenote.Project, error) {
+func (c *Client) Projects(ctx context.Context) ([]timenote.Project, error) {
 	var projects []timenote.Project
-	if err := c.do(http.MethodGet, "/v1/projects", nil, &projects); err != nil {
+	if err := c.do(ctx, http.MethodGet, "/v1/projects", nil, &projects); err != nil {
 		return nil, err
 	}
 	return projects, nil
 }
 
-func (c *Client) CreateProject(name string) error {
-	return c.do(http.MethodPost, "/v1/projects", NameRequest{Name: name}, nil)
+func (c *Client) CreateProject(ctx context.Context, name string) error {
+	return c.do(ctx, http.MethodPost, "/v1/projects", NameRequest{Name: name}, nil)
 }
 
-func (c *Client) DeleteProject(nameOrID string) error {
-	return c.do(http.MethodDelete, "/v1/projects/"+url.PathEscape(nameOrID), nil, nil)
+func (c *Client) DeleteProject(ctx context.Context, nameOrID string) error {
+	return c.do(ctx, http.MethodDelete, "/v1/projects/"+url.PathEscape(nameOrID), nil, nil)
 }
 
-func (c *Client) Clients() ([]timenote.Client, error) {
+func (c *Client) Clients(ctx context.Context) ([]timenote.Client, error) {
 	var clients []timenote.Client
-	if err := c.do(http.MethodGet, "/v1/clients", nil, &clients); err != nil {
+	if err := c.do(ctx, http.MethodGet, "/v1/clients", nil, &clients); err != nil {
 		return nil, err
 	}
 	return clients, nil
 }
 
-func (c *Client) CreateClient(name string) error {
-	return c.do(http.MethodPost, "/v1/clients", NameRequest{Name: name}, nil)
+func (c *Client) CreateClient(ctx context.Context, name string) error {
+	return c.do(ctx, http.MethodPost, "/v1/clients", NameRequest{Name: name}, nil)
 }
 
-func (c *Client) UpdateCache() error {
-	return c.do(http.MethodPost, "/v1/cache", nil, nil)
+func (c *Client) UpdateCache(ctx context.Context) error {
+	return c.do(ctx, http.MethodPost, "/v1/cache", nil, nil)
 }
 
-func (c *Client) CacheStatus() ([]timenote.CacheStatus, error) {
+func (c *Client) CacheStatus(ctx context.Context) ([]timenote.CacheStatus, error) {
 	var status []timenote.CacheStatus
-	if err := c.do(http.MethodGet, "/v1/cache", nil, &status); err != nil {
+	if err := c.do(ctx, http.MethodGet, "/v1/cache", nil, &status); err != nil {
 		return nil, err
 	}
 	return status, nil

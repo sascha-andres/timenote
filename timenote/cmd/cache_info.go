@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"strings"
 )
@@ -22,7 +23,7 @@ import (
 // cacheInfo prints when the cache was last updated and when it will be
 // updated next.
 func cacheInfo() {
-	status, err := newCachingBackend().CacheStatus()
+	status, err := newCachingBackend().CacheStatus(context.Background())
 	if err != nil {
 		fatal(err)
 	}

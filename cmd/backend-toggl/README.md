@@ -65,6 +65,35 @@ client that can connect to `-listen` can read the metrics.
 
 The Go runtime (`go_*`) and process (`process_*`) metrics are also included.
 
+## Tracing
+
+The server sends OpenTelemetry traces. The standard `OTEL_*` environment
+variables configure tracing. Tracing is off if `OTEL_TRACES_EXPORTER` is not
+set.
+
+| Environment variable          | Example                 | Description                                         |
+|-------------------------------|-------------------------|-----------------------------------------------------|
+| `OTEL_TRACES_EXPORTER`        | `otlp`                  | `otlp`, `console` or `none`. Not set: tracing is off |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:4318` | Collector address                                   |
+| `OTEL_EXPORTER_OTLP_PROTOCOL` | `http/protobuf`         | `http/protobuf` (default) or `grpc`                 |
+| `OTEL_SERVICE_NAME`           | `backend-toggl`         | Default: `unknown_service:backend-toggl`            |
+| `OTEL_RESOURCE_ATTRIBUTES`    | `deployment.environment.name=home` | More resource attributes                 |
+| `OTEL_TRACES_SAMPLER`         | `parentbased_traceidratio` | Default: `parentbased_always_on`                 |
+| `OTEL_PROPAGATORS`            | `tracecontext,baggage`  | Default: `tracecontext,baggage`                     |
+
+The other `OTEL_EXPORTER_OTLP_*` and `OTEL_BSP_*` variables also apply.
+
+Spans:
+
+- One server span for each request, named by the route pattern, for example
+  `GET /v1/projects`. If the request has a `traceparent` header, the span is a
+  child of that trace. `GET /metrics` has no span.
+- One child span for each call to the Toggl API, for example `toggl GetAccount`.
+  A `GET` request that the read cache answers has no Toggl span.
+
+On `SIGINT` or `SIGTERM` the server stops, waits for open requests (maximum
+10 seconds) and sends the remaining spans.
+
 ## Endpoints
 
 All request and response bodies are JSON. Field names are snake_case.

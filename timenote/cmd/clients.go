@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -26,7 +27,7 @@ func dispatchClients(verbs []string) {
 
 func clientsList() {
 	p := newPersistor()
-	clients, err := p.Clients()
+	clients, err := p.Clients(context.Background())
 	if err != nil {
 		fatal(err)
 	}

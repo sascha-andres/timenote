@@ -14,6 +14,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
@@ -59,7 +60,7 @@ func requireString(flagName, value string) string {
 func newPersistor() timenote.Backend {
 	switch *backend {
 	case "toggl":
-		p, err := persistence.NewToggl(token, *workspace, resolveCacheDir(), *cacheMaxAge)
+		p, err := persistence.NewToggl(context.Background(), token, *workspace, resolveCacheDir(), *cacheMaxAge)
 		if err != nil {
 			fatal(err)
 		}
@@ -127,8 +128,8 @@ func dispatch(verbs []string) {
 // its description; this is the default action for the root command.
 func newFromDescription(words []string) {
 	p := newPersistor()
-	if err := p.New(); err != nil {
+	if err := p.New(context.Background()); err != nil {
 		fatal(err)
 	}
-	_ = p.Append(strings.Join(words, " "), *separator)
+	_ = p.Append(context.Background(), strings.Join(words, " "), *separator)
 }

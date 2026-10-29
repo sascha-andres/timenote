@@ -14,11 +14,13 @@
 
 package cmd
 
+import "context"
+
 // projectsDelete removes a project from the time backend, by name or id.
 func projectsDelete() {
 	n := requireString("name", *name)
 	p := newPersistor()
-	if err := p.DeleteProject(n); err != nil {
+	if err := p.DeleteProject(context.Background(), n); err != nil {
 		fatal(err)
 	}
 }

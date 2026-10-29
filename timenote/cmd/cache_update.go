@@ -14,10 +14,12 @@
 
 package cmd
 
+import "context"
+
 // cacheUpdate reaches out to toggl and refreshes local data.
 func cacheUpdate() {
 	p := newCachingBackend()
-	if err := p.UpdateCache(); err != nil {
+	if err := p.UpdateCache(context.Background()); err != nil {
 		fatal(err)
 	}
 }

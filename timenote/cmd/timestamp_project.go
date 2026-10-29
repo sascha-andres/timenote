@@ -14,12 +14,14 @@
 
 package cmd
 
+import "context"
+
 // timestampProject sets the project for the current entry, optionally
 // creating it if missing.
 func timestampProject() {
 	n := requireString("name", *name)
 	p := newPersistor()
-	if err := p.SetProjectForCurrentTimestamp(n, *autoCreateProject); err != nil {
+	if err := p.SetProjectForCurrentTimestamp(context.Background(), n, *autoCreateProject); err != nil {
 		fatalf("error setting project", err)
 	}
 }

@@ -2,11 +2,14 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
 	"time"
 
 	"github.com/zalando/go-keyring"
@@ -57,8 +60,20 @@ func run(listen, token, togglToken string, workspace int, cacheDir string, cache
 		}
 		cacheDir = filepath.Join(home, ".config", "timenote", "cache")
 	}
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	shutdownTracing, err := setupTracing(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := shutdownTracing(context.Background()); err != nil {
+			slog.Error("tracing shutdown failed", "error", err)
+		}
+	}()
+
 	persistence.OnTogglCall = observeTogglCall
-	backend, err := persistence.NewToggl(togglToken, workspace, cacheDir, cacheMaxAge)
+	backend, err := persistence.NewToggl(ctx, togglToken, workspace, cacheDir, cacheMaxAge)
 	if err != nil {
 		return err
 	}
@@ -68,6 +83,19 @@ func run(listen, token, togglToken string, workspace int, cacheDir string, cache
 		Handler:           newHandler(backend, token, readCacheTTL),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
+	// shut down on a signal, so the deferred tracing shutdown sends the last spans
+	idle := make(chan struct{})
+	go func() {
+		defer close(idle)
+		<-ctx.Done()
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		_ = srv.Shutdown(shutdownCtx)
+	}()
 	slog.Info("listening", "address", listen)
-	return srv.ListenAndServe()
+	if err := srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+	<-idle
+	return nil
 }

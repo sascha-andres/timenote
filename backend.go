@@ -1,6 +1,7 @@
 package timenote
 
 import (
+	"context"
 	"errors"
 	"time"
 )
@@ -17,43 +18,43 @@ type (
 	// implementation detail of the backend.
 	Backend interface {
 		// New starts a new time entry with no description
-		New() error
+		New(ctx context.Context) error
 		// StartPrevious starts a new time entry based on the last finished time entry
-		StartPrevious() error
+		StartPrevious(ctx context.Context) error
 		// Append adds line to the description of the running time entry, separated by separator
-		Append(line, separator string) error
+		Append(ctx context.Context, line, separator string) error
 		// SetDescription replaces the description of the running time entry
-		SetDescription(line string) error
+		SetDescription(ctx context.Context, line string) error
 		// Tag toggles the tag name on the running time entry
-		Tag(name string) error
+		Tag(ctx context.Context, name string) error
 		// SetProjectForCurrentTimestamp sets the project of the running time entry.
 		// An empty name removes the project.
-		SetProjectForCurrentTimestamp(name string, autoCreateProject bool) error
+		SetProjectForCurrentTimestamp(ctx context.Context, name string, autoCreateProject bool) error
 		// Done stops the running time entry
-		Done() error
+		Done(ctx context.Context) error
 		// Current returns the running time entry
-		Current() (*TimeEntry, error)
+		Current(ctx context.Context) (*TimeEntry, error)
 		// ListForDay returns all time entries of today
-		ListForDay() ([]TimeEntry, error)
+		ListForDay(ctx context.Context) ([]TimeEntry, error)
 
-		Projects() ([]Project, error)
+		Projects(ctx context.Context) ([]Project, error)
 		// CreateProject creates a project, if it does not exist
-		CreateProject(name string) error
+		CreateProject(ctx context.Context, name string) error
 		// DeleteProject removes a project by name or id
-		DeleteProject(nameOrID string) error
+		DeleteProject(ctx context.Context, nameOrID string) error
 
-		Clients() ([]Client, error)
+		Clients(ctx context.Context) ([]Client, error)
 		// CreateClient creates a client, if it does not exist
-		CreateClient(name string) error
+		CreateClient(ctx context.Context, name string) error
 	}
 
 	// CachingBackend is a Backend that keeps a local cache.
 	CachingBackend interface {
 		Backend
 		// UpdateCache reloads the cache from the service
-		UpdateCache() error
+		UpdateCache(ctx context.Context) error
 		// CacheStatus returns the state of each part of the cache
-		CacheStatus() ([]CacheStatus, error)
+		CacheStatus(ctx context.Context) ([]CacheStatus, error)
 	}
 
 	CacheStatus struct {

@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 
 	"go.livingit.de/timenote"
@@ -23,7 +24,7 @@ import (
 // timestampDuration prints the current timestamp's duration as hh:mm:ss.
 func timestampDuration() {
 	p := newPersistor()
-	ts, err := p.Current()
+	ts, err := p.Current(context.Background())
 	if err != nil {
 		fatal(err)
 	}

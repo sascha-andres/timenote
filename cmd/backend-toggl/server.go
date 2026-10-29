@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 	"go.livingit.de/timenote"
 	"go.livingit.de/timenote/remote"
@@ -59,7 +60,9 @@ func newHandler(backend timenote.CachingBackend, token string, readTTL time.Dura
 	root := http.NewServeMux()
 	root.Handle("GET /metrics", promhttp.Handler())
 	root.Handle("/", s.authenticate(mux))
-	return instrument(root)
+	// otelhttp names each span by the route pattern; scrapes of /metrics get no span
+	return otelhttp.NewHandler(instrument(root), "backend-toggl",
+		otelhttp.WithFilter(func(r *http.Request) bool { return r.URL.Path != "/metrics" }))
 }
 
 func (s *server) authenticate(next http.Handler) http.Handler {
@@ -174,15 +177,15 @@ func (s *server) newTimeEntry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if req.FromPrevious {
-		s.call(w, noResult(s.backend.StartPrevious))
+		s.call(w, noResult(func() error { return s.backend.StartPrevious(r.Context()) }))
 		return
 	}
-	s.call(w, noResult(s.backend.New))
+	s.call(w, noResult(func() error { return s.backend.New(r.Context()) }))
 }
 
-func (s *server) listForDay(w http.ResponseWriter, _ *http.Request) {
+func (s *server) listForDay(w http.ResponseWriter, r *http.Request) {
 	s.read(w, "listForDay", func() (any, error) {
-		entries, err := s.backend.ListForDay()
+		entries, err := s.backend.ListForDay(r.Context())
 		if entries == nil {
 			entries = []timenote.TimeEntry{}
 		}
@@ -190,9 +193,9 @@ func (s *server) listForDay(w http.ResponseWriter, _ *http.Request) {
 	})
 }
 
-func (s *server) current(w http.ResponseWriter, _ *http.Request) {
+func (s *server) current(w http.ResponseWriter, r *http.Request) {
 	s.read(w, "current", func() (any, error) {
-		te, err := s.backend.Current()
+		te, err := s.backend.Current(r.Context())
 		if err == nil && te == nil {
 			err = timenote.ErrNoCurrentEntry
 		}
@@ -209,7 +212,7 @@ func (s *server) updateCurrent(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
-	s.call(w, noResult(s.backend.Done))
+	s.call(w, noResult(func() error { return s.backend.Done(r.Context()) }))
 }
 
 func (s *server) setDescription(w http.ResponseWriter, r *http.Request) {
@@ -217,7 +220,7 @@ func (s *server) setDescription(w http.ResponseWriter, r *http.Request) {
 	if !decode(w, r, &req) {
 		return
 	}
-	s.call(w, noResult(func() error { return s.backend.SetDescription(req.Description) }))
+	s.call(w, noResult(func() error { return s.backend.SetDescription(r.Context(), req.Description) }))
 }
 
 func (s *server) appendDescription(w http.ResponseWriter, r *http.Request) {
@@ -225,7 +228,7 @@ func (s *server) appendDescription(w http.ResponseWriter, r *http.Request) {
 	if !decode(w, r, &req) {
 		return
 	}
-	s.call(w, noResult(func() error { return s.backend.Append(req.Line, req.Separator) }))
+	s.call(w, noResult(func() error { return s.backend.Append(r.Context(), req.Line, req.Separator) }))
 }
 
 func (s *server) toggleTag(w http.ResponseWriter, r *http.Request) {
@@ -233,7 +236,7 @@ func (s *server) toggleTag(w http.ResponseWriter, r *http.Request) {
 	if !decode(w, r, &req) || !requireName(w, "toggle", req.Toggle) {
 		return
 	}
-	s.call(w, noResult(func() error { return s.backend.Tag(req.Toggle) }))
+	s.call(w, noResult(func() error { return s.backend.Tag(r.Context(), req.Toggle) }))
 }
 
 func (s *server) setProject(w http.ResponseWriter, r *http.Request) {
@@ -241,12 +244,14 @@ func (s *server) setProject(w http.ResponseWriter, r *http.Request) {
 	if !decode(w, r, &req) {
 		return
 	}
-	s.call(w, noResult(func() error { return s.backend.SetProjectForCurrentTimestamp(req.Name, req.AutoCreateProject) }))
+	s.call(w, noResult(func() error {
+		return s.backend.SetProjectForCurrentTimestamp(r.Context(), req.Name, req.AutoCreateProject)
+	}))
 }
 
-func (s *server) projects(w http.ResponseWriter, _ *http.Request) {
+func (s *server) projects(w http.ResponseWriter, r *http.Request) {
 	s.read(w, "projects", func() (any, error) {
-		projects, err := s.backend.Projects()
+		projects, err := s.backend.Projects(r.Context())
 		if projects == nil {
 			projects = []timenote.Project{}
 		}
@@ -259,16 +264,16 @@ func (s *server) createProject(w http.ResponseWriter, r *http.Request) {
 	if !decode(w, r, &req) || !requireName(w, "name", req.Name) {
 		return
 	}
-	s.call(w, noResult(func() error { return s.backend.CreateProject(req.Name) }))
+	s.call(w, noResult(func() error { return s.backend.CreateProject(r.Context(), req.Name) }))
 }
 
 func (s *server) deleteProject(w http.ResponseWriter, r *http.Request) {
-	s.call(w, noResult(func() error { return s.backend.DeleteProject(r.PathValue("nameOrID")) }))
+	s.call(w, noResult(func() error { return s.backend.DeleteProject(r.Context(), r.PathValue("nameOrID")) }))
 }
 
-func (s *server) clients(w http.ResponseWriter, _ *http.Request) {
+func (s *server) clients(w http.ResponseWriter, r *http.Request) {
 	s.read(w, "clients", func() (any, error) {
-		clients, err := s.backend.Clients()
+		clients, err := s.backend.Clients(r.Context())
 		if clients == nil {
 			clients = []timenote.Client{}
 		}
@@ -281,13 +286,13 @@ func (s *server) createClient(w http.ResponseWriter, r *http.Request) {
 	if !decode(w, r, &req) || !requireName(w, "name", req.Name) {
 		return
 	}
-	s.call(w, noResult(func() error { return s.backend.CreateClient(req.Name) }))
+	s.call(w, noResult(func() error { return s.backend.CreateClient(r.Context(), req.Name) }))
 }
 
-func (s *server) cacheStatus(w http.ResponseWriter, _ *http.Request) {
-	s.read(w, "cacheStatus", func() (any, error) { return s.backend.CacheStatus() })
+func (s *server) cacheStatus(w http.ResponseWriter, r *http.Request) {
+	s.read(w, "cacheStatus", func() (any, error) { return s.backend.CacheStatus(r.Context()) })
 }
 
-func (s *server) updateCache(w http.ResponseWriter, _ *http.Request) {
-	s.call(w, noResult(s.backend.UpdateCache))
+func (s *server) updateCache(w http.ResponseWriter, r *http.Request) {
+	s.call(w, noResult(func() error { return s.backend.UpdateCache(r.Context()) }))
 }

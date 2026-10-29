@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -42,7 +43,7 @@ func dispatchProjects(verbs []string) {
 
 func projectsList() {
 	p := newPersistor()
-	projects, err := p.Projects()
+	projects, err := p.Projects(context.Background())
 	if err != nil {
 		fatal(err)
 	}

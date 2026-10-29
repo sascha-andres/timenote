@@ -14,12 +14,14 @@
 
 package cmd
 
+import "context"
+
 // projectsCreate adds a new project to the time backend, if it does not
 // already exist.
 func projectsCreate() {
 	n := requireString("name", *name)
 	p := newPersistor()
-	if err := p.CreateProject(n); err != nil {
+	if err := p.CreateProject(context.Background(), n); err != nil {
 		fatal(err)
 	}
 }

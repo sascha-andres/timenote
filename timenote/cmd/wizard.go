@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"context"
+
 	"charm.land/bubbles/v2/list"
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
@@ -61,11 +63,11 @@ func (c choice) Description() string { return "" }
 // the running time entry.
 func runWizard() {
 	p := newPersistor()
-	clients, err := p.Clients()
+	clients, err := p.Clients(context.Background())
 	if err != nil {
 		fatal(err)
 	}
-	projects, err := p.Projects()
+	projects, err := p.Projects(context.Background())
 	if err != nil {
 		fatal(err)
 	}
@@ -104,24 +106,24 @@ func newWizardModel(p timenote.Backend, clients []timenote.Client, projects []ti
 func (m wizardModel) apply() error {
 	switch m.action {
 	case actionNew:
-		if err := m.p.New(); err != nil {
+		if err := m.p.New(context.Background()); err != nil {
 			return err
 		}
 		// Append writes the full cached entry, so it must run before the project is set.
 		if m.description != "" {
-			if err := m.p.Append(m.description, *separator); err != nil {
+			if err := m.p.Append(context.Background(), m.description, *separator); err != nil {
 				return err
 			}
 		}
-		return m.p.SetProjectForCurrentTimestamp(m.project, false)
+		return m.p.SetProjectForCurrentTimestamp(context.Background(), m.project, false)
 	case actionAppend:
-		return m.p.Append(m.description, *separator)
+		return m.p.Append(context.Background(), m.description, *separator)
 	case actionOverwrite:
-		return m.p.SetDescription(m.description)
+		return m.p.SetDescription(context.Background(), m.description)
 	case actionProject:
-		return m.p.SetProjectForCurrentTimestamp(m.project, false)
+		return m.p.SetProjectForCurrentTimestamp(context.Background(), m.project, false)
 	case actionStop:
-		return m.p.Done()
+		return m.p.Done(context.Background())
 	}
 	return nil
 }
@@ -217,7 +219,7 @@ func (m wizardModel) finish() (tea.Model, tea.Cmd) {
 
 // checkRunning reads the running time entry from the backend, not from the cache.
 func (m wizardModel) checkRunning() tea.Msg {
-	_, err := m.p.Current()
+	_, err := m.p.Current(context.Background())
 	return runningMsg{err: err}
 }
 

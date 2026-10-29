@@ -14,12 +14,14 @@
 
 package cmd
 
+import "context"
+
 // timestampAppend appends to (or, depending on the persistor, overwrites)
 // the description of the running time entry.
 func timestampAppend() {
 	desc := requireString("description", *description)
 	p := newPersistor()
-	if err := p.Append(desc, *separator); err != nil {
+	if err := p.Append(context.Background(), desc, *separator); err != nil {
 		fatal(err)
 	}
 }
