@@ -36,12 +36,21 @@ func clientsKey(workspace int) string {
 	return fmt.Sprintf("%d-clients", workspace)
 }
 
+// OnTogglCall, if not nil, is called after each toggl API call with the
+// method name, the call duration and the error. Set it before the first call;
+// it is not safe to change while calls run.
+var OnTogglCall func(method string, duration time.Duration, err error)
+
 // callToggl invokes fn against the toggl API, logging the method name and
-// call duration at debug level.
+// call duration at debug level and reporting them to OnTogglCall.
 func callToggl[T any](method string, fn func() (T, error)) (T, error) {
 	start := time.Now()
 	result, err := fn()
-	slog.Debug("toggl api call", "method", method, "duration", time.Since(start))
+	duration := time.Since(start)
+	if OnTogglCall != nil {
+		OnTogglCall(method, duration, err)
+	}
+	slog.Debug("toggl api call", "method", method, "duration", duration)
 	return result, err
 }
 

@@ -9,6 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 	"go.livingit.de/timenote"
 	"go.livingit.de/timenote/remote"
 )
@@ -54,7 +56,10 @@ func newHandler(backend timenote.CachingBackend, token string, readTTL time.Dura
 	mux.HandleFunc("POST /v1/clients", s.createClient)
 	mux.HandleFunc("GET /v1/cache", s.cacheStatus)
 	mux.HandleFunc("POST /v1/cache", s.updateCache)
-	return logRequests(s.authenticate(mux))
+	root := http.NewServeMux()
+	root.Handle("GET /metrics", promhttp.Handler())
+	root.Handle("/", s.authenticate(mux))
+	return instrument(root)
 }
 
 func (s *server) authenticate(next http.Handler) http.Handler {
@@ -123,12 +128,15 @@ func (s *server) read(w http.ResponseWriter, key string, fn func() (any, error))
 	s.mu.Lock()
 	r, ok := s.reads[key]
 	if !ok || time.Since(r.at) >= s.readTTL {
+		readCacheRequests.WithLabelValues("miss").Inc()
 		r = cachedRead{at: time.Now()}
 		r.out, r.err = fn()
 		// "no current entry" is a normal state for polling clients, keep it too
 		if s.readTTL > 0 && (r.err == nil || errors.Is(r.err, timenote.ErrNoCurrentEntry)) {
 			s.reads[key] = r
 		}
+	} else {
+		readCacheRequests.WithLabelValues("hit").Inc()
 	}
 	s.mu.Unlock()
 	respond(w, r.out, r.err)

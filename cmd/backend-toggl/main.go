@@ -57,6 +57,7 @@ func run(listen, token, togglToken string, workspace int, cacheDir string, cache
 		}
 		cacheDir = filepath.Join(home, ".config", "timenote", "cache")
 	}
+	persistence.OnTogglCall = observeTogglCall
 	backend, err := persistence.NewToggl(togglToken, workspace, cacheDir, cacheMaxAge)
 	if err != nil {
 		return err

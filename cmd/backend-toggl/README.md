@@ -45,11 +45,25 @@ app) are visible after a maximum of `-read-cache-ttl`.
 
 ## Authentication
 
-Each request must have this header:
+Each request must have this header, except `GET /metrics`:
 
     Authorization: Bearer <token>
 
 If the header is missing or wrong, the server sends `401`.
+
+## Metrics
+
+`GET /metrics` sends Prometheus metrics. It does not need the token. Each
+client that can connect to `-listen` can read the metrics.
+
+| Metric                                         | Labels            | Description                                  |
+|------------------------------------------------|-------------------|----------------------------------------------|
+| `backend_toggl_http_request_duration_seconds`  | `route`, `status` | HTTP requests. `route` is the route pattern, for example `GET /v1/projects/{nameOrID}`. `unmatched` if no route matched or the token was wrong |
+| `backend_toggl_read_cache_requests_total`      | `result`          | `GET` requests: `hit` from the read cache, `miss` from the backend |
+| `timenote_toggl_api_call_duration_seconds`     | `method`          | Calls to the Toggl API                       |
+| `timenote_toggl_api_call_errors_total`         | `method`          | Failed calls to the Toggl API                |
+
+The Go runtime (`go_*`) and process (`process_*`) metrics are also included.
 
 ## Endpoints
 
