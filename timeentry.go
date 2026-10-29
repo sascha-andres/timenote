@@ -38,10 +38,19 @@ func (te *TimeEntry) String() string {
 	return result
 }
 
+// Seconds returns the duration in seconds. For a running entry it is the time since Start.
+func (te *TimeEntry) Seconds() int64 {
+	if te.Duration < 0 {
+		// toggl api v9 returns -1 for a running entry, not -start, so Duration has no start time.
+		return int64(time.Since(te.Start).Seconds())
+	}
+	return te.Duration
+}
+
 func (te *TimeEntry) getHumanTime() string {
 	humanTime := ""
 	if te.Duration < 0 {
-		t := time.Now().UTC().Add(time.Duration(te.Duration) * time.Second)
+		t := time.Time{}.Add(time.Duration(te.Seconds()) * time.Second)
 		humanTime = t.Format("15:04:05")
 	} else {
 		td, err := NewTogglDuration(te.Duration)

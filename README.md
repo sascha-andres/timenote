@@ -20,6 +20,29 @@ Flags must come before the command, not after, e.g.:
 
     timenote -token xxx token save
 
+## Wizard
+
+    timenote wizard
+
+The wizard asks step by step what to do with the time entry. Use the arrow
+keys to move, `/` to filter a list, `enter` to select and `ctrl+c` (or `q` in a
+list) to cancel. Cancel makes no changes.
+
+- `new`: select a client, then a project of that client. Projects without a
+  client are under `(no client)`. Then select if you want to add a
+  description. `yes` asks for the description. The wizard starts a new time
+  entry with the project and the description.
+- `change`: if no time entry runs, the wizard prints an error and exits.
+  - `append description`: asks for text and appends it to the description,
+    separated by `-separator`.
+  - `overwrite description`: asks for text and replaces the description.
+  - `new project`: select a client and a project. The wizard sets the project
+    on the running time entry.
+- `stop`: stops the running time entry.
+
+The client and project lists come from the cache (`-cache-max-age`,
+`timenote cache update`). `-excluded-projects` also applies to the wizard.
+
 ## Logging
 
 `-log-level` sets the minimum level printed (`debug`, `info`, `warn`,
@@ -45,6 +68,8 @@ Used regularly with the toggl backend.
 ||Drop interactive mode|
 ||Replace ginkgo/gomega tests with standard library tests|
 ||Update dependencies|
+||Add wizard command|
+||Fix duration of the running time entry (toggl api v9)|
 |0.9.1|Print total for today|
 |0.9.0|Swap out logrus for the standard library logger|
 ||Make timestamp current the default behavior|

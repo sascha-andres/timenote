@@ -16,7 +16,6 @@ package cmd
 
 import (
 	"fmt"
-	"time"
 
 	"go.livingit.de/timenote"
 )
@@ -29,13 +28,7 @@ func timestampDuration() {
 		fatal(err)
 	}
 
-	var td *timenote.TogglDuration
-	if ts.Duration < 0 {
-		t := time.Now().UTC().Add(time.Duration(ts.Duration) * time.Second)
-		td, err = timenote.TogglDurationFromTime(t)
-	} else {
-		td, err = timenote.NewTogglDuration(ts.Duration)
-	}
+	td, err := timenote.NewTogglDuration(ts.Seconds())
 	if err != nil {
 		panic(err)
 	}

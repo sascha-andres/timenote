@@ -150,6 +150,26 @@ func (t *TogglPersistor) Append(line, separator string) error {
 	return t.cacheAccount()
 }
 
+// SetDescription replaces the description of the running time entry
+func (t *TogglPersistor) SetDescription(line string) error {
+	account, err := t.caching.GetAccount()
+	if err != nil {
+		return fmt.Errorf("unable to get account: %w", err)
+	}
+	te, err := getCurrentTimeEntry(account)
+	if err != nil {
+		return errors.Wrap(err, "unable to get running time entry from toggl")
+	}
+	te.Description = line
+	_, err = callToggl("UpdateTimeEntry", func() (toggl.TimeEntry, error) {
+		return t.session.UpdateTimeEntry(*te)
+	})
+	if err != nil {
+		return errors.Wrap(err, "unable to update time entry in toggl")
+	}
+	return t.cacheAccount()
+}
+
 // Tag toggle the tags associated with the running time entry
 // name is the name of the tag
 func (t *TogglPersistor) Tag(name string) error {
@@ -214,13 +234,13 @@ func (t *TogglPersistor) Current() (*timenote.TimeEntry, error) {
 	res.Tag = fmt.Sprintf("%v", te.Tags)
 	res.Start = *te.Start
 	res.Duration = te.Duration
-	if *te.Pid > 0 {
+	if te.Pid != nil && *te.Pid > 0 {
 		p, err := t.GetProject(*te.Pid)
 		if err != nil {
 			res.Project = "- unknown project -"
 		} else {
 			res.Project = p.Name
-			if *p.Cid > 0 {
+			if p.Cid != nil && *p.Cid > 0 {
 				c, err := t.GetClientByID(*p.Cid)
 				if err != nil {
 					res.Client = "- unknown client -"
@@ -287,7 +307,10 @@ func (t *TogglPersistor) SetProjectForCurrentTimestamp(name string, autoCreatePr
 	_, err = callToggl("UpdateTimeEntry", func() (toggl.TimeEntry, error) {
 		return t.session.UpdateTimeEntry(*te)
 	})
-	return err
+	if err != nil {
+		return err
+	}
+	return t.cacheAccount()
 }
 
 func (t *TogglPersistor) createProject(name string) (int, error) {

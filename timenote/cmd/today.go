@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"os"
 	"text/tabwriter"
-	"time"
 
 	"go.livingit.de/timenote"
 )
@@ -52,13 +51,7 @@ func timestampToday() {
 func printTodaySum(ts []timenote.TimeEntry) {
 	var sum int64
 	for _, e := range ts {
-		if e.Duration >= 0 {
-			sum += e.Duration
-		} else {
-			t := time.Now().UTC().Add(time.Duration(e.Duration) * time.Second)
-			td2, _ := timenote.TogglDurationFromTime(t)
-			sum += td2.GetDuration()
-		}
+		sum += e.Seconds()
 	}
 	td, err := timenote.NewTogglDuration(sum)
 	if err != nil {
@@ -108,23 +101,12 @@ func writeTimeEntriesTable(ts []timenote.TimeEntry) {
 	fmt.Fprintln(w, "ID\tTime\tClient\tProject\tNote\t")
 	var totalDuration int64
 	for _, e := range ts {
-		var humanTime string
-		if e.Duration >= 0 {
-			totalDuration += e.Duration
-			td, _ := timenote.NewTogglDuration(e.Duration)
-			if !*includeSeconds {
-				td.OmitSeconds()
-			}
-			humanTime = td.String()
-		} else {
-			t := time.Now().UTC().Add(time.Duration(e.Duration) * time.Second)
-			td2, _ := timenote.TogglDurationFromTime(t)
-			totalDuration += td2.GetDuration()
-			if !*includeSeconds {
-				td2.OmitSeconds()
-			}
-			humanTime = td2.String()
+		totalDuration += e.Seconds()
+		td, _ := timenote.NewTogglDuration(e.Seconds())
+		if !*includeSeconds {
+			td.OmitSeconds()
 		}
+		humanTime := td.String()
 		fmt.Fprintf(w, "%d\t%s\t%s\t%s\t%s\t\n", e.ID, humanTime, e.Client, e.Project, e.Note)
 	}
 	td, _ := timenote.NewTogglDuration(totalDuration)

@@ -117,6 +117,8 @@ func dispatch(verbs []string) {
 		timestampToday()
 	case "browser":
 		openBrowser()
+	case "wizard":
+		runWizard()
 	default:
 		newFromDescription(verbs)
 	}

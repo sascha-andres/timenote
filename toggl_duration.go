@@ -1,9 +1,6 @@
 package timenote
 
-import (
-	"fmt"
-	"time"
-)
+import "fmt"
 import "errors"
 
 // TogglDuration is used to pretty print a toggl duration
@@ -98,13 +95,6 @@ func (td *TogglDuration) calculateDone() {
 	td.minutes = localDuration / minuteInSeconds
 	localDuration = localDuration - (td.minutes * minuteInSeconds)
 	td.seconds = localDuration
-}
-
-// TogglDurationFromTime formats a time like the duration
-//
-// Known caveat: this forgets about days
-func TogglDurationFromTime(t time.Time) (*TogglDuration, error) {
-	return NewTogglDuration(int64(t.Hour())*hourInSeconds + int64(t.Minute())*minuteInSeconds + int64(t.Second()))
 }
 
 func (td *TogglDuration) GetDuration() int64 {
