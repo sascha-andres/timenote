@@ -26,15 +26,16 @@ func main() {
 	workspace := flag.Int("workspace", 0, "toggl workspace, 0 uses the first workspace")
 	cacheDir := flag.String("cache-path", "", "cache directory (default $HOME/.config/timenote/cache)")
 	cacheMaxAge := flag.Int("cache-max-age", 360, "maximum age of cache in minutes")
+	readCacheTTL := flag.Duration("read-cache-ttl", 30*time.Second, "how long GET results are kept, 0 disables")
 	flag.Parse()
 
-	if err := run(*listen, *token, *togglToken, *workspace, *cacheDir, *cacheMaxAge); err != nil {
+	if err := run(*listen, *token, *togglToken, *workspace, *cacheDir, *cacheMaxAge, *readCacheTTL); err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)
 	}
 }
 
-func run(listen, token, togglToken string, workspace int, cacheDir string, cacheMaxAge int) error {
+func run(listen, token, togglToken string, workspace int, cacheDir string, cacheMaxAge int, readCacheTTL time.Duration) error {
 	if token == "" {
 		return errors.New("-token or $BACKEND_TOGGL_TOKEN is required")
 	}
@@ -55,7 +56,7 @@ func run(listen, token, togglToken string, workspace int, cacheDir string, cache
 
 	srv := &http.Server{
 		Addr:              listen,
-		Handler:           newHandler(backend, token),
+		Handler:           newHandler(backend, token, readCacheTTL),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 	slog.Info("listening", "address", listen)

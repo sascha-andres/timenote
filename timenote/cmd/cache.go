@@ -36,8 +36,11 @@ func dispatchCache(verbs []string) {
 }
 
 // newCachingBackend returns the backend, or terminates the process if the
-// backend has no cache.
+// backend has no cache. The remote backend has no local cache.
 func newCachingBackend() timenote.CachingBackend {
+	if *backend == "remote" {
+		fatal(fmt.Errorf("backend %q has no cache", *backend))
+	}
 	p, ok := newPersistor().(timenote.CachingBackend)
 	if !ok {
 		fatal(fmt.Errorf("backend has no cache"))

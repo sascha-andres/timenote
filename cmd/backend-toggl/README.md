@@ -16,20 +16,31 @@ To start it at login with systemd or launchd, see
 Configuration is with command-line flags and environment variables
 (`go.livingit.de/reuse/flag`). The flag has priority.
 
-| Flag             | Environment variable          | Default                          | Description                                              |
-|------------------|-------------------------------|----------------------------------|----------------------------------------------------------|
-| `-listen`        | `BACKEND_TOGGL_LISTEN`        | `127.0.0.1:8141`                 | Address to listen on                                     |
-| `-token`         | `BACKEND_TOGGL_TOKEN`         | none, required                   | Token that clients must send                             |
-| `-toggl-token`   | `TOGGL_TOKEN`                 | timenote keyring entry           | Toggl API token (`timenote -token xxx token save`)       |
-| `-workspace`     | `BACKEND_TOGGL_WORKSPACE`     | `0`                              | Toggl workspace. `0` uses the first workspace            |
-| `-cache-path`    | `BACKEND_TOGGL_CACHE_PATH`    | `$HOME/.config/timenote/cache`   | Cache directory (same as the timenote CLI)               |
-| `-cache-max-age` | `BACKEND_TOGGL_CACHE_MAX_AGE` | `360`                            | Maximum age of the cache in minutes                      |
+| Flag              | Environment variable           | Default                        | Description                                           |
+|-------------------|--------------------------------|--------------------------------|-------------------------------------------------------|
+| `-listen`         | `BACKEND_TOGGL_LISTEN`         | `127.0.0.1:8141`               | Address to listen on                                  |
+| `-token`          | `BACKEND_TOGGL_TOKEN`          | none, required                 | Token that clients must send                          |
+| `-toggl-token`    | `TOGGL_TOKEN`                  | timenote keyring entry         | Toggl API token (`timenote -token xxx token save`)    |
+| `-workspace`      | `BACKEND_TOGGL_WORKSPACE`      | `0`                            | Toggl workspace. `0` uses the first workspace         |
+| `-cache-path`     | `BACKEND_TOGGL_CACHE_PATH`     | `$HOME/.config/timenote/cache` | Cache directory (same as the timenote CLI)            |
+| `-cache-max-age`  | `BACKEND_TOGGL_CACHE_MAX_AGE`  | `360`                          | Maximum age of the cache in minutes                   |
+| `-read-cache-ttl` | `BACKEND_TOGGL_READ_CACHE_TTL` | `30s`                          | How long the server keeps `GET` results. `0` disables |
 
 `-h` shows the values of the environment variables as defaults, including the
 tokens. Do not share `-h` output when the token variables are set.
 
 The server uses plain HTTP. Keep it on localhost, or put a TLS proxy in front
 of it.
+
+## Read cache
+
+The server keeps the result of each `GET` endpoint in memory for
+`-read-cache-ttl`. This decreases the calls to the Toggl API when clients poll.
+Each other request (`POST`, `PUT`, `PATCH`, `DELETE`) clears the read cache.
+Errors are not kept, except "no current time entry".
+
+Changes that you make outside of the server (for example in the Toggl web
+app) are visible after a maximum of `-read-cache-ttl`.
 
 ## Authentication
 
@@ -59,6 +70,8 @@ Times are RFC 3339.
 | DELETE | `/v1/projects/{nameOrID}`             |                                              | Deletes the project             |
 | GET    | `/v1/clients`                         |                                              | Clients                         |
 | POST   | `/v1/clients`                         | `{"name": "c"}`                              | Creates the client if it does not exist |
+| GET    | `/v1/cache`                           |                                              | Status of the projects and clients cache |
+| POST   | `/v1/cache`                           |                                              | Reloads the cache from Toggl    |
 
 If the table shows a body, the body is required (`{}` is valid for `POST
 /v1/timeentries`). Calls without a result send `204 No Content`.
@@ -103,5 +116,4 @@ if err := c.New(); err != nil {
 }
 ```
 
-`*remote.Client` implements `timenote.Backend`. Cache operations
-(`UpdateCache`, `CacheStatus`) are not available through the API.
+`*remote.Client` implements `timenote.CachingBackend`.

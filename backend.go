@@ -57,8 +57,8 @@ type (
 	}
 
 	CacheStatus struct {
-		Name       string
-		Updated    time.Time
-		NextUpdate time.Time
+		Name       string    `json:"name"`
+		Updated    time.Time `json:"updated"`
+		NextUpdate time.Time `json:"next_update"`
 	}
 )

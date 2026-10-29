@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"sync"
+	"time"
 
 	"go.livingit.de/timenote"
 	"go.livingit.de/timenote/remote"
@@ -14,17 +15,29 @@ import (
 
 const maxBodyBytes = 1 << 20
 
-type server struct {
-	// mu serializes backend calls; the toggl backend and its file cache are not safe for concurrent use
-	mu      sync.Mutex
-	backend timenote.Backend
-	auth    []byte
-}
+type (
+	server struct {
+		// mu serializes backend calls; the toggl backend and its file cache are not safe for concurrent use
+		mu      sync.Mutex
+		backend timenote.CachingBackend
+		auth    []byte
+		// readTTL is how long GET results stay in reads; 0 disables the read cache
+		readTTL time.Duration
+		reads   map[string]cachedRead
+	}
+
+	cachedRead struct {
+		at  time.Time
+		out any
+		err error
+	}
+)
 
 // newHandler exposes backend as the /v1 REST API. Each request must send
-// "Authorization: Bearer <token>".
-func newHandler(backend timenote.Backend, token string) http.Handler {
-	s := &server{backend: backend, auth: []byte("Bearer " + token)}
+// "Authorization: Bearer <token>". Results of GET requests are kept for
+// readTTL; each other request clears them.
+func newHandler(backend timenote.CachingBackend, token string, readTTL time.Duration) http.Handler {
+	s := &server{backend: backend, auth: []byte("Bearer " + token), readTTL: readTTL, reads: map[string]cachedRead{}}
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /v1/timeentries", s.newTimeEntry)
 	mux.HandleFunc("GET /v1/timeentries", s.listForDay)
@@ -39,6 +52,8 @@ func newHandler(backend timenote.Backend, token string) http.Handler {
 	mux.HandleFunc("DELETE /v1/projects/{nameOrID}", s.deleteProject)
 	mux.HandleFunc("GET /v1/clients", s.clients)
 	mux.HandleFunc("POST /v1/clients", s.createClient)
+	mux.HandleFunc("GET /v1/cache", s.cacheStatus)
+	mux.HandleFunc("POST /v1/cache", s.updateCache)
 	return s.authenticate(mux)
 }
 
@@ -92,12 +107,35 @@ func requireName(w http.ResponseWriter, field, value string) bool {
 	return false
 }
 
-// call runs fn under the backend lock and writes the result: a problem on
-// error, 204 if out is nil, else out as JSON.
+// call runs fn under the backend lock and writes the result. It clears the
+// read cache, because fn can change data.
 func (s *server) call(w http.ResponseWriter, fn func() (any, error)) {
 	s.mu.Lock()
+	clear(s.reads)
 	out, err := fn()
 	s.mu.Unlock()
+	respond(w, out, err)
+}
+
+// read is call for GET requests: it uses the result of fn stored under key
+// if it is younger than readTTL.
+func (s *server) read(w http.ResponseWriter, key string, fn func() (any, error)) {
+	s.mu.Lock()
+	r, ok := s.reads[key]
+	if !ok || time.Since(r.at) >= s.readTTL {
+		r = cachedRead{at: time.Now()}
+		r.out, r.err = fn()
+		// "no current entry" is a normal state for polling clients, keep it too
+		if s.readTTL > 0 && (r.err == nil || errors.Is(r.err, timenote.ErrNoCurrentEntry)) {
+			s.reads[key] = r
+		}
+	}
+	s.mu.Unlock()
+	respond(w, r.out, r.err)
+}
+
+// respond writes a problem on error, 204 if out is nil, else out as JSON.
+func respond(w http.ResponseWriter, out any, err error) {
 	switch {
 	case errors.Is(err, timenote.ErrNoCurrentEntry):
 		writeProblem(w, http.StatusNotFound, "No current time entry", err.Error(), "NO_CURRENT_ENTRY")
@@ -135,7 +173,7 @@ func (s *server) newTimeEntry(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) listForDay(w http.ResponseWriter, _ *http.Request) {
-	s.call(w, func() (any, error) {
+	s.read(w, "listForDay", func() (any, error) {
 		entries, err := s.backend.ListForDay()
 		if entries == nil {
 			entries = []timenote.TimeEntry{}
@@ -145,7 +183,7 @@ func (s *server) listForDay(w http.ResponseWriter, _ *http.Request) {
 }
 
 func (s *server) current(w http.ResponseWriter, _ *http.Request) {
-	s.call(w, func() (any, error) {
+	s.read(w, "current", func() (any, error) {
 		te, err := s.backend.Current()
 		if err == nil && te == nil {
 			err = timenote.ErrNoCurrentEntry
@@ -199,7 +237,7 @@ func (s *server) setProject(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) projects(w http.ResponseWriter, _ *http.Request) {
-	s.call(w, func() (any, error) {
+	s.read(w, "projects", func() (any, error) {
 		projects, err := s.backend.Projects()
 		if projects == nil {
 			projects = []timenote.Project{}
@@ -221,7 +259,7 @@ func (s *server) deleteProject(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) clients(w http.ResponseWriter, _ *http.Request) {
-	s.call(w, func() (any, error) {
+	s.read(w, "clients", func() (any, error) {
 		clients, err := s.backend.Clients()
 		if clients == nil {
 			clients = []timenote.Client{}
@@ -236,4 +274,12 @@ func (s *server) createClient(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.call(w, noResult(func() error { return s.backend.CreateClient(req.Name) }))
+}
+
+func (s *server) cacheStatus(w http.ResponseWriter, _ *http.Request) {
+	s.read(w, "cacheStatus", func() (any, error) { return s.backend.CacheStatus() })
+}
+
+func (s *server) updateCache(w http.ResponseWriter, _ *http.Request) {
+	s.call(w, noResult(s.backend.UpdateCache))
 }

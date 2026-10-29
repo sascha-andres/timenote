@@ -12,14 +12,14 @@ import (
 	"go.livingit.de/timenote"
 )
 
-// Client implements timenote.Backend through the backend-toggl REST API.
+// Client implements timenote.CachingBackend through the backend-toggl REST API.
 type Client struct {
 	baseURL string
 	token   string
 	http    *http.Client
 }
 
-var _ timenote.Backend = (*Client)(nil)
+var _ timenote.CachingBackend = (*Client)(nil)
 
 // New returns a client for the server at baseURL (for example
 // http://127.0.0.1:8141). token is sent in the Authorization header.
@@ -138,4 +138,16 @@ func (c *Client) Clients() ([]timenote.Client, error) {
 
 func (c *Client) CreateClient(name string) error {
 	return c.do(http.MethodPost, "/v1/clients", NameRequest{Name: name}, nil)
+}
+
+func (c *Client) UpdateCache() error {
+	return c.do(http.MethodPost, "/v1/cache", nil, nil)
+}
+
+func (c *Client) CacheStatus() ([]timenote.CacheStatus, error) {
+	var status []timenote.CacheStatus
+	if err := c.do(http.MethodGet, "/v1/cache", nil, &status); err != nil {
+		return nil, err
+	}
+	return status, nil
 }

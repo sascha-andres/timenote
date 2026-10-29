@@ -8,13 +8,28 @@ Essentially this is a commandline client to track your time
 
 Configuration is via command-line flags and environment variables only (no
 config file). Every flag falls back to an upper-cased, dash-to-underscore
-environment variable, e.g. `-workspace` / `WORKSPACE`, `-cache-path` /
-`CACHE_PATH`.
+environment variable with the prefix `TIMENOTE_`, e.g. `-workspace` /
+`TIMENOTE_WORKSPACE`, `-cache-path` / `TIMENOTE_CACHE_PATH`.
 
 Flags must come before the command, not after, e.g.:
 
     timenote -description "did a thing" timestamp new
     timenote -name "Client X" projects create
+
+## Backend
+
+`-backend` selects where time entries go (default `toggl`):
+
+- `toggl`: talks to toggl directly. Uses the token from the keyring (see
+  below), `-workspace` and the local cache.
+- `remote`: talks to a `backend-toggl` server (see
+  `cmd/backend-toggl/README.md`). `-remote-url` (for example
+  `http://127.0.0.1:8141`) and `-remote-token` are required. Environment:
+  `TIMENOTE_BACKEND`, `TIMENOTE_REMOTE_URL`, `TIMENOTE_REMOTE_TOKEN`.
+  timenote uses no cache: `-cache-path` and `-cache-max-age` have no effect,
+  and `timenote cache` stops with an error.
+
+    timenote -backend remote -remote-url http://127.0.0.1:8141 -remote-token xxx today
 
 ## Store your toggl token
 

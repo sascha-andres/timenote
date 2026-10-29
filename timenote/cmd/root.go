@@ -25,6 +25,7 @@ import (
 	"go.livingit.de/reuse/flag"
 	"go.livingit.de/timenote"
 	"go.livingit.de/timenote/internal/persistence"
+	"go.livingit.de/timenote/remote"
 )
 
 var token string
@@ -53,14 +54,22 @@ func requireString(flagName, value string) string {
 	return value
 }
 
-// newPersistor builds the backend for the configured workspace, or
-// terminates the process if that fails.
+// newPersistor builds the backend selected with --backend, or terminates the
+// process if that fails.
 func newPersistor() timenote.Backend {
-	p, err := persistence.NewToggl(token, *workspace, resolveCacheDir(), *cacheMaxAge)
-	if err != nil {
-		fatal(err)
+	switch *backend {
+	case "toggl":
+		p, err := persistence.NewToggl(token, *workspace, resolveCacheDir(), *cacheMaxAge)
+		if err != nil {
+			fatal(err)
+		}
+		return p
+	case "remote":
+		return remote.New(requireString("remote-url", *remoteURL), requireString("remote-token", *remoteToken))
+	default:
+		fatal(fmt.Errorf("unknown backend %q", *backend))
+		return nil
 	}
-	return p
 }
 
 // Execute parses flags and dispatches to the requested command.
