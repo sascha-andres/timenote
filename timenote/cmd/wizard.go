@@ -1,11 +1,12 @@
 package cmd
 
 import (
+	"context"
+
 	"charm.land/bubbles/v2/list"
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
-	"github.com/jason0x43/go-toggl"
-	"go.livingit.de/timenote/internal/persistence"
+	"go.livingit.de/timenote"
 )
 
 type wizardStep int
@@ -30,7 +31,7 @@ const (
 )
 
 type (
-	// choice is a list entry; id holds the toggl id for clients.
+	// choice is a list entry; id holds the backend id for clients.
 	choice struct {
 		title string
 		id    int
@@ -40,9 +41,9 @@ type (
 	runningMsg struct{ err error }
 
 	wizardModel struct {
-		p           *persistence.TogglPersistor
-		clients     []toggl.Client
-		projects    []toggl.Project
+		p           timenote.Backend
+		clients     []timenote.Client
+		projects    []timenote.Project
 		list        list.Model
 		input       textinput.Model
 		step        wizardStep
@@ -62,11 +63,11 @@ func (c choice) Description() string { return "" }
 // the running time entry.
 func runWizard() {
 	p := newPersistor()
-	clients, err := p.Clients()
+	clients, err := p.Clients(context.Background())
 	if err != nil {
 		fatal(err)
 	}
-	projects, err := p.Projects()
+	projects, err := p.Projects(context.Background())
 	if err != nil {
 		fatal(err)
 	}
@@ -86,7 +87,7 @@ func runWizard() {
 	}
 }
 
-func newWizardModel(p *persistence.TogglPersistor, clients []toggl.Client, projects []toggl.Project) wizardModel {
+func newWizardModel(p timenote.Backend, clients []timenote.Client, projects []timenote.Project) wizardModel {
 	d := list.NewDefaultDelegate()
 	d.ShowDescription = false
 	d.SetSpacing(0)
@@ -105,24 +106,24 @@ func newWizardModel(p *persistence.TogglPersistor, clients []toggl.Client, proje
 func (m wizardModel) apply() error {
 	switch m.action {
 	case actionNew:
-		if err := m.p.New(); err != nil {
+		if err := m.p.New(context.Background()); err != nil {
 			return err
 		}
 		// Append writes the full cached entry, so it must run before the project is set.
 		if m.description != "" {
-			if err := m.p.Append(m.description, *separator); err != nil {
+			if err := m.p.Append(context.Background(), m.description, *separator); err != nil {
 				return err
 			}
 		}
-		return m.p.SetProjectForCurrentTimestamp(m.project, false)
+		return m.p.SetProjectForCurrentTimestamp(context.Background(), m.project, false)
 	case actionAppend:
-		return m.p.Append(m.description, *separator)
+		return m.p.Append(context.Background(), m.description, *separator)
 	case actionOverwrite:
-		return m.p.SetDescription(m.description)
+		return m.p.SetDescription(context.Background(), m.description)
 	case actionProject:
-		return m.p.SetProjectForCurrentTimestamp(m.project, false)
+		return m.p.SetProjectForCurrentTimestamp(context.Background(), m.project, false)
 	case actionStop:
-		return m.p.Done()
+		return m.p.Done(context.Background())
 	}
 	return nil
 }
@@ -216,9 +217,9 @@ func (m wizardModel) finish() (tea.Model, tea.Cmd) {
 	return m, tea.Quit
 }
 
-// checkRunning reads the running time entry from toggl, not from the cache.
+// checkRunning reads the running time entry from the backend, not from the cache.
 func (m wizardModel) checkRunning() tea.Msg {
-	_, err := m.p.Current()
+	_, err := m.p.Current(context.Background())
 	return runningMsg{err: err}
 }
 
@@ -265,14 +266,10 @@ func (m *wizardModel) showInput() tea.Cmd {
 }
 
 // clientProjects returns the projects of clientID; 0 selects projects without a client.
-func clientProjects(projects []toggl.Project, clientID int) []toggl.Project {
-	var res []toggl.Project
+func clientProjects(projects []timenote.Project, clientID int) []timenote.Project {
+	var res []timenote.Project
 	for _, prj := range projects {
-		cid := 0
-		if prj.Cid != nil {
-			cid = *prj.Cid
-		}
-		if cid == clientID {
+		if prj.ClientID == clientID {
 			res = append(res, prj)
 		}
 	}

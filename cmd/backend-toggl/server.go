@@ -1,0 +1,298 @@
+package main
+
+import (
+	"crypto/subtle"
+	"encoding/json"
+	"errors"
+	"log/slog"
+	"net/http"
+	"sync"
+	"time"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+
+	"go.livingit.de/timenote"
+	"go.livingit.de/timenote/remote"
+)
+
+const maxBodyBytes = 1 << 20
+
+type (
+	server struct {
+		// mu serializes backend calls; the toggl backend and its file cache are not safe for concurrent use
+		mu      sync.Mutex
+		backend timenote.CachingBackend
+		auth    []byte
+		// readTTL is how long GET results stay in reads; 0 disables the read cache
+		readTTL time.Duration
+		reads   map[string]cachedRead
+	}
+
+	cachedRead struct {
+		at  time.Time
+		out any
+		err error
+	}
+)
+
+// newHandler exposes backend as the /v1 REST API. Each request must send
+// "Authorization: Bearer <token>". Results of GET requests are kept for
+// readTTL; each other request clears them.
+func newHandler(backend timenote.CachingBackend, token string, readTTL time.Duration) http.Handler {
+	s := &server{backend: backend, auth: []byte("Bearer " + token), readTTL: readTTL, reads: map[string]cachedRead{}}
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST /v1/timeentries", s.newTimeEntry)
+	mux.HandleFunc("GET /v1/timeentries", s.listForDay)
+	mux.HandleFunc("GET /v1/timeentries/current", s.current)
+	mux.HandleFunc("PATCH /v1/timeentries/current", s.updateCurrent)
+	mux.HandleFunc("PUT /v1/timeentries/current/description", s.setDescription)
+	mux.HandleFunc("PATCH /v1/timeentries/current/description", s.appendDescription)
+	mux.HandleFunc("PATCH /v1/timeentries/current/tags", s.toggleTag)
+	mux.HandleFunc("PUT /v1/timeentries/current/project", s.setProject)
+	mux.HandleFunc("GET /v1/projects", s.projects)
+	mux.HandleFunc("POST /v1/projects", s.createProject)
+	mux.HandleFunc("DELETE /v1/projects/{nameOrID}", s.deleteProject)
+	mux.HandleFunc("GET /v1/clients", s.clients)
+	mux.HandleFunc("POST /v1/clients", s.createClient)
+	mux.HandleFunc("GET /v1/cache", s.cacheStatus)
+	mux.HandleFunc("POST /v1/cache", s.updateCache)
+	root := http.NewServeMux()
+	root.Handle("GET /metrics", promhttp.Handler())
+	root.Handle("/", s.authenticate(mux))
+	// otelhttp names each span by the route pattern; scrapes of /metrics get no span
+	return otelhttp.NewHandler(instrument(root), "backend-toggl",
+		otelhttp.WithFilter(func(r *http.Request) bool { return r.URL.Path != "/metrics" }))
+}
+
+func (s *server) authenticate(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if subtle.ConstantTimeCompare([]byte(r.Header.Get("Authorization")), s.auth) != 1 {
+			writeProblem(w, http.StatusUnauthorized, "Unauthorized", "missing or invalid bearer token", "UNAUTHORIZED")
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func writeProblem(w http.ResponseWriter, status int, title, detail, code string) {
+	w.Header().Set("Content-Type", remote.ProblemContentType)
+	w.WriteHeader(status)
+	_ = json.NewEncoder(w).Encode(remote.Problem{Type: "about:blank", Title: title, Status: status, Detail: detail, Code: code})
+}
+
+func writeJSON(w http.ResponseWriter, v any) {
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(v)
+}
+
+// decode reads the JSON body into v. On failure it writes a problem and returns false.
+func decode(w http.ResponseWriter, r *http.Request, v any) bool {
+	dec := json.NewDecoder(http.MaxBytesReader(w, r.Body, maxBodyBytes))
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(v); err != nil {
+		writeProblem(w, http.StatusBadRequest, "Invalid request body", err.Error(), "INVALID_BODY")
+		return false
+	}
+	return true
+}
+
+// requireName writes a validation problem and returns false if value is empty.
+func requireName(w http.ResponseWriter, field, value string) bool {
+	if value != "" {
+		return true
+	}
+	w.Header().Set("Content-Type", remote.ProblemContentType)
+	w.WriteHeader(http.StatusUnprocessableEntity)
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"type":       "about:blank",
+		"title":      "Validation failed",
+		"status":     http.StatusUnprocessableEntity,
+		"detail":     "The request has 1 invalid field",
+		"code":       "VALIDATION_FAILED",
+		"validation": map[string]any{field: map[string]any{"value": value, "error": "must not be empty"}},
+	})
+	return false
+}
+
+// call runs fn under the backend lock and writes the result. It clears the
+// read cache, because fn can change data.
+func (s *server) call(w http.ResponseWriter, fn func() (any, error)) {
+	s.mu.Lock()
+	clear(s.reads)
+	out, err := fn()
+	s.mu.Unlock()
+	respond(w, out, err)
+}
+
+// read is call for GET requests: it uses the result of fn stored under key
+// if it is younger than readTTL.
+func (s *server) read(w http.ResponseWriter, key string, fn func() (any, error)) {
+	s.mu.Lock()
+	r, ok := s.reads[key]
+	if !ok || time.Since(r.at) >= s.readTTL {
+		readCacheRequests.WithLabelValues("miss").Inc()
+		r = cachedRead{at: time.Now()}
+		r.out, r.err = fn()
+		// "no current entry" is a normal state for polling clients, keep it too
+		if s.readTTL > 0 && (r.err == nil || errors.Is(r.err, timenote.ErrNoCurrentEntry)) {
+			s.reads[key] = r
+		}
+	} else {
+		readCacheRequests.WithLabelValues("hit").Inc()
+	}
+	s.mu.Unlock()
+	respond(w, r.out, r.err)
+}
+
+// respond writes a problem on error, 204 if out is nil, else out as JSON.
+func respond(w http.ResponseWriter, out any, err error) {
+	switch {
+	case errors.Is(err, timenote.ErrNoCurrentEntry):
+		writeProblem(w, http.StatusNotFound, "No current time entry", err.Error(), "NO_CURRENT_ENTRY")
+		return
+	case errors.Is(err, timenote.ErrProjectNotFound):
+		writeProblem(w, http.StatusNotFound, "Project not found", err.Error(), "PROJECT_NOT_FOUND")
+		return
+	case err != nil:
+		slog.Error("backend call failed", "error", err)
+		writeProblem(w, http.StatusBadGateway, "Backend call failed", err.Error(), "BACKEND_ERROR")
+		return
+	}
+	if out == nil {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+	writeJSON(w, out)
+}
+
+// noResult adapts a backend method without result to call.
+func noResult(fn func() error) func() (any, error) {
+	return func() (any, error) { return nil, fn() }
+}
+
+func (s *server) newTimeEntry(w http.ResponseWriter, r *http.Request) {
+	var req remote.NewTimeEntryRequest
+	if !decode(w, r, &req) {
+		return
+	}
+	if req.FromPrevious {
+		s.call(w, noResult(func() error { return s.backend.StartPrevious(r.Context()) }))
+		return
+	}
+	s.call(w, noResult(func() error { return s.backend.New(r.Context()) }))
+}
+
+func (s *server) listForDay(w http.ResponseWriter, r *http.Request) {
+	s.read(w, "listForDay", func() (any, error) {
+		entries, err := s.backend.ListForDay(r.Context())
+		if entries == nil {
+			entries = []timenote.TimeEntry{}
+		}
+		return entries, err
+	})
+}
+
+func (s *server) current(w http.ResponseWriter, r *http.Request) {
+	s.read(w, "current", func() (any, error) {
+		te, err := s.backend.Current(r.Context())
+		if err == nil && te == nil {
+			err = timenote.ErrNoCurrentEntry
+		}
+		return te, err
+	})
+}
+
+func (s *server) updateCurrent(w http.ResponseWriter, r *http.Request) {
+	var req remote.UpdateCurrentRequest
+	if !decode(w, r, &req) {
+		return
+	}
+	if !req.Stop {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+	s.call(w, noResult(func() error { return s.backend.Done(r.Context()) }))
+}
+
+func (s *server) setDescription(w http.ResponseWriter, r *http.Request) {
+	var req remote.SetDescriptionRequest
+	if !decode(w, r, &req) {
+		return
+	}
+	s.call(w, noResult(func() error { return s.backend.SetDescription(r.Context(), req.Description) }))
+}
+
+func (s *server) appendDescription(w http.ResponseWriter, r *http.Request) {
+	var req remote.AppendDescriptionRequest
+	if !decode(w, r, &req) {
+		return
+	}
+	s.call(w, noResult(func() error { return s.backend.Append(r.Context(), req.Line, req.Separator) }))
+}
+
+func (s *server) toggleTag(w http.ResponseWriter, r *http.Request) {
+	var req remote.ToggleTagRequest
+	if !decode(w, r, &req) || !requireName(w, "toggle", req.Toggle) {
+		return
+	}
+	s.call(w, noResult(func() error { return s.backend.Tag(r.Context(), req.Toggle) }))
+}
+
+func (s *server) setProject(w http.ResponseWriter, r *http.Request) {
+	var req remote.SetProjectRequest
+	if !decode(w, r, &req) {
+		return
+	}
+	s.call(w, noResult(func() error {
+		return s.backend.SetProjectForCurrentTimestamp(r.Context(), req.Name, req.AutoCreateProject)
+	}))
+}
+
+func (s *server) projects(w http.ResponseWriter, r *http.Request) {
+	s.read(w, "projects", func() (any, error) {
+		projects, err := s.backend.Projects(r.Context())
+		if projects == nil {
+			projects = []timenote.Project{}
+		}
+		return projects, err
+	})
+}
+
+func (s *server) createProject(w http.ResponseWriter, r *http.Request) {
+	var req remote.NameRequest
+	if !decode(w, r, &req) || !requireName(w, "name", req.Name) {
+		return
+	}
+	s.call(w, noResult(func() error { return s.backend.CreateProject(r.Context(), req.Name) }))
+}
+
+func (s *server) deleteProject(w http.ResponseWriter, r *http.Request) {
+	s.call(w, noResult(func() error { return s.backend.DeleteProject(r.Context(), r.PathValue("nameOrID")) }))
+}
+
+func (s *server) clients(w http.ResponseWriter, r *http.Request) {
+	s.read(w, "clients", func() (any, error) {
+		clients, err := s.backend.Clients(r.Context())
+		if clients == nil {
+			clients = []timenote.Client{}
+		}
+		return clients, err
+	})
+}
+
+func (s *server) createClient(w http.ResponseWriter, r *http.Request) {
+	var req remote.NameRequest
+	if !decode(w, r, &req) || !requireName(w, "name", req.Name) {
+		return
+	}
+	s.call(w, noResult(func() error { return s.backend.CreateClient(r.Context(), req.Name) }))
+}
+
+func (s *server) cacheStatus(w http.ResponseWriter, r *http.Request) {
+	s.read(w, "cacheStatus", func() (any, error) { return s.backend.CacheStatus(r.Context()) })
+}
+
+func (s *server) updateCache(w http.ResponseWriter, r *http.Request) {
+	s.call(w, noResult(func() error { return s.backend.UpdateCache(r.Context()) }))
+}

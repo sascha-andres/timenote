@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -27,7 +28,7 @@ import (
 func timestampToday() {
 	p := newPersistor()
 
-	ts, err := p.ListForDay()
+	ts, err := p.ListForDay(context.Background())
 	if err != nil {
 		fatal(err)
 	}

@@ -14,10 +14,12 @@
 
 package cmd
 
+import "context"
+
 // timestampDone stops the current entry.
 func timestampDone() {
 	p := newPersistor()
-	if err := p.Done(); err != nil {
+	if err := p.Done(context.Background()); err != nil {
 		fatal(err)
 	}
 }

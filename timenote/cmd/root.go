@@ -14,6 +14,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
@@ -23,14 +24,12 @@ import (
 	"github.com/google/gops/agent"
 	"github.com/zalando/go-keyring"
 	"go.livingit.de/reuse/flag"
-	"go.livingit.de/timenote/internal/cache"
+	"go.livingit.de/timenote"
 	"go.livingit.de/timenote/internal/persistence"
+	"go.livingit.de/timenote/remote"
 )
 
-var (
-	token   string
-	caching *cache.Cache
-)
+var token string
 
 func init() {
 	token, _ = keyring.Get("timenote", "token")
@@ -56,14 +55,22 @@ func requireString(flagName, value string) string {
 	return value
 }
 
-// newPersistor builds the persistence layer for the configured workspace, or
-// terminates the process if that fails.
-func newPersistor() *persistence.TogglPersistor {
-	p, err := persistence.NewToggl(token, *workspace, caching)
-	if err != nil {
-		fatal(err)
+// newPersistor builds the backend selected with --backend, or terminates the
+// process if that fails.
+func newPersistor() timenote.Backend {
+	switch *backend {
+	case "toggl":
+		p, err := persistence.NewToggl(context.Background(), token, *workspace, resolveCacheDir(), *cacheMaxAge)
+		if err != nil {
+			fatal(err)
+		}
+		return p
+	case "remote":
+		return remote.New(requireString("remote-url", *remoteURL), requireString("remote-token", *remoteToken))
+	default:
+		fatal(fmt.Errorf("unknown backend %q", *backend))
+		return nil
 	}
-	return p
 }
 
 // Execute parses flags and dispatches to the requested command.
@@ -74,13 +81,6 @@ func Execute() {
 	if err := agent.Listen(agent.Options{}); err != nil {
 		fatal(err)
 	}
-
-	c, err := cache.NewCache(*cacheMaxAge, resolveCacheDir())
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	caching = c
 
 	dispatch(flag.GetVerbs())
 }
@@ -128,8 +128,8 @@ func dispatch(verbs []string) {
 // its description; this is the default action for the root command.
 func newFromDescription(words []string) {
 	p := newPersistor()
-	if err := p.New(); err != nil {
+	if err := p.New(context.Background()); err != nil {
 		fatal(err)
 	}
-	_ = p.Append(strings.Join(words, " "), *separator)
+	_ = p.Append(context.Background(), strings.Join(words, " "), *separator)
 }

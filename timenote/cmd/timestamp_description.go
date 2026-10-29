@@ -14,12 +14,15 @@
 
 package cmd
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+)
 
 // timestampDescription prints the current timestamp's description.
 func timestampDescription() {
 	p := newPersistor()
-	ts, err := p.Current()
+	ts, err := p.Current(context.Background())
 	if err != nil {
 		fatal(err)
 	}

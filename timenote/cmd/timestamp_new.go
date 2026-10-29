@@ -14,12 +14,14 @@
 
 package cmd
 
+import "context"
+
 // timestampNew starts a new timestamp with the given description.
 func timestampNew() {
 	desc := requireString("description", *description)
 	p := newPersistor()
-	if err := p.New(); err != nil {
+	if err := p.New(context.Background()); err != nil {
 		fatal(err)
 	}
-	_ = p.Append(desc, *separator)
+	_ = p.Append(context.Background(), desc, *separator)
 }

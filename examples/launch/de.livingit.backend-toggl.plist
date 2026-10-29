@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  launchd user agent for backend-toggl.
+  launchd does not expand ~ or $HOME: replace USERNAME with your user name.
+  The file contains the token: keep the file mode 600.
+  Install: see README.md in this directory.
+-->
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>de.livingit.backend-toggl</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/Users/USERNAME/go/bin/backend-toggl</string>
+		<string>-listen</string>
+		<string>127.0.0.1:8141</string>
+	</array>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>BACKEND_TOGGL_TOKEN</key>
+		<string>change-me</string>
+		<!-- Optional. If not set, backend-toggl uses the timenote keychain entry. -->
+		<!--
+		<key>TOGGL_TOKEN</key>
+		<string></string>
+		-->
+	</dict>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<dict>
+		<key>SuccessfulExit</key>
+		<false/>
+	</dict>
+	<key>ThrottleInterval</key>
+	<integer>10</integer>
+	<key>StandardOutPath</key>
+	<string>/Users/USERNAME/Library/Logs/backend-toggl.log</string>
+	<key>StandardErrorPath</key>
+	<string>/Users/USERNAME/Library/Logs/backend-toggl.log</string>
+</dict>
+</plist>

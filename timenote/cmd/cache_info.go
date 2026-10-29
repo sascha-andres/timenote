@@ -14,31 +14,29 @@
 
 package cmd
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+	"strings"
+)
 
 // cacheInfo prints when the cache was last updated and when it will be
 // updated next.
 func cacheInfo() {
-	p := newPersistor()
-
-	mdProjects, err := caching.ProjectMetaData(p.Workspace())
-	if err != nil {
-		fatal(err)
-	}
-	mdClients, err := caching.ClientMetaData(p.Workspace())
+	status, err := newCachingBackend().CacheStatus(context.Background())
 	if err != nil {
 		fatal(err)
 	}
 
-	fmt.Println("Project cache")
-	fmt.Println("-------------")
-	fmt.Println()
-	fmt.Printf("Updated:     %s\n", mdProjects.Updated.String())
-	fmt.Printf("Next update: %s\n", mdProjects.NextUpdate.String())
-	fmt.Println()
-	fmt.Println("Client cache")
-	fmt.Println("------------")
-	fmt.Println()
-	fmt.Printf("Updated:     %s\n", mdClients.Updated.String())
-	fmt.Printf("Next update: %s\n", mdClients.NextUpdate.String())
+	for i, s := range status {
+		if i > 0 {
+			fmt.Println()
+		}
+		title := s.Name + " cache"
+		fmt.Println(title)
+		fmt.Println(strings.Repeat("-", len(title)))
+		fmt.Println()
+		fmt.Printf("Updated:     %s\n", s.Updated.String())
+		fmt.Printf("Next update: %s\n", s.NextUpdate.String())
+	}
 }

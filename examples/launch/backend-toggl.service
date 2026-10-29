@@ -1,0 +1,18 @@
+# systemd user unit for backend-toggl.
+# Install: see README.md in this directory.
+
+[Unit]
+Description=timenote toggl REST backend
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Sets BACKEND_TOGGL_TOKEN and optionally TOGGL_TOKEN. Keep the file mode 600.
+EnvironmentFile=%h/.config/timenote/backend-toggl.env
+ExecStart=%h/go/bin/backend-toggl -listen 127.0.0.1:8141
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target

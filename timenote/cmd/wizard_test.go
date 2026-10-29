@@ -4,15 +4,15 @@ import (
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
-	"github.com/jason0x43/go-toggl"
+	"go.livingit.de/timenote"
 )
 
 func TestWizardNewWithDescription(t *testing.T) {
 	c1, c2 := 1, 2
-	clients := []toggl.Client{{ID: c1, Name: "first"}, {ID: c2, Name: "second"}}
-	projects := []toggl.Project{
-		{ID: 10, Name: "p-first", Cid: &c1},
-		{ID: 20, Name: "p-second", Cid: &c2},
+	clients := []timenote.Client{{ID: c1, Name: "first"}, {ID: c2, Name: "second"}}
+	projects := []timenote.Project{
+		{ID: 10, Name: "p-first", ClientID: c1},
+		{ID: 20, Name: "p-second", ClientID: c2},
 		{ID: 30, Name: "p-none"},
 	}
 	var m tea.Model = newWizardModel(nil, clients, projects)
@@ -43,7 +43,7 @@ func TestWizardNewWithDescription(t *testing.T) {
 
 func TestClientProjects(t *testing.T) {
 	c1 := 1
-	projects := []toggl.Project{{ID: 10, Cid: &c1}, {ID: 30}}
+	projects := []timenote.Project{{ID: 10, ClientID: c1}, {ID: 30}}
 	if got := clientProjects(projects, 1); len(got) != 1 || got[0].ID != 10 {
 		t.Errorf("clientProjects(1) = %v", got)
 	}

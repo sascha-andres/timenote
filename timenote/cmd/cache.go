@@ -14,7 +14,11 @@
 
 package cmd
 
-import "fmt"
+import (
+	"fmt"
+
+	"go.livingit.de/timenote"
+)
 
 // dispatchCache routes "cache" sub-verbs: info, update.
 func dispatchCache(verbs []string) {
@@ -29,4 +33,17 @@ func dispatchCache(verbs []string) {
 	default:
 		fatal(fmt.Errorf("unknown cache command %q", verbs[0]))
 	}
+}
+
+// newCachingBackend returns the backend, or terminates the process if the
+// backend has no cache. The remote backend has no local cache.
+func newCachingBackend() timenote.CachingBackend {
+	if *backend == "remote" {
+		fatal(fmt.Errorf("backend %q has no cache", *backend))
+	}
+	p, ok := newPersistor().(timenote.CachingBackend)
+	if !ok {
+		fatal(fmt.Errorf("backend has no cache"))
+	}
+	return p
 }

@@ -3,9 +3,9 @@ package timenote
 import "fmt"
 
 type Client struct {
-	ID          int
-	Name        string
-	Description string
+	ID          int    `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"notes"`
 }
 
 func (c Client) String() string {

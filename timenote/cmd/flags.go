@@ -17,6 +17,9 @@ var (
 	excludedProjects func() []string
 	logLevel         *string
 	logJSON          *bool
+	backend          *string
+	remoteURL        *string
+	remoteToken      *string
 
 	description       *string
 	name              *string
@@ -35,6 +38,9 @@ func init() {
 
 	defaultCachePath = path.Join(home, ".config/timenote")
 
+	// env fallback: TIMENOTE_<FLAG>; must be set before the flags are defined
+	flag.SetEnvPrefix("TIMENOTE")
+
 	workspace = flag.Int("workspace", 0, "Set to work within this workspace, leave to zero to have it guessed (first workspace)")
 	outputFormat = flag.String("output-format", "text", "text or json")
 	separator = flag.String("separator", ";", "Separator for existing value and new value")
@@ -43,6 +49,9 @@ func init() {
 	excludedProjects = flag.StringSlice("excluded-projects", []string{}, "exclude projects from the list by name (comma separated)")
 	logLevel = flag.String("log-level", "warn", "minimum log level to print (debug, info, warn, error)")
 	logJSON = flag.Bool("log-json", false, "log in JSON format")
+	backend = flag.String("backend", "toggl", "backend to use: toggl or remote")
+	remoteURL = flag.String("remote-url", "", "base URL of the backend-toggl server (required for -backend remote)")
+	remoteToken = flag.String("remote-token", "", "token for the backend-toggl server (required for -backend remote)")
 
 	description = flag.String("description", "", "Description for timestamp")
 	name = flag.String("name", "", "Name value (tag, project or client)")

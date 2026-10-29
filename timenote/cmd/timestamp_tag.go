@@ -14,11 +14,13 @@
 
 package cmd
 
+import "context"
+
 // timestampTag adds or overwrites a tag on the current entry.
 func timestampTag() {
 	n := requireString("name", *name)
 	p := newPersistor()
-	if err := p.Tag(n); err != nil {
+	if err := p.Tag(context.Background(), n); err != nil {
 		fatal(err)
 	}
 }
