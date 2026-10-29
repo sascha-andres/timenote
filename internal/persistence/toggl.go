@@ -323,7 +323,7 @@ func getCurrentTimeEntry(account toggl.Account) (*toggl.TimeEntry, error) {
 			return &te, nil
 		}
 	}
-	return nil, fmt.Errorf("no current time entry")
+	return nil, timenote.ErrNoCurrentEntry
 }
 
 // SetProjectForCurrentTimestamp apply project to running time entry
@@ -344,7 +344,7 @@ func (t *TogglPersistor) SetProjectForCurrentTimestamp(name string, autoCreatePr
 		projectID, err = t.getProjectID(name)
 		if projectID == 0 {
 			if !autoCreateProject {
-				return errors.New("project does not exist")
+				return timenote.ErrProjectNotFound
 			}
 			projectID, err = t.createProject(name)
 			if err != nil {
@@ -435,6 +435,9 @@ func (t *TogglPersistor) DeleteProject(name string) error {
 
 	if err != nil {
 		return err
+	}
+	if id == 0 {
+		return timenote.ErrProjectNotFound
 	}
 
 	project, err = callToggl("GetProject", func() (toggl.Project, error) {

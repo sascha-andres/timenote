@@ -9,21 +9,21 @@ type (
 	// TimeEntry represents a simple note
 	TimeEntry struct {
 		// ID is a system id which may be set from a persistor
-		ID int
+		ID int `json:"id"`
 		// Tag is used for grouping
-		Tag string
+		Tag string `json:"tag"`
 		// Some text attached to entry
-		Note string
+		Note string `json:"note"`
 		// When has the author started working on the note
-		Start time.Time
+		Start time.Time `json:"start"`
 		// End time
-		Stop *time.Time
+		Stop *time.Time `json:"stop,omitempty"`
 		// time entry duration in seconds. If the time entry is currently running, the duration attribute contains a negative value, denoting the start of the time entry in seconds since epoch (Jan 1 1970). The correct duration can be calculated as current_time + duration, where current_time is the current time in seconds since epoch.
-		Duration int64
+		Duration int64 `json:"duration"`
 		// TimeEntry belongs to project
-		Project string
+		Project string `json:"project"`
 		// // TimeEntry belongs to client
-		Client string
+		Client string `json:"client"`
 	}
 )
 

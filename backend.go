@@ -1,6 +1,16 @@
 package timenote
 
-import "time"
+import (
+	"errors"
+	"time"
+)
+
+var (
+	// ErrNoCurrentEntry is returned when no time entry is running
+	ErrNoCurrentEntry = errors.New("no current time entry")
+	// ErrProjectNotFound is returned when a project name or id does not exist
+	ErrProjectNotFound = errors.New("project does not exist")
+)
 
 type (
 	// Backend is a time tracking service (for example toggl). Caching is an
